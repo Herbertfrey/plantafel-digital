@@ -1,665 +1,536 @@
 <!DOCTYPE html>
 <html lang="de">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Plantafel Digital</title>
-  <style>
-    :root{
-      --bg:#0f1620;--panel:#1b2431;--panel-2:#1f2a3a;--text:#e7edf5;--muted:#a8b3c5;
-      --brand:#3b82f6;--danger:#ef4444;--ok:#22c55e;--warn:#f59e0b;--chip:#2b3a50;
-      --grid:#233043;--card:#233044;--card-b:#2c3b53;--ghost:#2c3a4d66
-    }
-    *{box-sizing:border-box} html,body{height:100%}
-    body{margin:0;background:var(--bg);color:var(--text);font:15px/1.5 system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,"Helvetica Neue",Arial}
-    header{display:flex;gap:.75rem;align-items:center;padding:.75rem 1rem;background:linear-gradient(180deg,#111827,#0f1620)}
-    header .title{font-weight:700;margin-right:8px}
-    select,input,button{border-radius:10px;border:1px solid #0000;background:var(--panel);color:var(--text);padding:.55rem .7rem}
-    button{background:var(--brand);border:none;cursor:pointer}
-    button.ghost{background:var(--panel-2)}
-    button.red{background:var(--danger)}
-    button.gray{background:#2a3446}
-    .toggle{display:inline-flex;gap:.5rem;align-items:center;padding:.35rem .6rem;background:var(--panel-2);border-radius:12px}
-    .row{display:flex;gap:.5rem;align-items:center;flex-wrap:wrap}
-    .hint{color:var(--muted);padding:.4rem 1rem;border-top:1px dashed #2c3b53}
-    main{padding: .5rem 1rem 2.5rem}
-    /* Boards */
-    .board{display:grid;gap:12px}
-    .board.weeks{grid-template-columns: 160px repeat(5,1fr)}
-    .board .col-head{font-weight:600;color:#cdd7e6;padding:.35rem .5rem}
-    .sticky{position:sticky;left:0;z-index:3;background:var(--bg)}
-    .week-label{background:var(--panel-2);border-radius:12px;padding:.5rem .6rem;margin-top:28px}
-    .cell{min-height:120px;background:var(--card);border:1px dashed var(--grid);border-radius:14px;padding:8px;position:relative;overflow:hidden}
-    .cell.placeholder{background:transparent;border:1px dashed #0000}
-    .drop-hint{position:absolute;inset:0;border:2px dashed var(--brand);border-radius:14px;opacity:.7;pointer-events:none}
-    /* Card */
-    .card{background:linear-gradient(180deg,var(--card),var(--card-b));border:1px solid #00000033;border-radius:14px;box-shadow:0 6px 18px #00000033;padding:8px 10px;margin:6px 0;cursor:grab}
-    .card.dragging{opacity:.5}
-    .card .top{display:flex;align-items:center;gap:.5rem}
-    .card .title{font-weight:600}
-    .chips{display:flex;flex-wrap:wrap;gap:6px;margin-top:6px}
-    .chip{background:var(--chip);border-radius:999px;padding:2px 8px;font-size:12px}
-    .chip.warn{background:#4d2f17;color:#ffd9a3;border:1px solid #b7742a}
-    .badge{display:inline-flex;align-items:center;gap:6px}
-    .badge .dot{width:8px;height:8px;border-radius:50%}
-    /* Months grid */
-    .months{display:grid;gap:14px;grid-template-columns:repeat(4,1fr)}
-    .month{background:var(--panel);border:1px solid #00000022;border-radius:16px;padding:10px}
-    .month h4{margin:6px 6px 10px 6px;font-size:15px;color:#d7e2f1}
-    /* Modals */
-    dialog{border:none;border-radius:16px;padding:0;background:var(--panel);color:var(--text);box-shadow:0 30px 60px #00000066}
-    dialog::backdrop{background:#0008}
-    .dlg{padding:16px;min-width:320px}
-    .dlg h3{margin:0 0 10px 0}
-    .grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
-    .field{margin:8px 0}
-    .label{font-size:12px;color:var(--muted);margin-bottom:4px}
-    .pill{display:inline-flex;gap:6px;flex-wrap:wrap}
-    .tag{padding:6px 10px;background:#2a3a52;border-radius:999px;cursor:pointer;border:1px solid #0000}
-    .tag.active{background:#314b79;border-color:#5b84d1;box-shadow: inset 0 0 0 1px #5b84d1}
-    /* Floating add */
-    .fab{position:fixed;right:18px;bottom:18px;width:54px;height:54px;border-radius:50%;display:grid;place-items:center;background:var(--brand);color:#fff;font-size:26px;cursor:pointer;box-shadow:0 12px 22px #0008}
-    /* tiny footer status */
-    .footer{position:fixed;left:8px;bottom:6px;color:#9fb0c9;font-size:12px}
-    /* zoom */
-    .zoom-wrap{display:inline-flex;align-items:center;gap:6px}
-    input[type="range"]{accent-color:var(--brand)}
-    /* little icon buttons */
-    .icon-btn{background:var(--panel-2);border:none;color:#cfe0ff;border-radius:10px;padding:4px 8px;cursor:pointer}
-    .icon-btn.red{background:#4b2329;color:#ffd6db}
-    .icon-btn.blue{background:#243857}
-    .toolbar{display:flex;gap:6px;margin-left:auto}
-    .hidden{display:none}
-    @media (max-width:900px){
-      .board.weeks{grid-template-columns:120px repeat(5,1fr)}
-      .months{grid-template-columns:1fr 1fr}
-      header{gap:.5rem;flex-wrap:wrap}
-    }
-  </style>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Plantafel Digital</title>
+<style>
+  :root{
+    --bg:#0f1620; --panel:#17212e; --panel2:#1e2a3a; --text:#d9e1ee;
+    --muted:#91a0b7; --primary:#3a86ff; --danger:#ef4444; --ok:#22c55e;
+    --card:#213245; --card-border:#2e4158; --badge:#2b3e55; --shadow:rgba(0,0,0,.25);
+  }
+  html,body{height:100%;margin:0;background:var(--bg);color:var(--text);font:14px/1.4 system-ui,Segoe UI,Roboto,Arial;}
+  .toolbar{position:sticky;top:0;z-index:5;background:linear-gradient(180deg,var(--panel),#131b27);padding:10px 12px;display:flex;gap:10px;align-items:center;box-shadow:0 2px 12px var(--shadow)}
+  .toolbar label{opacity:.9;margin-right:6px}
+  .toolbar .btn{background:#2b3a52;border:1px solid #394b69;color:var(--text);padding:8px 10px;border-radius:10px;cursor:pointer}
+  .toolbar .btn.primary{background:var(--primary);border-color:#2e6be6}
+  .toolbar .btn.ghost{background:transparent;border-color:#2c3950}
+  .toolbar select,.toolbar input[type="date"]{background:#203146;border:1px solid #2e4158;color:var(--text);padding:8px 10px;border-radius:10px}
+  .hint{padding:8px 12px;color:var(--muted)}
+  #board{padding:16px;min-height:calc(100vh - 120px)}
+  /* Grid – Tage/Wochen */
+  .weekgrid{display:grid;gap:10px}
+  .weekgrid.cols-5{grid-template-columns:160px repeat(5,1fr)}
+  .weekgrid .kwcol{background:var(--panel2);border:1px solid #263349;border-radius:12px;padding:10px;min-width:160px}
+  .weekgrid .day{background:var(--panel2);border:1px dashed #2d3a4f;border-radius:12px;min-height:120px;padding:10px;position:relative;overflow:hidden}
+  .weekgrid .day h4{margin:0 0 8px 0;color:#aab8cf;font-weight:600}
+  /* Grid – Monate */
+  .monthgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+  .month{background:var(--panel2);border:1px solid #263349;border-radius:14px;padding:12px;min-height:140px}
+  .month h3{margin:0 0 8px 0;color:#aab8cf}
+  /* Karten */
+  .card{background:var(--card);border:1px solid var(--card-border);border-radius:12px;padding:8px 10px;margin:6px 0;box-shadow:0 4px 12px var(--shadow);cursor:grab}
+  .card .title{font-weight:700;margin-bottom:6px}
+  .card .badges{display:flex;flex-wrap:wrap;gap:6px}
+  .badge{background:var(--badge);border:1px solid #3a516e;padding:2px 8px;border-radius:999px;font-size:12px}
+  .card .actions{position:absolute;top:6px;right:6px;display:flex;gap:6px}
+  .iconbtn{background:#2a394e;border:1px solid #3a4d68;border-radius:8px;color:#cfe0ff;cursor:pointer;padding:2px 6px;font-size:12px}
+  .card.red{box-shadow:0 0 0 2px rgba(239,68,68,.35) inset}
+  /* Modal */
+  dialog{border:none;border-radius:18px;background:#0f1a2a;color:var(--text);width:min(760px,96vw)}
+  dialog::backdrop{background:rgba(0,0,0,.6)}
+  .modal-head{padding:14px 16px;border-bottom:1px solid #24334a;font-weight:700}
+  .modal-body{padding:16px;display:grid;grid-template-columns:1fr;gap:12px}
+  .row{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+  .pill{background:#1c2c41;border:1px solid #2d425f;color:var(--text);padding:8px 12px;border-radius:999px;cursor:pointer;user-select:none}
+  .pill.active{background:#2c3f59;border-color:#4d6a93;box-shadow:inset 0 0 0 2px #34527a}
+  .modal-actions{padding:12px 16px;border-top:1px solid #24334a;display:flex;justify-content:flex-end;gap:10px}
+  /* Floater */
+  .fab{position:fixed;right:18px;bottom:18px;width:48px;height:48px;border-radius:50%;display:grid;place-items:center;background:var(--primary);color:#fff;border:none;box-shadow:0 10px 24px var(--shadow);cursor:pointer;font-size:26px}
+  /* Statusdot */
+  #cloud-dot{position:fixed;left:8px;bottom:26px;width:10px;height:10px;border-radius:50%;background:#666;box-shadow:0 0 0 3px rgba(0,0,0,.25)}
+  /* Zoom */
+  .zoom{width:140px}
+</style>
 </head>
 <body>
-  <header>
-    <div class="title">Plantafel</div>
-    <select id="viewSel" title="Ansicht">
-      <option value="4w">4 Wochen (Mo–Fr)</option>
-      <option value="14d">14 Tage (Mo–Fr)</option>
-      <option value="12m">12 Monate (Grobplanung)</option>
+  <div class="toolbar">
+    <strong>Plantafel</strong>
+    <label>Ansicht:</label>
+    <select id="view">
+      <option value="14">14 Tage (Mo–Fr)</option>
+      <option value="28" selected>4 Wochen (Mo–Fr)</option>
+      <option value="365">12 Monate (Grobplanung)</option>
     </select>
-    <div class="row">
-      <span>Start:</span>
-      <input id="startInput" type="date" />
-      <button id="btnReload" class="ghost">Neu laden</button>
-    </div>
 
-    <div class="toolbar">
-      <div class="toggle"><span class="dot" id="legendDot" style="background:#ef4444;border-radius:50%;width:10px;height:10px"></span> Urlaub/Krank/Schule</div>
-      <div class="toggle">
-        <div class="zoom-wrap">
-          <span style="font-size:12px;color:var(--muted)">Zoom</span>
-          <input id="zoomRange" type="range" min="90" max="130" value="100">
+    <label>Start:</label>
+    <input id="start" type="date" />
+    <button id="reload" class="btn">Neu laden</button>
+
+    <div style="margin-left:auto;display:flex;gap:8px;align-items:center">
+      <span id="status-dot" title="Status">🔴</span>
+      <div title="Zoom">
+        <input id="zoom" class="zoom" type="range" min="80" max="180" value="120" />
+      </div>
+      <label style="display:flex;gap:6px;align-items:center" title="Seite regelmäßig neu laden (für Monitor)">
+        <input id="autorefresh" type="checkbox" />
+        <span class="btn ghost">Auto-Reload</span>
+      </label>
+      <button id="openSettings" class="btn">Stammdaten</button>
+      <button id="add" class="btn primary">+ Eintrag</button>
+    </div>
+  </div>
+
+  <div class="hint">Drag & Drop: Karte auf Ziel ziehen → „Verschieben“ oder „Duplizieren“. Klick auf Karte = bearbeiten, X = löschen.</div>
+
+  <div id="board"></div>
+
+  <button class="fab" id="fab" title="Neuer Eintrag">+</button>
+  <div id="cloud-dot" title="Cloud-Verbindung"></div>
+
+  <!-- Modal: Editor -->
+  <dialog id="dlg">
+    <div class="modal-head">Eintrag bearbeiten</div>
+    <form method="dialog" class="modal-body" id="form">
+      <div class="row">
+        <label style="width:110px">Titel</label>
+        <input id="f_title" required style="flex:1;background:#18263a;border:1px solid #2c3f5a;color:#fff;padding:10px;border-radius:12px" />
+      </div>
+
+      <div class="row">
+        <label style="width:110px">Status</label>
+        <div id="f_status" class="row">
+          <span data-v="normal"  class="pill active">Normal</span>
+          <span data-v="urlaub"  class="pill" style="background:#3a2930;border-color:#6a3a46">Urlaub</span>
+          <span data-v="krank"   class="pill" style="background:#3a2a2a;border-color:#6a3a3a">Krank</span>
+          <span data-v="schule"  class="pill" style="background:#2f2a3a;border-color:#4a3a6a">Schule</span>
         </div>
       </div>
-      <div class="toggle">
-        <label style="display:flex;gap:8px;align-items:center">
-          <input id="autoReload" type="checkbox" />
-          <span>Auto-Reload</span>
-        </label>
-      </div>
-      <button id="btnMaster" class="gray">Stammdaten</button>
-      <button id="btnAdd">+ Eintrag</button>
-    </div>
-  </header>
 
-  <div class="hint">Drag &amp; Drop: Karte auf Ziel ziehen → „Verschieben“ oder „Duplizieren“. Klick auf Karte = bearbeiten, X = löschen.</div>
-
-  <main>
-    <div id="board"></div>
-  </main>
-
-  <div class="fab" id="fab">+</div>
-  <div class="footer">Status rot = Urlaub/Krank/Schule</div>
-
-  <!-- Dialog: Eintrag -->
-  <dialog id="dlgCard"><form method="dialog" class="dlg">
-    <h3>Eintrag bearbeiten</h3>
-    <div class="field">
-      <div class="label">Titel</div>
-      <input id="f_title" type="text" style="width:100%;background:var(--panel-2);border-radius:10px;border:1px solid #0000;color:var(--text);padding:.55rem .7rem">
-    </div>
-    <div class="grid2">
-      <div class="field">
-        <div class="label">Status</div>
-        <div class="pill" id="f_status">
-          <div class="tag" data-v="normal">Normal</div>
-          <div class="tag" data-v="urlaub" style="background:#5a1f25">Urlaub</div>
-          <div class="tag" data-v="krank" style="background:#5a1f25">Krank</div>
-          <div class="tag" data-v="schule" style="background:#5a1f25">Schule</div>
-        </div>
-      </div>
-      <div class="field">
-        <div class="label">Datum (Feinplanung)</div>
-        <input id="f_date" type="date" style="width:100%;background:var(--panel-2);border-radius:10px;border:1px solid #0000;color:var(--text);padding:.55rem .7rem">
-      </div>
-    </div>
-
-    <div class="grid2">
-      <div class="field">
-        <div class="label">Mitarbeiter</div>
-        <div class="pill" id="f_staff"></div>
-      </div>
-      <div class="field">
-        <div class="label">Fahrzeuge</div>
-        <div class="pill" id="f_cars"></div>
-      </div>
-    </div>
-
-    <div class="grid2">
-      <div class="field">
-        <div class="label">Dauer</div>
-        <select id="f_span" style="width:100%;background:var(--panel-2);border-radius:10px;border:1px solid #0000;color:var(--text);padding:.55rem .7rem">
+      <div class="row">
+        <label style="width:110px">Datum</label>
+        <input id="f_date" type="date" required style="background:#18263a;border:1px solid #2c3f5a;color:#fff;padding:10px;border-radius:12px" />
+        <label style="margin-left:12px">Dauer</label>
+        <select id="f_days" style="background:#18263a;border:1px solid #2c3f5a;color:#fff;padding:10px;border-radius:12px">
           <option value="1">nur dieser Tag</option>
           <option value="2">2 Tage</option>
           <option value="3">3 Tage</option>
           <option value="4">4 Tage</option>
           <option value="5">5 Tage</option>
+          <option value="10">2 Wochen</option>
         </select>
       </div>
-      <div class="field">
-        <div class="label">Position</div>
-        <div class="pill">
-          <div class="tag" id="btnToFine">→ in Feinplanung</div>
-          <div class="tag" id="btnToBacklog">→ in Grobplanung</div>
+
+      <div class="row">
+        <label style="width:110px">Mitarbeiter</label>
+        <div id="f_staff" class="row"></div>
+      </div>
+
+      <div class="row">
+        <label style="width:110px">Fahrzeuge</label>
+        <div id="f_cars" class="row"></div>
+      </div>
+
+      <div class="row">
+        <label style="width:110px">Tafel</label>
+        <div id="f_board" class="row">
+          <span data-v="fine"   class="pill active">Feinplanung</span>
+          <span data-v="coarse" class="pill">Grobplanung</span>
         </div>
       </div>
-    </div>
 
-    <div class="row" style="justify-content:flex-end;gap:8px;margin-top:12px">
-      <button value="cancel" class="ghost">Abbrechen</button>
-      <button id="btnSaveCard">Speichern</button>
+      <input type="hidden" id="f_id" />
+    </form>
+    <div class="modal-actions">
+      <button id="btnDelete" class="btn" style="background:#3a2430;border-color:#5a3248">Löschen</button>
+      <button id="btnDup" class="btn">Duplizieren</button>
+      <button id="btnCancel" class="btn">Abbrechen</button>
+      <button id="btnSave" class="btn primary">Speichern</button>
     </div>
-  </form></dialog>
+  </dialog>
 
-  <!-- Dialog: Stammdaten -->
-  <dialog id="dlgMaster"><form method="dialog" class="dlg">
-    <h3>Stammdaten</h3>
-    <div class="grid2">
-      <div>
-        <div class="label">Neuer Mitarbeiter</div>
-        <div class="row">
-          <input id="m_staff_inp" placeholder="Name" />
-          <button class="blue icon-btn" id="m_staff_add">+</button>
-        </div>
-        <div id="m_staff_list" class="pill" style="margin-top:8px"></div>
+  <!-- Modal: Stammdaten -->
+  <dialog id="dlgSettings">
+    <div class="modal-head">Stammdaten</div>
+    <div class="modal-body">
+      <div class="row" style="flex-direction:column;gap:6px">
+        <label>Mitarbeiter (kommagetrennt)</label>
+        <textarea id="s_staff" rows="3" style="background:#18263a;border:1px solid #2c3f5a;color:#fff;padding:10px;border-radius:12px"></textarea>
       </div>
-      <div>
-        <div class="label">Neues Fahrzeug</div>
-        <div class="row">
-          <input id="m_car_inp" placeholder="Fahrzeug" />
-          <button class="blue icon-btn" id="m_car_add">+</button>
-        </div>
-        <div id="m_car_list" class="pill" style="margin-top:8px"></div>
+      <div class="row" style="flex-direction:column;gap:6px">
+        <label>Fahrzeuge (kommagetrennt)</label>
+        <textarea id="s_cars" rows="3" style="background:#18263a;border:1px solid #2c3f5a;color:#fff;padding:10px;border-radius:12px"></textarea>
       </div>
     </div>
-    <div class="row" style="justify-content:flex-end;margin-top:14px">
-      <button value="cancel" class="ghost">Schließen</button>
-      <button id="m_save">Speichern</button>
+    <div class="modal-actions">
+      <button id="btnSettingsCancel" class="btn">Abbrechen</button>
+      <button id="btnSettingsSave" class="btn primary">Speichern</button>
     </div>
-  </form></dialog>
+  </dialog>
 
-  <!-- Verbindungspunkt (grün / rot) -->
-  <div id="cloud-dot" style="position:fixed;left:8px;bottom:26px;width:10px;height:10px;border-radius:50%;background:#ff3b30;opacity:.85"></div>
-
-  <!-- Firebase & App-Logik -->
+  <!-- Firebase + App-Logik (ohne App Check) -->
   <script type="module">
-    /***** Firebase: App + AppCheck (DEV) + Firestore *****/
+    /* Firebase SDK (CDN) */
     import { initializeApp } from "https://www.gstatic.com/firebasejs/12.4.0/firebase-app.js";
-    import { initializeAppCheck, ReCaptchaV3Provider } from "https://www.gstatic.com/firebasejs/12.4.0/firebase-app-check.js";
     import {
-      getFirestore, collection, doc, addDoc, setDoc, updateDoc, getDoc, getDocs,
-      deleteDoc, onSnapshot, query, where, orderBy, serverTimestamp
+      getFirestore, collection, doc, addDoc, setDoc, updateDoc, getDoc,
+      deleteDoc, onSnapshot, query, where, orderBy, serverTimestamp, enableIndexedDbPersistence
     } from "https://www.gstatic.com/firebasejs/12.4.0/firebase-firestore.js";
 
-    /* >>>>> HIER DEINE KONFIG AUS DER FIREBASE-KONSOLE EINTRAGEN <<<<< */
-  const firebaseConfig = {
-    apiKey: "AIzaSyDpWF-XnO23Bx-ebCvg6a42Drxm9f4SxDI",
-    authDomain: "plantafelfreylich100.firebaseapp.com",
-    projectId: "plantafelfreylich100",
-    storageBucket: "plantafelfreylich100.firebasestorage.app",
-    messagingSenderId: "96295193135",
-    appId: "1:96295193135:web:e446279447815c0ef914da",
-    measurementId: "G-W5VG5SLTRC"
-};
+    /* >>>>> Firebase-Konfig – bitte prüfen (deine Werte aus der Konsole) <<<<< */
+    const firebaseConfig = {
+      apiKey: "AIzaSyDpwF_KnO23BX-ebCVG9642DrXmf94SxDI",
+      authDomain: "plantafelfreyllich100.firebaseapp.com",
+      projectId: "plantafelfreyllich100",
+      storageBucket: "plantafelfreyllich100.firebasestorage.app",
+      messagingSenderId: "962959139135",
+      appId: "1:962959139135:web:e44627944781c50ef91d4a",
+      measurementId: "G-W5GSSLTRC"
+    };
 
     const app = initializeApp(firebaseConfig);
-    // DEV-Token aktivieren (funktioniert auf Handy & Zweit-PC ohne App-Registrierung)
-    self.FIREBASE_APPCHECK_DEBUG_TOKEN = true;
-    initializeAppCheck(app, {
-      provider: new ReCaptchaV3Provider("6LeIxAcTAAAAAJcZVRqyHh71UMIEGNQ_MXjiZKhI"), // offizieller Test-Key
-      isTokenAutoRefreshEnabled: true
-    });
-    const db = getFirestore(app);
+    const db  = getFirestore(app);
 
-    // kleiner Verbindungstest
-    const cloudDot = document.getElementById('cloud-dot');
-    try {
-      await setDoc(doc(db, "meta", "heartbeat"), { ts: serverTimestamp() }, { merge:true });
-      cloudDot.style.background = "#1dd75b";
-    } catch(e){ console.error(e); cloudDot.style.background="#ff3b30"; }
+    // Offline-Cache (optional)
+    try { await enableIndexedDbPersistence(db); } catch(e){ /* kann ignoriert werden */ }
 
-    /***** Stammdaten *****/
-    const COLORS = [
-      "#22c55e","#3b82f6","#f97316","#a855f7","#e11d48","#10b981","#ef4444","#14b8a6",
-      "#eab308","#8b5cf6","#f59e0b","#06b6d4","#84cc16","#d946ef","#f43f5e","#0ea5e9"
-    ];
-    let master = { staff:[], cars:[] }; // {name,color}
-    const settingsRef = doc(db, "settings", "default");
+    /* UI References */
+    const $ = sel => document.querySelector(sel);
+    const viewSel = $('#view');
+    const startInp = $('#start');
+    const boardEl = $('#board');
+    const dlg = $('#dlg');
+    const dlgSettings = $('#dlgSettings');
 
-    async function loadMaster(){
-      const s = await getDoc(settingsRef);
-      if (s.exists()){
-        master = s.data();
-      } else {
-        master = {
-          staff:[{name:"Thomas", color:COLORS[0]},{name:"Patrick",color:COLORS[2]},{name:"Herbert",color:COLORS[1]}],
-          cars:[{name:"Doka"},{name:"Crafter"},{name:"Mercedes Bus"},{name:"Ford"}]
+    /* Stammdaten laden/speichern */
+    async function loadSettings(){
+      const ref = doc(db,'settings','default');
+      const snap = await getDoc(ref);
+      if(snap.exists()){
+        const s = snap.data();
+        window._settings = {
+          staff: s.staff || ['Thomas','Patrick','Herbert','Artiom','Juppi','Terry'],
+          cars:  s.cars  || ['Doka','Crafter','Mercedes Bus','Ford','Mercedes Bus Doka']
         };
-        await setDoc(settingsRef, master);
-      }
-      renderMasterLists();
-    }
-
-    function renderMasterLists(){
-      const staffWrap = document.getElementById('m_staff_list');
-      const carWrap = document.getElementById('m_car_list');
-      staffWrap.innerHTML = ""; carWrap.innerHTML = "";
-      master.staff.forEach((s,i)=>{
-        const el = document.createElement('div');
-        el.className='tag'; el.textContent=s.name;
-        el.style.background = "#2a3a52"; el.style.borderColor="#0000";
-        el.style.position="relative";
-        const dot = document.createElement('span');
-        dot.style.cssText=`position:absolute;left:-6px;top:-6px;width:12px;height:12px;border-radius:50%;background:${s.color||"#3b82f6"}`;
-        el.appendChild(dot);
-        el.title="Zum Entfernen klicken";
-        el.onclick=()=>{ master.staff.splice(i,1); renderMasterLists(); };
-        staffWrap.appendChild(el);
-      });
-      master.cars.forEach((c,i)=>{
-        const el = document.createElement('div');
-        el.className='tag'; el.textContent=c.name;
-        el.title="Zum Entfernen klicken";
-        el.onclick=()=>{ master.cars.splice(i,1); renderMasterLists(); };
-        carWrap.appendChild(el);
-      });
-    }
-
-    document.getElementById('m_staff_add').onclick = (e)=>{
-      e.preventDefault();
-      const name = (document.getElementById('m_staff_inp').value||"").trim();
-      if(!name) return;
-      const color = COLORS[(master.staff.length)%COLORS.length];
-      master.staff.push({name, color});
-      document.getElementById('m_staff_inp').value="";
-      renderMasterLists();
-    }
-    document.getElementById('m_car_add').onclick = (e)=>{
-      e.preventDefault();
-      const name = (document.getElementById('m_car_inp').value||"").trim();
-      if(!name) return;
-      master.cars.push({name});
-      document.getElementById('m_car_inp').value="";
-      renderMasterLists();
-    }
-    document.getElementById('m_save').onclick = async (e)=>{
-      e.preventDefault();
-      await setDoc(settingsRef, master, {merge:true});
-      dlgMaster.close();
-    }
-
-    /***** UI & State *****/
-    const boardEl = document.getElementById('board');
-    const viewSel = document.getElementById('viewSel');
-    const startInput = document.getElementById('startInput');
-    const btnReload = document.getElementById('btnReload');
-    const zoomRange = document.getElementById('zoomRange');
-    const autoReload = document.getElementById('autoReload');
-    const btnAdd = document.getElementById('btnAdd');
-    const fab = document.getElementById('fab');
-    const btnMaster = document.getElementById('btnMaster');
-    const dlgCard = document.getElementById('dlgCard');
-    const dlgMaster = document.getElementById('dlgMaster');
-
-    // Default: heute (Montag der Woche)
-    const today = new Date();
-    const monday = new Date(today); monday.setDate(today.getDate() - ((today.getDay()+6)%7));
-    startInput.valueAsDate = monday;
-
-    let unsub = null;     // Firestore live subscription
-    let items = [];       // aktuell geladene Karten
-    function ymd(d){ return d.toISOString().slice(0,10); }
-    function ym(d){ return d.toISOString().slice(0,7); }
-
-    // Laden & abonnieren
-    async function loadData(){
-      if(unsub){unsub(); unsub=null;}
-      boardEl.innerHTML = "";
-      const mode = viewSel.value;
-      if(mode==="12m"){
-        renderMonths();
-        const base = new Date(startInput.value || new Date());
-        const y = base.getFullYear();
-        const months = [];
-        for(let m=0;m<12;m++){ months.push(`${y}-${String(m+1).padStart(2,"0")}`); }
-        const q = query(collection(db,"plantafel"), where("board","==","backlog"), where("month","in", months));
-        unsub = onSnapshot(q, snap=>{
-          items = snap.docs.map(d=>({id:d.id, ...d.data()}));
-          renderMonths(true);
-        });
-      } else {
-        const days = buildDays(mode);
-        renderWeeks(days);
-        const from = ymd(days[0]); const to = ymd(days[days.length-1]);
-        const q = query(collection(db,"plantafel"), where("board","==","fine"), where("date",">=",from), where("date","<=",to));
-        unsub = onSnapshot(q, snap=>{
-          items = snap.docs.map(d=>({id:d.id, ...d.data()}));
-          renderWeeks(days, true);
-        });
+      }else{
+        window._settings = {
+          staff:['Thomas','Patrick','Herbert','Artiom','Juppi','Terry'],
+          cars:['Doka','Crafter','Mercedes Bus','Ford','Mercedes Bus Doka']
+        };
+        await setDoc(ref, window._settings);
       }
     }
+    function openSettings(){
+      $('#s_staff').value = (window._settings?.staff||[]).join(', ');
+      $('#s_cars').value  = (window._settings?.cars||[]).join(', ');
+      dlgSettings.showModal();
+    }
+    $('#openSettings').onclick = openSettings;
+    $('#btnSettingsCancel').onclick = ()=> dlgSettings.close();
+    $('#btnSettingsSave').onclick = async ()=>{
+      const staff = $('#s_staff').value.split(',').map(s=>s.trim()).filter(Boolean);
+      const cars  = $('#s_cars').value.split(',').map(s=>s.trim()).filter(Boolean);
+      await setDoc(doc(db,'settings','default'),{staff,cars});
+      window._settings = {staff,cars};
+      dlgSettings.close();
+      render(); // aktualisiere die Auswahl im Editor
+    };
 
-    function buildDays(mode){
-      const start = new Date(startInput.value || new Date());
-      const days = [];
-      const weeks = (mode==="14d")?2:4;
-      let d = new Date(start);
-      for(let w=0; w<weeks; w++){
-        for(let i=0;i<5;i++){
-          const day = new Date(d); day.setDate(d.getDate() + i + w*7);
-          days.push(day);
-        }
-      }
-      return days;
+    /* Utilities */
+    const fmtISO = d => d.toISOString().slice(0,10);
+    const addDays = (d,n)=>{const x=new Date(d); x.setDate(x.getDate()+n); return x};
+    function mondayOf(date){
+      const d=new Date(date); const day=(d.getDay()+6)%7; d.setDate(d.getDate()-day); return d;
+    }
+    function firstOfMonth(date){ const d=new Date(date); d.setDate(1); return d; }
+    function monthName(i){ return ['Januar','Februar','März','April','Mai','Juni','Juli','August','September','Oktober','November','Dezember'][i]; }
+    function kw(d){ d=new Date(d); d.setHours(0,0,0,0); d.setDate(d.getDate()+3-((d.getDay()+6)%7)); const week1=new Date(d.getFullYear(),0,4); return 1+Math.round(((d-week1)/86400000-3+((week1.getDay()+6)%7))/7); }
+
+    /* Global state */
+    let unsub = null;
+    let items = []; // aktuelle Einträge
+    let zoomPx = 120;
+
+    /* Render */
+    function clearBoard(){ boardEl.innerHTML=''; }
+    function setStatusDot(ok){ $('#status-dot').textContent = ok ? '🟢' : '🔴'; $('#cloud-dot').style.background = ok ? '#22c55e' : '#ef4444'; }
+
+    function dayCell(dateStr){
+      const div = document.createElement('div');
+      div.className='day droptarget';
+      div.dataset.date = dateStr;
+      const d = new Date(dateStr);
+      const h = document.createElement('h4');
+      h.textContent = d.toLocaleDateString('de-DE',{weekday:'short', year:'numeric', month:'2-digit', day:'2-digit'});
+      div.appendChild(h);
+      div.ondragover = e=> e.preventDefault();
+      div.ondrop = async e=>{
+        e.preventDefault();
+        const id = e.dataTransfer.getData('text/plain');
+        const one = items.find(x=>x.id===id);
+        if(!one) return;
+        await updateDoc(doc(db,'entries',id), { date: dateStr, board:'fine', updated: serverTimestamp() });
+      };
+      return div;
     }
 
-    /* ---------- RENDER: Wochen ---------- */
-    function renderWeeks(days, refill=false){
-      if(!refill){
-        const grid = document.createElement('div'); grid.className='board weeks';
-        // Kopf
-        grid.appendChild(div('col-head sticky','KW / Zeitraum'));
-        const headDays = [];
-        for(let w=0; w<days.length; w+=5){
-          for(let i=0;i<5;i++){
-            const d = new Date(days[w]); d.setDate(d.getDate()+i);
-            headDays.push(d);
-          }
-        }
-        for(const d of headDays){
-          const h = div('col-head', `${d.toLocaleDateString('de-DE',{weekday:'short'})}<br>${ymd(d)}`); h.style.textAlign='center';
-          grid.appendChild(h);
-        }
-        // Wochenzeilen
-        for(let w=0; w<days.length; w+=5){
-          const wkStart = new Date(days[w]);
-          const wkEnd = new Date(days[w]); wkEnd.setDate(wkEnd.getDate()+4);
-          const kw = getISOWeek(wkStart);
-          const lab = div('week-label sticky', `<div>KW ${kw}</div><div style="font-size:12px;color:#9fb0c9">${ymd(wkStart)} – ${ymd(wkEnd)}</div><div style="margin-top:8px;color:#9fb0c9">Projekt</div>`);
-          grid.appendChild(lab);
-          for(let i=0;i<5;i++){
-            const cell = makeCell('fine', ymd(new Date(days[w+i])));
-            grid.appendChild(cell);
-          }
-        }
-        boardEl.innerHTML=""; boardEl.appendChild(grid);
-      }
-      // Karten einfüllen
-      fillCards();
+    function monthCell(year,monthIdx){
+      const div = document.createElement('div');
+      div.className='month droptarget';
+      div.dataset.year=year; div.dataset.month=monthIdx;
+      const h=document.createElement('h3'); h.textContent = `${monthName(monthIdx)} ${year}`; div.appendChild(h);
+      div.ondragover = e=> e.preventDefault();
+      div.ondrop = async e=>{
+        e.preventDefault();
+        const id = e.dataTransfer.getData('text/plain');
+        const one = items.find(x=>x.id===id);
+        if(!one) return;
+        const newDate = fmtISO(new Date(year,monthIdx,1));
+        await updateDoc(doc(db,'entries',id), { date:newDate, board:'coarse', updated: serverTimestamp() });
+      };
+      return div;
     }
 
-    /* ---------- RENDER: Monate (Backlog) ---------- */
-    function renderMonths(refill=false){
-      if(!refill){
-        const wrap = document.createElement('div'); wrap.className='months';
-        const base = new Date(startInput.value || new Date());
-        const y = base.getFullYear();
-        for(let m=0;m<12;m++){
-          const box = document.createElement('div'); box.className='month';
-          const monthDate = new Date(y, m, 1);
-          const mKey = `${y}-${String(m+1).padStart(2,"0")}`;
-          box.innerHTML = `<h4>${monthDate.toLocaleString('de-DE',{month:'long'})} ${y}</h4>`;
-          const cell = makeCell('backlog', mKey); cell.style.minHeight="140px";
-          box.appendChild(cell);
-          wrap.appendChild(box);
-        }
-        boardEl.innerHTML=""; boardEl.appendChild(wrap);
-      }
-      fillCards();
-    }
+    function cardHTML(it){
+      const el = document.createElement('div');
+      el.className = 'card' + (it.status!=='normal' ? ' red':'');
+      el.draggable = true;
+      el.style.minHeight = zoomPx+'px';
+      el.ondragstart = e=> e.dataTransfer.setData('text/plain', it.id);
 
-    /* ---------- Zellen & Karten ---------- */
-    function makeCell(boardKey, slotKey){
-      const cell = div('cell','<div style="color:#7e91ad;font-size:12px">Klicken zum Eintragen · Drag & Drop möglich</div>');
-      cell.dataset.board = boardKey; // fine/backlog
-      if(boardKey==="fine") cell.dataset.date = slotKey; else cell.dataset.month = slotKey;
+      const t = document.createElement('div');
+      t.className='title';
+      t.textContent = it.title || '(ohne Titel)';
+      el.appendChild(t);
 
-      cell.addEventListener('click',(e)=>{
-        if(e.target.closest('.card')) return;
-        openEdit({ title:"", status:"normal", staff:[], cars:[], span:1,
-          board: boardKey, date: cell.dataset.date || null, month: cell.dataset.month || null
-        }, true);
-      });
+      const bb = document.createElement('div');
+      bb.className='badges';
+      if(Array.isArray(it.staff))   it.staff.forEach(s=>{ const b=document.createElement('span'); b.className='badge'; b.textContent=s; bb.appendChild(b); });
+      if(Array.isArray(it.cars))    it.cars.forEach(s=>{ const b=document.createElement('span'); b.className='badge'; b.textContent=s; bb.appendChild(b); });
+      if(it.status!=='normal'){ const b=document.createElement('span'); b.className='badge'; b.textContent=it.status; b.style.background='#5a2a2a'; bb.appendChild(b); }
+      el.appendChild(bb);
 
-      // DnD
-      cell.addEventListener('dragover', ev=>{ ev.preventDefault(); cell.classList.add('drag-over'); });
-      cell.addEventListener('dragleave', ()=> cell.classList.remove('drag-over'));
-      cell.addEventListener('drop', async ev=>{
-        ev.preventDefault(); cell.classList.remove('drag-over');
-        const payload = JSON.parse(ev.dataTransfer.getData('text/plain')||"{}");
-        if(!payload.id) return;
-        const choice = confirm("OK = verschieben · Abbrechen = duplizieren");
-        if(choice){
-          // verschieben
-          const upd = { board: cell.dataset.board };
-          if(cell.dataset.board==="fine"){ upd.date = cell.dataset.date; upd.month = ym(new Date(cell.dataset.date)); }
-          else { upd.month = cell.dataset.month; delete upd.date; }
-          await updateDoc(doc(db,"plantafel",payload.id), upd);
-        }else{
-          const src = items.find(x=>x.id===payload.id); if(!src) return;
-          const copy = {...src}; delete copy.id; copy.created = serverTimestamp();
-          copy.board = cell.dataset.board;
-          if(cell.dataset.board==="fine"){ copy.date = cell.dataset.date; copy.month = ym(new Date(cell.dataset.date)); }
-          else { copy.month = cell.dataset.month; delete copy.date; }
-          await addDoc(collection(db,"plantafel"), copy);
-        }
-      });
-      return cell;
-    }
+      const acts=document.createElement('div'); acts.className='actions';
+      const edit=document.createElement('button'); edit.className='iconbtn'; edit.textContent='✎'; edit.title='Bearbeiten';
+      const del=document.createElement('button'); del.className='iconbtn'; del.textContent='×'; del.title='Löschen';
+      acts.appendChild(edit); acts.appendChild(del); el.appendChild(acts);
 
-    function fillCards(){
-      // leeren
-      document.querySelectorAll('.cell').forEach(c=> c.innerHTML = '<div style="color:#7e91ad;font-size:12px">Klicken zum Eintragen · Drag & Drop möglich</div>');
-      // pro item passende Zelle suchen
-      for(const it of items){
-        let selector = '';
-        if(it.board==="fine") selector = `.cell[data-board="fine"][data-date="${it.date}"]`;
-        else selector = `.cell[data-board="backlog"][data-month="${it.month}"]`;
-        const cell = document.querySelector(selector);
-        if(!cell) continue;
-        cell.appendChild(renderCard(it));
-      }
-    }
+      edit.onclick = ()=> openEditor(it);
+      del.onclick = async ()=> { if(confirm('Eintrag löschen?')) await deleteDoc(doc(db,'entries',it.id)); };
 
-    function renderCard(it){
-      const el = div('card');
-      el.draggable=true;
-      el.addEventListener('dragstart', ev=>{
-        el.classList.add('dragging');
-        ev.dataTransfer.setData('text/plain', JSON.stringify({id:it.id}));
-      });
-      el.addEventListener('dragend', ()=> el.classList.remove('dragging'));
-
-      const top = div('top');
-      const title = div('title', it.title || '(ohne Titel)');
-      const btnEdit = btn('✎','icon-btn', ()=> openEdit(it,false));
-      const btnDel = btn('✕','icon-btn red', async ()=>{
-        if(confirm('Diesen Eintrag löschen?')) await deleteDoc(doc(db,"plantafel",it.id));
-      });
-      top.append(title, spacer(), btnEdit, btnDel);
-      el.appendChild(top);
-
-      const chips = div('chips');
-      // status rot markieren
-      if(["urlaub","krank","schule"].includes(it.status)){
-        el.style.outline="2px dashed #ef4444"; el.style.outlineOffset="3px";
-      }
-      // Mitarbeiter
-      (it.staff||[]).forEach(n=>{
-        const st = master.staff.find(s=>s.name===n);
-        const c = div('chip', n); c.style.background= (st?.color || '#455e85');
-        chips.appendChild(c);
-      });
-      // Fahrzeuge
-      (it.cars||[]).forEach(n=>{
-        const c = div('chip', n); chips.appendChild(c);
-      });
-
-      // Konflikte (gleiches Datum & Mitarbeiter doppelt)
-      if(it.board==="fine"){
-        const sameDay = items.filter(x=> x.board==="fine" && x.date===it.date && x.id!==it.id);
-        const names = new Set();
-        for(const other of sameDay){
-          for(const n of (it.staff||[])){
-            if((other.staff||[]).includes(n) && !names.has(n)) names.add(n);
-          }
-        }
-        for(const n of names){
-          const w = div('chip warn', `${n} doppelt`); chips.appendChild(w);
-        }
-      }
-
-      el.appendChild(chips);
       return el;
     }
 
-    /***** Edit-Dialog *****/
-    let current = null; let isNew=false;
-    function openEdit(data, create){
-      isNew = create; current = JSON.parse(JSON.stringify(data));
-      dlgCard.showModal();
+    function render(){
+      clearBoard();
+      const view = viewSel.value;
+      if(view==='365'){ // Grobplanung, 12 Monate ab Start
+        const start = new Date(startInp.value || fmtISO(new Date()));
+        const y0 = start.getFullYear();
+        const m0 = start.getMonth();
+        const wrapper=document.createElement('div'); wrapper.className='monthgrid';
+        for(let i=0;i<12;i++){
+          const y = y0 + Math.floor((m0+i)/12);
+          const m = (m0+i)%12;
+          const cell=monthCell(y,m);
+          const monthStart = fmtISO(new Date(y,m,1));
+          const monthEnd = fmtISO(new Date(y,m+1,0));
+          // add cards (board == coarse) whose date lies in month
+          items.filter(x=>x.board==='coarse' && x.date>=monthStart && x.date<=monthEnd)
+               .forEach(it=> cell.appendChild(cardHTML(it)));
+          wrapper.appendChild(cell);
+        }
+        boardEl.appendChild(wrapper);
+      } else {
+        const days = (view==='14'?14:28);
+        const start = mondayOf(startInp.value || new Date());
+        const table=document.createElement('div'); table.className='weekgrid cols-5';
+        // 4 Wochen Raster mit KW Spalte
+        const weeks = Math.ceil(days/5);
+        for(let w=0; w<weeks; w++){
+          // KW Spalte
+          const kwcol=document.createElement('div'); kwcol.className='kwcol';
+          const d0 = addDays(start, w*7);
+          const d5 = addDays(d0,6);
+          const k = kw(d0);
+          kwcol.innerHTML = `<div style="font-weight:700;margin-bottom:6px">KW ${String(k).padStart(2,'0')}</div>
+            <div style="color:#aab8cf;font-size:12px">${fmtISO(d0)} – ${fmtISO(d5)}</div>
+            <div style="margin-top:10px;color:#aab8cf">Projekt</div>`;
+          table.appendChild(kwcol);
+          // Mo–Fr
+          for(let d=0; d<5; d++){
+            const date = addDays(d0,d);
+            const ds = fmtISO(date);
+            const cell = dayCell(ds);
+            // Einträge (board == fine) die an diesem Tag liegen (inkl. Dauer)
+            items.filter(x=>{
+              if(x.board!=='fine') return false;
+              const startD = new Date(x.date);
+              const endD = addDays(startD,(x.days||1)-1);
+              return date>=startD && date<=endD;
+            }).forEach(it=> cell.appendChild(cardHTML(it)));
+            table.appendChild(cell);
+          }
+        }
+        boardEl.appendChild(table);
+      }
+    }
+
+    /* Realtime-Live-Query: wir hören immer auf den passenden Bereich */
+    function attachListener(){
+      if(unsub) { unsub(); unsub=null; }
+      const view = viewSel.value;
+      const start = new Date(startInp.value || fmtISO(new Date()));
+      let qRef;
+      if(view==='365'){
+        const y0=start.getFullYear(); const m0=start.getMonth();
+        const startISO = fmtISO(new Date(y0,m0,1));
+        const endISO   = fmtISO(new Date(y0,m0+12,0));
+        qRef = query(collection(db,'entries'), where('date','>=',startISO), where('date','<=',endISO), orderBy('date'));
+      }else{
+        const s = mondayOf(start);
+        const e = addDays(s, (view==='14'?14:28)-1);
+        const startISO = fmtISO(s);
+        const endISO   = fmtISO(e);
+        qRef = query(collection(db,'entries'), where('date','>=',startISO), where('date','<=',endISO), orderBy('date'));
+      }
+      unsub = onSnapshot(qRef, snap=>{
+        const arr=[];
+        snap.forEach(d=> arr.push({id:d.id, ...d.data()}));
+        items = arr;
+        setStatusDot(true);
+        render();
+      }, err=>{
+        console.error('Snapshot error', err);
+        setStatusDot(false);
+      });
+    }
+
+    /* Editor */
+    function pills(containerId, val){
+      const box = $(containerId);
+      box.querySelectorAll('.pill').forEach(p=>{
+        p.classList.toggle('active', p.dataset.v===val);
+      });
+    }
+    function collectPills(container){
+      return Array.from(container.querySelectorAll('.pill.active')).map(x=>x.dataset.v);
+    }
+    function buildSelectable(container, list){
+      container.innerHTML='';
+      list.forEach(name=>{
+        const s=document.createElement('span');
+        s.className='pill'; s.textContent=name; s.dataset.v=name;
+        s.onclick=()=> s.classList.toggle('active');
+        container.appendChild(s);
+      });
+    }
+
+    function openEditor(it){
+      const isNew = !it;
+      const s = window._settings || {staff:[],cars:[]};
+
       // Felder setzen
-      qs('#f_title').value = current.title||"";
-      qs('#f_date').value = current.date||"";
-      qs('#f_span').value = String(current.span||1);
+      $('#f_id').value    = it?.id || '';
+      $('#f_title').value = it?.title || '';
+      $('#f_date').value  = it?.date || fmtISO(new Date());
+      $('#f_days').value  = String(it?.days || 1);
 
       // Status
-      bindPills('#f_status', ['normal','urlaub','krank','schule'], current.status||'normal', v=> current.status=v);
-
-      // Mitarbeiter + Fahrzeuge
-      const staffWrap = qs('#f_staff'); staffWrap.innerHTML="";
-      master.staff.forEach(s=>{
-        const t = tag(s.name, (current.staff||[]).includes(s.name)); t.style.background='#2a3a52';
-        t.onclick=()=>{ toggleList(current,'staff',s.name); t.classList.toggle('active'); };
-        t.style.position='relative';
-        const dot = document.createElement('span'); dot.style.cssText=`position:absolute;left:-6px;top:-6px;width:12px;height:12px;border-radius:50%;background:${s.color}`;
-        t.appendChild(dot);
-        staffWrap.appendChild(t);
-      });
-      const carWrap = qs('#f_cars'); carWrap.innerHTML="";
-      master.cars.forEach(c=>{
-        const t = tag(c.name, (current.cars||[]).includes(c.name));
-        t.onclick=()=>{ toggleList(current,'cars',c.name); t.classList.toggle('active'); };
-        carWrap.appendChild(t);
+      const status = it?.status || 'normal';
+      $('#f_status').querySelectorAll('.pill').forEach(p=>{
+        p.classList.toggle('active', p.dataset.v===status);
+        p.onclick=()=>{ $('#f_status').querySelectorAll('.pill').forEach(x=>x.classList.remove('active')); p.classList.add('active'); };
       });
 
-      // Positionsknöpfe
-      qs('#btnToFine').onclick = ()=>{
-        current.board='fine';
-        if(!qs('#f_date').value) qs('#f_date').value = ymd(new Date());
-      };
-      qs('#btnToBacklog').onclick = ()=>{
-        current.board='backlog';
-        const d = qs('#f_date').value ? new Date(qs('#f_date').value) : new Date();
-        current.month = ym(d); current.date = undefined; qs('#f_date').value="";
-      };
+      // Board
+      const board = it?.board || (viewSel.value==='365'?'coarse':'fine');
+      $('#f_board').querySelectorAll('.pill').forEach(p=>{
+        p.classList.toggle('active', p.dataset.v===board);
+        p.onclick=()=>{ $('#f_board').querySelectorAll('.pill').forEach(x=>x.classList.remove('active')); p.classList.add('active'); };
+      });
+
+      // Staff/Cars
+      buildSelectable($('#f_staff'), s.staff);
+      buildSelectable($('#f_cars'),  s.cars);
+      // Vorbelegen
+      (it?.staff||[]).forEach(v=>{
+        const n=[...$('#f_staff').children].find(x=>x.dataset.v===v); if(n) n.classList.add('active');
+      });
+      (it?.cars||[]).forEach(v=>{
+        const n=[...$('#f_cars').children].find(x=>x.dataset.v===v); if(n) n.classList.add('active');
+      });
+
+      // Buttons
+      $('#btnDelete').style.display = isNew ? 'none' : 'inline-flex';
+      $('#btnDup').style.display    = isNew ? 'none' : 'inline-flex';
+
+      dlg.showModal();
     }
 
-    qs('#btnSaveCard').onclick = async (e)=>{
-      e.preventDefault();
-      current.title = qs('#f_title').value.trim();
-      current.span = parseInt(qs('#f_span').value||"1",10);
-      current.date = qs('#f_date').value || undefined;
-      if((current.board||'fine')==='fine'){
-        current.board = 'fine';
-        if(!current.date) current.date = ymd(new Date());
-        current.month = ym(new Date(current.date));
-      }else{
-        current.board = 'backlog';
-        if(!current.month) current.month = ym(new Date());
-        current.date = undefined;
+    $('#add').onclick = ()=> openEditor(null);
+    $('#fab').onclick = ()=> openEditor(null);
+
+    $('#btnCancel').onclick = ()=> dlg.close();
+    $('#btnDelete').onclick = async ()=>{
+      const id = $('#f_id').value; if(!id) return;
+      if(confirm('Eintrag wirklich löschen?')){
+        await deleteDoc(doc(db,'entries',id));
+        dlg.close();
       }
-      if(isNew){
-        current.created = serverTimestamp();
-        await addDoc(collection(db,"plantafel"), current);
-      }else{
-        await setDoc(doc(db,"plantafel", current.id), current, {merge:true});
-      }
-      dlgCard.close();
+    };
+    $('#btnDup').onclick = async ()=>{
+      const id = $('#f_id').value; if(!id) return;
+      const it = items.find(x=>x.id===id); if(!it) return;
+      const copy = {...it}; delete copy.id;
+      copy.title = (copy.title||'')+' (Kopie)';
+      copy.created = serverTimestamp(); copy.updated = serverTimestamp();
+      await addDoc(collection(db,'entries'), copy);
+      dlg.close();
     };
 
-    function toggleList(obj, key, val){
-      obj[key] = obj[key]||[];
-      const i = obj[key].indexOf(val);
-      if(i>=0) obj[key].splice(i,1); else obj[key].push(val);
-    }
+    $('#btnSave').onclick = async ()=>{
+      const id   = $('#f_id').value || null;
+      const data = {
+        title: $('#f_title').value.trim(),
+        status: $('#f_status .pill.active')?.dataset.v || 'normal',
+        date: $('#f_date').value,
+        days: Number($('#f_days').value||1),
+        staff: collectPills($('#f_staff')),
+        cars:  collectPills($('#f_cars')),
+        board: $('#f_board .pill.active')?.dataset.v || 'fine',
+        updated: serverTimestamp()
+      };
+      if(!data.title) { alert('Bitte Titel angeben.'); return; }
+      if(!data.date)  { alert('Bitte Datum wählen.'); return; }
 
-    /***** Helpers *****/
-    function div(c,html){ const e=document.createElement('div'); e.className=c||""; if(html!=null)e.innerHTML=html; return e; }
-    function btn(txt,cls,fn){ const b=document.createElement('button'); b.textContent=txt; b.className=cls; b.onclick=(e)=>{e.stopPropagation(); fn&&fn();}; return b;}
-    function spacer(){ const s=document.createElement('div'); s.style.flex='1'; return s;}
-    function qs(sel){ return document.querySelector(sel); }
-    function tag(label, active){ const t=document.createElement('div'); t.className='tag'+(active?' active':''); t.textContent=label; return t; }
-    function bindPills(sel, values, cur, cb){
-      const wrap = qs(sel); wrap.querySelectorAll('.tag').forEach(el=>{
-        el.classList.toggle('active', el.dataset.v===cur);
-        el.onclick=()=>{ wrap.querySelectorAll('.tag').forEach(x=>x.classList.remove('active')); el.classList.add('active'); cb(el.dataset.v); };
-      });
-    }
-    function getISOWeek(d){
-      const date = new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()));
-      const dayNum = date.getUTCDay() || 7; date.setUTCDate(date.getUTCDate()+4 - dayNum);
-      const yearStart = new Date(Date.UTC(date.getUTCFullYear(),0,1));
-      return Math.ceil(((date - yearStart) / 86400000 + 1)/7);
-    }
-
-    /***** Events *****/
-    btnReload.onclick = loadData;
-    viewSel.onchange = loadData;
-    startInput.onchange = loadData;
-    zoomRange.oninput = ()=>{ document.body.style.zoom = (zoomRange.value/100); };
-    btnAdd.onclick = ()=> openQuickCreate();
-    fab.onclick = ()=> openQuickCreate();
-    btnMaster.onclick = ()=> dlgMaster.showModal();
-
-    function openQuickCreate(){
-      const mode = viewSel.value;
-      if(mode==="12m"){
-        openEdit({ title:"", status:"normal", staff:[], cars:[], span:1, board:'backlog', month: ym(new Date(startInput.value||new Date())) }, true);
+      if(id){
+        await updateDoc(doc(db,'entries',id), data);
       }else{
-        openEdit({ title:"", status:"normal", staff:[], cars:[], span:1, board:'fine', date: ymd(new Date(startInput.value||new Date())) }, true);
+        data.created = serverTimestamp();
+        await addDoc(collection(db,'entries'), data);
       }
-    }
-
-    // Auto-Reload (optional – Firestore streamt sowieso)
-    let reloadTimer=null;
-    autoReload.onchange = ()=>{
-      if(autoReload.checked){
-        reloadTimer = setInterval(loadData, 30000);
-      }else if(reloadTimer){ clearInterval(reloadTimer); reloadTimer=null; }
+      dlg.close();
     };
 
-    // Erste Initialisierung
-    await loadMaster();
-    await loadData();
+    /* Interaktionen oben */
+    startInp.value = fmtISO(new Date());
+    viewSel.onchange = ()=> attachListener();
+    startInp.onchange = ()=> attachListener();
+    $('#reload').onclick = ()=> attachListener();
+    $('#zoom').oninput = (e)=>{ zoomPx = Number(e.target.value); render(); };
+
+    // Auto-Reload (hart) – optional für Monitoranzeige
+    let timer = null;
+    $('#autorefresh').onchange = (e)=>{
+      if(e.target.checked){ timer = setInterval(()=> location.reload(), 60000); }
+      else { clearInterval(timer); timer=null; }
+    };
+
+    // Erstinitialisierung
+    await loadSettings();
+    attachListener();
   </script>
 </body>
 </html>
