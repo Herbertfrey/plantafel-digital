@@ -1,1108 +1,1355 @@
 <!DOCTYPE html>
 <html lang="de">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Plantafel Digital</title>
-  <style>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Plantafel Digital</title>
+
+<style>
     :root {
-      --bg-dark: #1a1d22;
-      --bg-card: #2a2f37;
-      --bg-card-border: #3a404c;
-      --text-main: #fff;
-      --text-dim: #9ca3b0;
-      --accent-blue: #3b82f6;
-      --accent-green: #22c55e;
-      --accent-red: #ef4444;
-      --radius-lg: 10px;
-      --radius-md: 6px;
-      --gap: 8px;
-      --font-stack: system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
+        --bg-main:#121416;
+        --bg-panel:#1e2227;
+        --bg-panel-border:#2a3038;
+        --text-main:#f4f4f4;
+        --text-dim:#9ba3ad;
+        --accent:#2d6bff;
+        --danger:#d9534f;
+        --radius-lg:12px;
+        --radius-sm:6px;
+        --gap:8px;
+        --col-header:#2a3038;
+        --badge-bg:#2a3038;
+        --badge-text:#ffffff;
     }
 
-    body {
-      margin: 0;
-      background-color: var(--bg-dark);
-      color: var(--text-main);
-      font-family: var(--font-stack);
-      font-size: 14px;
-      line-height: 1.4;
-      -webkit-font-smoothing: antialiased;
+    body{
+        margin:0;
+        background:var(--bg-main);
+        color:var(--text-main);
+        font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+        font-size:14px;
+        line-height:1.4;
+        display:flex;
+        flex-direction:column;
+        min-height:100vh;
     }
 
-    /* ======= TOP BAR ======= */
-    .topbar {
-      background: #111418;
-      color: var(--text-main);
-      padding: 10px 12px;
-      border-bottom: 1px solid #2a303a;
-      display: flex;
-      flex-wrap: wrap;
-      gap: 10px;
-      align-items: flex-start;
-      position: relative;
-    }
-    .row-line1,
-    .row-line2 {
-      width: 100%;
-      display: flex;
-      flex-wrap: wrap;
-      gap: 10px;
-      align-items: center;
+    header{
+        background:linear-gradient(to right,#1e2227 0%,#242a31 100%);
+        border-bottom:1px solid var(--bg-panel-border);
+        padding:10px 12px;
+        display:flex;
+        flex-wrap:wrap;
+        align-items:center;
+        gap:8px 12px;
+        position:relative;
+        z-index:10;
+        box-shadow:0 10px 30px rgba(0,0,0,.6);
     }
 
-    .brand {
-      font-size: 15px;
-      font-weight: 600;
-      color: var(--text-main);
-      background: #00000033;
-      padding: 6px 10px;
-      border-radius: var(--radius-md);
-      border: 1px solid #2a303a;
+    header .group{
+        display:flex;
+        flex-wrap:wrap;
+        align-items:center;
+        gap:8px;
+        background:#0000;
     }
 
-    .field-group {
-      display: flex;
-      flex-direction: column;
-      gap: 4px;
-      min-width: max-content;
+    label.small{
+        font-size:12px;
+        color:var(--text-dim);
+        display:flex;
+        flex-direction:column;
+        font-weight:500;
     }
 
-    .field-label {
-      font-size: 12px;
-      color: var(--text-dim);
-      line-height: 1.2;
+    select, input[type="date"], input[type="text"]{
+        background:#0f1114;
+        border:1px solid var(--bg-panel-border);
+        color:var(--text-main);
+        padding:6px 8px;
+        border-radius:var(--radius-sm);
+        min-width:120px;
+        font-size:13px;
     }
 
-    select,
-    input[type="text"] {
-      background-color: #1f232a;
-      color: var(--text-main);
-      border: 1px solid #3a404c;
-      border-radius: var(--radius-md);
-      padding: 6px 8px;
-      font-size: 14px;
-      min-width: 180px;
+    button.btn{
+        background:#2a3038;
+        border:1px solid var(--bg-panel-border);
+        color:var(--text-main);
+        padding:6px 10px;
+        font-size:13px;
+        border-radius:var(--radius-sm);
+        cursor:pointer;
+        line-height:1.2;
+        white-space:nowrap;
+    }
+    button.btn.primary{
+        background:var(--accent);
+        border-color:var(--accent);
+        color:#fff;
+        font-weight:600;
+    }
+    button.btn.ghost{
+        background:#0000;
+        border:1px solid var(--bg-panel-border);
+        color:var(--text-dim);
+    }
+    button.btn.danger{
+        background:var(--danger);
+        border-color:var(--danger);
+        color:#fff;
     }
 
-    .inline-row {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 8px;
-      align-items: center;
+    .statusDot{
+        display:inline-block;
+        width:8px;
+        height:8px;
+        border-radius:50%;
+        background:#34c759;
+        margin-right:6px;
+    }
+    .statusDot.off{
+        background:#d9534f;
+    }
+    .statusWrap{
+        font-size:13px;
+        font-weight:500;
+        display:flex;
+        align-items:center;
+        min-width:90px;
+        user-select:none;
     }
 
-    .btn {
-      background-color: #2a2f37;
-      border: 1px solid #3a404c;
-      border-radius: var(--radius-md);
-      color: var(--text-main);
-      padding: 6px 10px;
-      font-size: 14px;
-      cursor: pointer;
-      line-height: 1.2;
+    .toggleRow{
+        display:flex;
+        align-items:center;
+        gap:6px;
+        font-size:13px;
+        color:var(--text-main);
+        user-select:none;
     }
-    .btn.primary {
-      background-color: var(--accent-blue);
-      border-color: var(--accent-blue);
-      color: #fff;
-      font-weight: 600;
-    }
-    .btn.ghost {
-      background-color: transparent;
-      border-color: #515967;
-      color: var(--text-dim);
-    }
-    .btn.small {
-      font-size: 13px;
-      padding: 4px 8px;
-      line-height: 1.1;
+    .toggleRow input[type="checkbox"]{
+        accent-color:var(--accent);
+        width:16px;
+        height:16px;
+        cursor:pointer;
     }
 
-    .status-light {
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-      background-color: #1f232a;
-      border: 1px solid #3a404c;
-      border-radius: var(--radius-md);
-      padding: 6px 10px;
-      font-size: 13px;
-      line-height: 1.2;
-      font-weight: 500;
-      min-width: max-content;
+    /* FAB */
+    .fabWrapper{
+        position:fixed;
+        right:16px;
+        bottom:16px;
+        z-index:30;
     }
-    .dot-red,
-    .dot-green {
-      width: 8px;
-      height: 8px;
-      border-radius: 999px;
-    }
-    .dot-red { background-color: var(--accent-red); }
-    .dot-green { background-color: var(--accent-green); }
-
-    .toggle-wrap {
-      display: flex;
-      align-items: center;
-      gap: 6px;
-      background-color: #1f232a;
-      border: 1px solid #3a404c;
-      border-radius: var(--radius-md);
-      padding: 6px 10px;
-      font-size: 13px;
-      line-height: 1.2;
-    }
-    .toggle-wrap input {
-      width: 16px;
-      height: 16px;
-      cursor: pointer;
+    .fabMain{
+        width:42px;
+        height:42px;
+        border-radius:50%;
+        background:var(--accent);
+        color:#fff;
+        border:none;
+        font-size:24px;
+        font-weight:500;
+        line-height:0;
+        display:flex;
+        align-items:center;
+        justify-content:center;
+        cursor:pointer;
+        box-shadow:0 10px 30px rgba(0,0,0,.6);
     }
 
-    .zoom-wrap {
-      display: flex;
-      flex-direction: column;
-      gap: 4px;
-      min-width: max-content;
-      color: var(--text-dim);
-      font-size: 12px;
-    }
-    .zoom-row {
-      display: flex;
-      align-items: center;
-      gap: 6px;
-    }
-    .zoom-row input[type="range"] {
-      width: 140px;
-      accent-color: var(--accent-blue);
+    /* BOARD AREA */
+    .boardOuter{
+        flex:1;
+        overflow:auto;
+        padding:16px;
     }
 
-    .spacer {
-      flex: 1;
+    .boardGrid{
+        display:grid;
+        grid-template-columns:repeat(var(--cols,5),minmax(240px,1fr));
+        gap:12px;
+        min-width:max-content;
     }
 
-    /* Hinweiszeile unter den Controls */
-    .hint-row {
-      font-size: 12px;
-      color: var(--text-dim);
-    }
-    .hint-row strong {
-      color: #fff;
-      font-weight: 500;
-    }
-
-    /* ======= STATUS FOOTER LEFT (rot=Urlaub/...) ======= */
-    .status-footer {
-      font-size: 12px;
-      color: var(--text-dim);
-      padding: 6px 12px 0 12px;
+    .dayCol{
+        background:var(--bg-panel);
+        border:1px solid var(--bg-panel-border);
+        border-radius:var(--radius-lg);
+        display:flex;
+        flex-direction:column;
+        min-height:220px;
+        box-shadow:0 8px 24px rgba(0,0,0,.5);
+        position:relative;
     }
 
-    /* ======= BOARD WRAPPER ======= */
-    .board-scroll {
-      position: relative;
-      overflow-x: auto;
-      overflow-y: hidden;
-      padding: 12px;
+    .dayHeader{
+        background:var(--col-header);
+        border-bottom:1px solid var(--bg-panel-border);
+        border-radius:var(--radius-lg) var(--radius-lg) 0 0;
+        padding:8px 10px 6px;
+        font-size:12px;
+        line-height:1.3;
+        display:flex;
+        flex-wrap:wrap;
+        justify-content:space-between;
+        align-items:flex-start;
+        min-height:44px;
+    }
+    .dayHeader .left{
+        display:flex;
+        flex-direction:column;
+    }
+    .dayHeader .kw{
+        color:var(--accent);
+        font-weight:600;
+        font-size:12px;
+    }
+    .dayHeader .dateLine{
+        font-size:11px;
+        color:var(--text-dim);
     }
 
-    /* Das Grid für die Wochen/Spalten */
-    .board-grid {
-      display: grid;
-      grid-template-columns: repeat(5, minmax(220px,1fr));
-      gap: var(--gap);
-      min-width: 1100px;
-      border: 1px solid #2a303a;
-      background-color: #1f2229;
-      border-radius: var(--radius-lg);
-      padding: 12px;
-      transform-origin: top left;
+    .cardList{
+        flex:1;
+        padding:10px;
+        display:flex;
+        flex-direction:column;
+        gap:8px;
     }
 
-    /* Spalten (=Tage bzw. KW Blöcke) */
-    .day-col {
-      display: flex;
-      flex-direction: column;
-      background-color: #1f232a;
-      border: 1px solid #2f3541;
-      border-radius: var(--radius-md);
-      min-height: 220px;
+    .dropHint{
+        font-size:12px;
+        line-height:1.3;
+        color:var(--text-dim);
+        text-align:center;
+        padding:16px 8px;
+        border:1px dashed var(--bg-panel-border);
+        border-radius:var(--radius-sm);
+        min-height:64px;
     }
 
-    .day-head {
-      border-bottom: 1px solid #2f3541;
-      padding: 8px;
-      font-size: 12px;
-      line-height: 1.4;
-      display: flex;
-      flex-direction: column;
-      gap: 2px;
-      color: var(--text-main);
+    .jobCard{
+        background:#0f1114;
+        border:1px solid var(--bg-panel-border);
+        border-radius:var(--radius-sm);
+        box-shadow:0 8px 20px rgba(0,0,0,.6);
+        padding:8px;
+        font-size:12px;
+        line-height:1.4;
+        cursor:grab;
+        position:relative;
     }
-    .day-head .kw {
-      font-size: 11px;
-      color: var(--accent-blue);
-      font-weight: 600;
+    .jobCard.dragging{
+        opacity:.5;
     }
-    .day-head .date-line {
-      font-size: 11px;
-      color: var(--text-dim);
+    .cardHeaderRow{
+        display:flex;
+        align-items:flex-start;
+        justify-content:space-between;
+        margin-bottom:4px;
+        color:var(--text-main);
+        font-weight:600;
+        font-size:12px;
     }
-
-    .day-body {
-      flex: 1;
-      padding: 8px;
-      display: flex;
-      flex-direction: column;
-      gap: var(--gap);
+    .cardHeaderRow .titleWrap{
+        display:flex;
+        flex-wrap:wrap;
+        gap:6px;
+        align-items:center;
     }
-
-    .drop-hint {
-      font-size: 11px;
-      color: #6b7280;
-      border: 1px dashed #4b5563;
-      border-radius: var(--radius-md);
-      background-color: #1a1d22;
-      padding: 8px;
-      text-align: center;
+    .badgeStatus{
+        background:var(--badge-bg);
+        color:var(--badge-text);
+        border-radius:999px;
+        padding:2px 6px;
+        font-size:11px;
+        font-weight:500;
+        line-height:1.3;
     }
-
-    /* Karte / Eintrag */
-    .card {
-      background-color: var(--bg-card);
-      border: 1px solid var(--bg-card-border);
-      border-radius: var(--radius-md);
-      color: var(--text-main);
-      padding: 8px;
-      font-size: 12px;
-      line-height: 1.4;
-      display: flex;
-      flex-direction: column;
-      gap: 6px;
-      cursor: grab;
-      position: relative;
+    .badgeStatus.red{
+        background:#8a1f1f;
+        color:#fff;
     }
-    .card.red {
-      border-left: 4px solid var(--accent-red);
-      padding-left: 6px;
+    .badgeStatus.green{
+        background:#1f8a34;
+        color:#fff;
     }
-    .card .title-row {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 6px;
-      align-items: baseline;
-      font-weight: 600;
-      color: #fff;
-    }
-    .card .subtitle {
-      font-size: 11px;
-      color: var(--text-dim);
+    .badgeStatus.blue{
+        background:#1f3f8a;
+        color:#fff;
     }
 
-    .card .tags {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 4px;
+    .cardHeaderRow .cardActions{
+        display:flex;
+        gap:4px;
+        flex-shrink:0;
     }
-    .tag-person {
-      background-color: #374151;
-      color: #fff;
-      border-radius: 999px;
-      padding: 2px 6px;
-      font-size: 11px;
-      line-height: 1.2;
-      border: 1px solid #4b5563;
+    .tinyBtn{
+        background:#0000;
+        border:1px solid var(--bg-panel-border);
+        border-radius:4px;
+        padding:0 4px;
+        font-size:11px;
+        line-height:1.4;
+        color:var(--text-dim);
+        cursor:pointer;
+        min-width:18px;
+        height:18px;
+        display:flex;
+        align-items:center;
+        justify-content:center;
     }
-
-    .card-actions {
-      position: absolute;
-      top: 6px;
-      right: 6px;
-      display: flex;
-      gap: 4px;
-    }
-    .card-btn {
-      background-color: #1f232a;
-      border: 1px solid #4b5563;
-      border-radius: var(--radius-md);
-      font-size: 10px;
-      line-height: 1;
-      color: var(--text-dim);
-      padding: 2px 4px;
-      cursor: pointer;
-    }
-    .card-btn:hover {
-      background-color: #3b4252;
-      color: #fff;
+    .tinyBtn:hover{
+        background:#2a3038;
+        color:var(--text-main);
     }
 
-    /* Floating Add Button rechts unten */
-    .fab {
-      position: fixed;
-      right: 16px;
-      bottom: 16px;
-      background-color: var(--accent-blue);
-      color: #fff;
-      border-radius: 999px;
-      width: 42px;
-      height: 42px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 24px;
-      font-weight: 500;
-      line-height: 1;
-      border: none;
-      box-shadow: 0 10px 24px rgba(0,0,0,0.6);
-      cursor: pointer;
+    .cardBody{
+        color:var(--text-dim);
+        font-size:11px;
+        line-height:1.4;
+        display:flex;
+        flex-wrap:wrap;
+        gap:4px 8px;
+    }
+    .pill{
+        background:#2a3038;
+        border-radius:999px;
+        padding:2px 6px;
+        font-size:11px;
+        color:#fff;
+        line-height:1.3;
     }
 
-    /* Cloud-Dot rechts oben in der Bar (Verbindung)*/
-    .conn-indicator {
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-      background-color: #1f232a;
-      border: 1px solid #3a404c;
-      border-radius: var(--radius-md);
-      padding: 6px 10px;
-      font-size: 13px;
-      font-weight: 500;
-      line-height: 1.2;
-    }
-    .conn-dot {
-      width: 8px;
-      height: 8px;
-      border-radius: 999px;
-      background-color: var(--accent-green);
-    }
-    .conn-dot.offline {
-      background-color: var(--accent-red);
+    footer{
+        font-size:11px;
+        color:var(--text-dim);
+        padding:8px 12px;
+        border-top:1px solid var(--bg-panel-border);
+        background:#0f1114;
     }
 
-    /* Dialog / Modal */
-    dialog {
-      background-color: #1f232a;
-      color: var(--text-main);
-      border: 1px solid #3a404c;
-      border-radius: var(--radius-lg);
-      padding: 16px;
-      max-width: 320px;
-      width: calc(100% - 32px);
-      box-shadow: 0 24px 60px rgba(0,0,0,0.8);
+    /* Dialog Overlay */
+    dialog{
+        background:#1e2227;
+        color:var(--text-main);
+        border:1px solid var(--bg-panel-border);
+        border-radius:var(--radius-lg);
+        max-width:400px;
+        width:90vw;
+        box-shadow:0 30px 80px rgba(0,0,0,.9);
     }
-    dialog::backdrop {
-      background: rgba(0,0,0,0.6);
-      backdrop-filter: blur(2px);
+    dialog::backdrop{
+        background:rgba(0,0,0,.6);
     }
-    .dlg-head {
-      font-size: 15px;
-      font-weight: 600;
-      margin-bottom: 12px;
-      color: #fff;
+    .dlg-head{
+        padding:16px;
+        border-bottom:1px solid var(--bg-panel-border);
+        font-weight:600;
+        font-size:14px;
+        display:flex;
+        justify-content:space-between;
+        align-items:flex-start;
     }
-    .dlg-body {
-      display: flex;
-      flex-direction: column;
-      gap: 10px;
-      margin-bottom: 16px;
+    .dlg-body{
+        padding:16px;
+        display:flex;
+        flex-direction:column;
+        gap:12px;
+        max-height:50vh;
+        overflow:auto;
     }
-    .dlg-body label {
-      font-size: 13px;
-      color: var(--text-dim);
-      display: block;
-      margin-bottom: 4px;
-    }
-    .dlg-body input,
-    .dlg-body textarea {
-      width: 100%;
-      background-color: #111418;
-      color: #fff;
-      border: 1px solid #3a404c;
-      border-radius: var(--radius-md);
-      font-size: 13px;
-      padding: 8px;
-    }
-    .dlg-body textarea {
-      min-height: 60px;
-      resize: vertical;
-    }
-    .dlg-foot {
-      display: flex;
-      flex-wrap: wrap;
-      justify-content: flex-end;
-      gap: 8px;
+    .dlg-foot{
+        padding:16px;
+        border-top:1px solid var(--bg-panel-border);
+        display:flex;
+        justify-content:flex-end;
+        gap:8px;
+        flex-wrap:wrap;
     }
 
-    /* kleine Helper Badges */
-    .badge-role {
-      display: inline-block;
-      font-size: 11px;
-      line-height: 1.2;
-      padding: 2px 6px;
-      border-radius: 999px;
-      background-color: #374151;
-      border: 1px solid #4b5563;
-      color: #fff;
-      margin-left: 4px;
+    .formRow{
+        display:flex;
+        flex-direction:column;
+        gap:4px;
+        font-size:13px;
+    }
+    .formRow label{
+        color:var(--text-dim);
+        font-size:12px;
+        font-weight:500;
+    }
+    .multiLine{
+        min-height:48px;
+        resize:vertical;
+        background:#0f1114;
+        border:1px solid var(--bg-panel-border);
+        color:var(--text-main);
+        border-radius:var(--radius-sm);
+        font-size:13px;
+        line-height:1.4;
+        padding:6px 8px;
     }
 
-    @media (max-width: 700px) {
-      .row-line1,
-      .row-line2 {
-        flex-direction: column;
-        align-items: flex-start;
-      }
-      .spacer {
-        display: none;
-      }
-      .zoom-row input[type="range"] {
-        width: 120px;
-      }
-      .board-grid {
-        min-width: 900px;
-      }
+    .rowSplit2{
+        display:flex;
+        flex-wrap:wrap;
+        gap:12px;
     }
-  </style>
+    .rowSplit2 .formRow{
+        flex:1 1 120px;
+    }
+
+    .chipsArea{
+        display:flex;
+        flex-wrap:wrap;
+        gap:6px;
+    }
+    .chipToggle{
+        border:1px solid var(--bg-panel-border);
+        background:#2a3038;
+        color:#fff;
+        border-radius:999px;
+        padding:4px 8px;
+        font-size:12px;
+        cursor:pointer;
+        line-height:1.2;
+    }
+    .chipToggle.off{
+        background:#0f1114;
+        color:var(--text-dim);
+    }
+
+    /* Auto-reload text */
+    .dimNote{
+        font-size:11px;
+        color:var(--text-dim);
+        font-style:italic;
+    }
+
+    @media (max-width:800px){
+        header{
+            flex-direction:column;
+            align-items:flex-start;
+        }
+        .boardOuter{
+            padding:8px;
+        }
+        .boardGrid{
+            grid-template-columns:repeat(var(--cols,3),minmax(200px,1fr));
+            gap:8px;
+        }
+    }
+</style>
 </head>
 <body>
 
-  <!-- ======== TOP BAR ======== -->
-  <div class="topbar">
-    <div class="row-line1">
-      <div class="brand">Plantafel</div>
-
-      <div class="field-group">
-        <div class="field-label">Ansicht:</div>
-        <select id="viewSel">
-          <option value="4w">4 Wochen (Mo–Fr)</option>
-          <option value="3w">3 Wochen</option>
-          <option value="2w">2 Wochen</option>
-          <option value="1w">1 Woche</option>
-        </select>
-      </div>
-
-      <div class="field-group">
-        <div class="field-label">Start:</div>
-        <input id="startDate" type="text" placeholder="TT.MM.JJJJ" />
-      </div>
-
-      <button class="btn" id="btnReload">Neu laden</button>
-
-      <div class="status-light" id="statusBlock">
-        <div class="dot-red"></div>
-        <span>Urlaub/Krank/Schule</span>
-        <button class="btn small" id="btnUrlaubMinus">-</button>
-        <button class="btn small" id="btnUrlaubPlus">+</button>
-      </div>
-
-      <div class="toggle-wrap">
-        <input type="checkbox" id="autoReloadChk" />
-        <label for="autoReloadChk" style="cursor:pointer;">Auto-Reload</label>
-      </div>
-
-      <button class="btn" id="btnStammdaten">Stammdaten</button>
-      <button class="btn primary" id="btnAdd">+ Eintrag</button>
-
-      <div class="spacer"></div>
-
-      <div class="conn-indicator" id="cloudStatus">
-        <div class="conn-dot" id="cloudDot"></div>
-        <span id="cloudText">verbunden</span>
-      </div>
-
-      <div class="zoom-wrap">
-        <span>Zoom</span>
-        <div class="zoom-row">
-          <input id="zoomRange" type="range" min="0.5" max="1.5" step="0.05" value="1" />
+<header>
+    <div class="group">
+        <div class="statusWrap">
+            <span class="statusDot" id="cloudDot"></span>
+            <span id="cloudText">verbunden</span>
         </div>
-      </div>
-    </div>
 
-    <div class="row-line2">
-      <div class="hint-row">
-        Drag &amp; Drop: Karte auf Ziel ziehen → „Verschieben“ oder „Duplizieren“. Klick auf Karte = bearbeiten, X = löschen.
-      </div>
-    </div>
-  </div>
+        <div class="group">
+            <label class="small">
+                Ansicht:
+                <select id="viewSel">
+                    <option value="4w">4 Wochen (Mo–Fr)</option>
+                    <option value="6w">6 Wochen</option>
+                    <option value="3m">3 Monate</option>
+                </select>
+            </label>
 
-  <!-- mini Status Fußzeile (links oben wie bei dir) -->
-  <div class="status-footer">
+            <label class="small">
+                Start:
+                <input id="startDate" type="date"/>
+            </label>
+
+            <button class="btn" id="btnReload">Neu laden</button>
+        </div>
+
+        <div class="group">
+            <button class="btn" id="btnStatus">Urlaub/Krank/Schule</button>
+            <div class="toggleRow">
+                <input type="checkbox" id="autoReloadChk"/>
+                <label for="autoReloadChk">Auto-Reload</label>
+            </div>
+            <button class="btn" id="btnMasterData">Stammdaten</button>
+            <button class="btn primary" id="btnNewEntry">+ Eintrag</button>
+        </div>
+    </div>
+</header>
+
+<div class="boardOuter">
+    <div id="board" class="boardGrid" style="--cols:5;">
+        <!-- Spalten/Tage werden hier via JS reingebaut -->
+    </div>
+</div>
+
+<footer>
     Status rot = Urlaub/Krank/Schule
-  </div>
+</footer>
 
-  <!-- ======== BOARD ======== -->
-  <div class="board-scroll">
-    <div class="board-grid" id="boardGrid" style="transform:scale(1);">
-      <!-- Spalten/Tage werden dynamisch aus Firestore geladen -->
+<!-- Dialog: Neuer/ Bearbeiten Eintrag -->
+<dialog id="entryDlg">
+    <div class="dlg-head">
+        <div id="dlgEntryTitle">Eintrag</div>
+        <button class="btn tinyBtn danger" id="btnDeleteEntry" title="Löschen">X</button>
     </div>
-  </div>
-
-  <!-- Floating Add Button -->
-  <button class="fab" id="fabAdd">+</button>
-
-  <!-- ======== DIALOG: EINTRAG BEARBEITEN/NEU ======== -->
-  <dialog id="entryDlg">
-    <div class="dlg-head">Eintrag</div>
     <div class="dlg-body">
-      <div>
-        <label for="mTitle">Titel / Projekt</label>
-        <input id="mTitle" placeholder="Projekt / Kunde / Baustelle" />
-      </div>
-      <div>
-        <label for="mText">Beschreibung / Notiz</label>
-        <textarea id="mText" placeholder="z. B. 'Mercedes Bus', Material, Besonderheiten …"></textarea>
-      </div>
-      <div>
-        <label for="mDate">Datum (TT.MM.JJJJ)</label>
-        <input id="mDate" placeholder="TT.MM.JJJJ" />
-      </div>
-      <div>
-        <label>Mitarbeiter (Kommagetrennt)</label>
-        <input id="mCrew" placeholder="z. B. Patrick, Herbert" />
-      </div>
-      <div>
-        <label>Status / Typ</label>
-        <select id="mStatus">
-          <option value="normal">Normal</option>
-          <option value="urlaub">Urlaub / Krank / Schule</option>
-        </select>
-      </div>
-      <input type="hidden" id="mDocId" />
+        <div class="formRow">
+            <label for="fTitle">Titel / Projekt</label>
+            <input id="fTitle" type="text" placeholder="z. B. 'Dollinger und Schneider PV Anlage'"/>
+        </div>
+
+        <div class="formRow">
+            <label for="fNote">Beschreibung / Notiz</label>
+            <textarea id="fNote" class="multiLine" placeholder="z. B. 'Mercedes Bus'"></textarea>
+        </div>
+
+        <div class="rowSplit2">
+            <div class="formRow">
+                <label>Mitarbeiter</label>
+                <div id="empChips" class="chipsArea">
+                    <!-- Dynamisch Chips -->
+                </div>
+                <div class="dimNote">Klick zum Auswählen/Abwählen</div>
+            </div>
+
+            <div class="formRow">
+                <label>Fahrzeug / Gerät</label>
+                <div id="vehChips" class="chipsArea">
+                    <!-- Dynamisch Chips -->
+                </div>
+            </div>
+        </div>
+
+        <div class="rowSplit2">
+            <div class="formRow">
+                <label>Status / Farbe</label>
+                <div id="statusChips" class="chipsArea">
+                    <!-- Dynamisch Chips, z. B. Rot = Urlaub -->
+                </div>
+            </div>
+
+            <div class="formRow">
+                <label for="fDayTarget">Tag / Spalte</label>
+                <select id="fDayTarget"></select>
+            </div>
+        </div>
+
+        <input type="hidden" id="fDocId" />
     </div>
     <div class="dlg-foot">
-      <button class="btn ghost" id="btnEntryCancel">Abbrechen</button>
-      <button class="btn primary" id="btnEntrySave">Speichern</button>
+        <button class="btn ghost" id="btnEntryCancel">Abbrechen</button>
+        <button class="btn primary" id="btnEntrySave">Speichern</button>
     </div>
-  </dialog>
+</dialog>
 
-  <!-- ======== DIALOG: STAMMDATEN ======== -->
-  <dialog id="masterDlg">
-    <div class="dlg-head">Stammdaten</div>
+<!-- Dialog: Stammdaten (Mitarbeiter, Fahrzeuge, Statusfarben) -->
+<dialog id="masterDlg">
+    <div class="dlg-head">
+        <div>Stammdaten</div>
+        <button class="btn tinyBtn" id="btnMasterClose">✕</button>
+    </div>
     <div class="dlg-body">
-      <div>
-        <label for="mNote">Team-Notiz</label>
-        <input id="mNote" placeholder="optional" />
-      </div>
-      <div>
-        <label for="mDefaultCrew">Standard-Team (Kommagetrennt)</label>
-        <input id="mDefaultCrew" placeholder="z. B. Patrick, Herbert" />
-      </div>
+        <div class="formRow">
+            <label>Mitarbeiter</label>
+            <textarea id="mEmployees" class="multiLine"
+                placeholder="Ein Name pro Zeile&#10;z. B. Herbert&#10;Patrick"></textarea>
+        </div>
+
+        <div class="formRow">
+            <label>Fahrzeuge / Geräte</label>
+            <textarea id="mVehicles" class="multiLine"
+                placeholder="Ein Eintrag pro Zeile&#10;z. B. Mercedes Bus&#10;Kran LKW"></textarea>
+        </div>
+
+        <div class="formRow">
+            <label>Status / Farben</label>
+            <textarea id="mStatuses" class="multiLine"
+                placeholder="Format: Name|Farbe&#10;z. B. Urlaub/Krank/Schule|red&#10;Normaler Einsatz|blue"></textarea>
+            <div class="dimNote">
+                Farbe darf sein: red, green, blue (wird als farbige Plakette angezeigt)
+            </div>
+        </div>
+        <div class="dimNote">
+            Diese Stammdaten gelten für alle Geräte. Änderungen hier wirken global.
+        </div>
     </div>
     <div class="dlg-foot">
-      <button class="btn ghost" id="btnMasterCancel">Abbrechen</button>
-      <button class="btn primary" id="btnMasterSave">Speichern</button>
+        <button class="btn ghost" id="btnMasterCancel">Abbrechen</button>
+        <button class="btn primary" id="btnMasterSave">Speichern</button>
     </div>
-  </dialog>
+</dialog>
 
-  <!-- ======== SCRIPT: APP LOGIK + FIREBASE ======== -->
-  <script type="module">
-    /********************************************************
-     * Firebase SDK (ohne AppCheck, stabil)
-     ********************************************************/
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-app.js";
-    import {
-      getFirestore, collection, doc, addDoc, setDoc, updateDoc, deleteDoc,
-      getDoc, getDocs, onSnapshot, query, where, orderBy, serverTimestamp
-    } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-firestore.js";
+<!-- Firebase / App-Logik -->
+<script type="module">
+/* -------------------------------------------------------------------------------------------------
+   1. Firebase INITIALISIEREN (ohne AppCheck, ohne heartbeat)
+--------------------------------------------------------------------------------------------------*/
 
-    /********************************************************
-     * Firebase-Konfiguration (deine project-Daten)
-     ********************************************************/
-    const firebaseConfig = {
-      apiKey: "AIzAsyDpWFf-XnO238X-ebCVg6a42DRxm9f4SxDT",
-      authDomain: "plantafelfreylclich100.firebaseapp.com",
-      projectId: "plantafelfreylclich100",
-      storageBucket: "plantafelfreylclich100.appspot.com",
-      messagingSenderId: "962959139135",
-      appId: "1:962959139135:web:e4462794477815c0ef91d4a",
-      measurementId: "G-W5GVSSLTRC"
+// Firebase SDK (stabile Version ohne Cache-Tricks)
+import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-app.js";
+import {
+    getFirestore,
+    collection,
+    doc,
+    addDoc,
+    setDoc,
+    updateDoc,
+    deleteDoc,
+    getDoc,
+    getDocs,
+    onSnapshot,
+    query,
+    where,
+    orderBy,
+    serverTimestamp
+} from "https://www.gstatic.com/firebasejs/11.0.1/firebase-firestore.js";
+
+// <-- deine echte Konfiguration (aus Firebase Console, die du mir gezeigt hast)
+const firebaseConfig = {
+    apiKey: "AIzaSyDpwF-XnO23Bx-ebCV6g642D7xm9f45xDT",
+    authDomain: "plantafelfreyllich100.firebaseapp.com",
+    projectId: "plantafelfreyllich100",
+    storageBucket: "plantafelfreyllich100.appspot.com",
+    messagingSenderId: "96295913315",
+    appId: "1:96295913315:web:e4462794478f15c0ef914da",
+    measurementId: "G-W5GVSSLTRC"
+};
+
+const app  = initializeApp(firebaseConfig);
+const db   = getFirestore(app);
+
+// Status-Anzeige oben
+const cloudDot  = document.getElementById("cloudDot");
+const cloudText = document.getElementById("cloudText");
+function setOnlineState(ok){
+    if(ok){
+        cloudDot.classList.remove("off");
+        cloudText.textContent="verbunden";
+    }else{
+        cloudDot.classList.add("off");
+        cloudText.textContent="offline";
+    }
+}
+setOnlineState(true); // wir probieren optimistisch connected zu zeigen
+
+/* -------------------------------------------------------------------------------------------------
+   2. STATE IM BROWSER
+--------------------------------------------------------------------------------------------------*/
+
+// wir halten Stammdaten hier live
+let employees = []; // ["Herbert","Patrick",...]
+let vehicles  = []; // ["Mercedes Bus","Kran",...]
+let statuses  = []; // [{label:"Urlaub/Krank/Schule",color:"red"}, ...]
+
+// Board-Daten
+// job = { id, title, note, emps[], vehs[], statusLabel,statusColor, dayKey, ts }
+let jobs = [];
+
+// welche Ansicht?
+const viewSel      = document.getElementById("viewSel");
+const startDateInp = document.getElementById("startDate");
+// AutoReload
+const autoReloadChk = document.getElementById("autoReloadChk");
+
+// Mapping der Ansicht -> wie viele Tage (ungefähr)
+const VIEW_MODES = {
+    "4w": 20,   // 4 Wochen Mo-Fr (4*5=20)
+    "6w": 30,   // 6 Wochen ~30 Arbeitstage
+    "3m": 60    // 3 Monate grob ~60 Arbeitstage
+};
+
+// Helper: Datum normalisieren auf 00:00
+function startOfDay(d){
+    const x=new Date(d);
+    x.setHours(0,0,0,0);
+    return x;
+}
+
+// wir bauen uns eine Liste Tage (Spalten) ab Start
+function buildDayRange(){
+    const mode = viewSel.value;
+    const count = VIEW_MODES[mode] ?? 20;
+
+    let start = startDateInp.value
+        ? new Date(startDateInp.value+"T00:00")
+        : new Date();
+
+    // Bei "4w" machen wir Montag als Start
+    if(mode==="4w"){
+        const day = start.getDay(); // So=0, Mo=1 ...
+        const diffToMon = (day===0?6:day-1);
+        start = new Date(start.getTime()-diffToMon*86400000);
+    }
+
+    const result=[];
+    for(let i=0;i<count;i++){
+        const d=new Date(start.getTime()+i*86400000);
+        // Nur Mo-Fr in 4w Modus?
+        if(mode==="4w"){
+            const dow=d.getDay();
+            if(dow===0 || dow===6){
+                continue;
+            }
+        }
+        result.push(d);
+    }
+    return result;
+}
+
+// Key für einen Tag, zB "2025-10-30"
+function dayKeyFromDate(d){
+    const y=d.getFullYear();
+    const m=String(d.getMonth()+1).padStart(2,"0");
+    const da=String(d.getDate()).padStart(2,"0");
+    return `${y}-${m}-${da}`;
+}
+
+// KW berechnen (kalenderwoche, grob ISO)
+function getKW(d){
+    const tmp = new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()));
+    const dayNum = tmp.getUTCDay() || 7;
+    tmp.setUTCDate(tmp.getUTCDate() + 4 - dayNum);
+    const yearStart = new Date(Date.UTC(tmp.getUTCFullYear(),0,1));
+    const weekNo = Math.ceil((((tmp - yearStart) / 86400000) + 1)/7);
+    return weekNo;
+}
+
+// Deutschen Wochentag kurz
+const WD = ["So","Mo","Di","Mi","Do","Fr","Sa"];
+
+/* -------------------------------------------------------------------------------------------------
+   3. FIRESTORE-LAYER
+--------------------------------------------------------------------------------------------------*/
+
+// Collections:
+// - "plantafel" (Einträge)
+// - "settings"  (Stammdaten)
+
+async function loadSettingsOnce(){
+    try{
+        const snap = await getDocs(collection(db,"settings"));
+        const emps=[], vehs=[], stats=[];
+        snap.forEach(docSnap=>{
+            const data=docSnap.data();
+            if(data.type==="employees" && Array.isArray(data.items)){
+                emps.push(...data.items);
+            }
+            if(data.type==="vehicles" && Array.isArray(data.items)){
+                vehs.push(...data.items);
+            }
+            if(data.type==="statuses" && Array.isArray(data.items)){
+                stats.push(...data.items);
+            }
+        });
+        employees = emps;
+        vehicles  = vehs;
+        statuses  = stats;
+    }catch(e){
+        console.error("loadSettingsOnce:", e);
+        setOnlineState(false);
+    }
+}
+
+async function saveSettings(){
+    // wir speichern in 3 docs:
+    // settings/employees, settings/vehicles, settings/statuses
+    try{
+        await setDoc(doc(db,"settings","employees"),{
+            type:"employees",
+            items: employees
+        });
+        await setDoc(doc(db,"settings","vehicles"),{
+            type:"vehicles",
+            items: vehicles
+        });
+        await setDoc(doc(db,"settings","statuses"),{
+            type:"statuses",
+            items: statuses
+        });
+        setOnlineState(true);
+    }catch(e){
+        console.error("saveSettings:", e);
+        setOnlineState(false);
+    }
+}
+
+async function createOrUpdateJob(job){
+    // wenn job.id vorhanden -> update, sonst add
+    const payload={
+        title: job.title||"",
+        note: job.note||"",
+        emps: Array.isArray(job.emps)?job.emps:[],
+        vehs: Array.isArray(job.vehs)?job.vehs:[],
+        statusLabel: job.statusLabel||"",
+        statusColor: job.statusColor||"",
+        dayKey: job.dayKey||"",
+        ts: serverTimestamp()
     };
 
-    // Firebase initialisieren
-    const app = initializeApp(firebaseConfig);
-    const db  = getFirestore(app);
-    // Debug Zugriff im Browser
-    window.__db = db;
-
-    /********************************************************
-     * Element-Referenzen / UI
-     ********************************************************/
-    const $ = (sel) => document.querySelector(sel);
-
-    const boardGrid     = $("#boardGrid");
-    const cloudDot      = $("#cloudDot");
-    const cloudText     = $("#cloudText");
-    const zoomRange     = $("#zoomRange");
-
-    const viewSel       = $("#viewSel");
-    const startDate     = $("#startDate");
-    const btnReload     = $("#btnReload");
-    const btnUrlaubMinus= $("#btnUrlaubMinus");
-    const btnUrlaubPlus = $("#btnUrlaubPlus");
-    const autoReloadChk = $("#autoReloadChk");
-    const btnStammdaten = $("#btnStammdaten");
-    const btnAdd        = $("#btnAdd");
-    const fabAdd        = $("#fabAdd");
-
-    // Dialog Eintrag
-    const entryDlg      = $("#entryDlg");
-    const mTitle        = $("#mTitle");
-    const mText         = $("#mText");
-    const mDate         = $("#mDate");
-    const mCrew         = $("#mCrew");
-    const mStatus       = $("#mStatus");
-    const mDocId        = $("#mDocId");
-    const btnEntryCancel= $("#btnEntryCancel");
-    const btnEntrySave  = $("#btnEntrySave");
-
-    // Dialog Stammdaten
-    const masterDlg      = $("#masterDlg");
-    const mNote          = $("#mNote");
-    const mDefaultCrew   = $("#mDefaultCrew");
-    const btnMasterCancel= $("#btnMasterCancel");
-    const btnMasterSave  = $("#btnMasterSave");
-
-    /********************************************************
-     * State
-     ********************************************************/
-    let unsubListener = null; // Firestore Live-Listener
-    let currentZoom   = 1;
-
-    // Hilfsfunktion für Datum formatiert (TT.MM.JJJJ)
-    function formatDate(d) {
-      const dd   = String(d.getDate()).padStart(2,"0");
-      const mm   = String(d.getMonth()+1).padStart(2,"0");
-      const yyyy = d.getFullYear();
-      return `${dd}.${mm}.${yyyy}`;
-    }
-
-    // parse "TT.MM.JJJJ" -> Date
-    function parseDate(str) {
-      const parts = str.split(".");
-      if(parts.length!==3) return null;
-      const dd = parseInt(parts[0],10);
-      const mm = parseInt(parts[1],10)-1;
-      const yy = parseInt(parts[2],10);
-      const d = new Date(yy,mm,dd);
-      if(isNaN(d.getTime())) return null;
-      return d;
-    }
-
-    // Erzeuge ein Array von Tagen (z. B. Mo-Fr x 4 Wochen)
-    function buildDaySlots(startDay, viewMode) {
-      // viewMode "4w" = 4 Wochen Mo-Fr = 20 Spalten
-      // aktuell im UI zeigen wir 5 Spalten nebeneinander (Mo-Fr),
-      // aber du hattest vorher Scroll nach rechts mit vielen Wochen.
-      // Wir machen simpel: 4 Wochen x5 Tage = 20 Tage in Reihenfolge.
-      const weeks = (viewMode==="4w"?4: viewMode==="3w"?3: viewMode==="2w"?2:1);
-      const daysPerWeek = 5; // Mo-Fr
-      // wir verschieben startDay zurück bis Montag
-      const base = new Date(startDay.getTime());
-      while(base.getDay()!==1) { // 1 = Montag
-        base.setDate(base.getDate()-1);
-      }
-
-      const slots=[];
-      for(let w=0; w<weeks; w++){
-        for(let d=0; d<daysPerWeek; d++){
-          const cur = new Date(base.getTime());
-          cur.setDate(base.getDate() + w*7 + d);
-          slots.push({
-            date: cur,
-            iso: cur.toISOString().slice(0,10), // "2025-10-30"
-          });
+    try{
+        if(job.id){
+            await updateDoc(doc(db,"plantafel",job.id),payload);
+        }else{
+            const ref=await addDoc(collection(db,"plantafel"),payload);
+            job.id=ref.id;
         }
-      }
-      return slots;
+        setOnlineState(true);
+    }catch(e){
+        console.error("createOrUpdateJob:",e);
+        setOnlineState(false);
     }
+}
 
-    /********************************************************
-     * Render Board (Days + Cards)
-     ********************************************************/
-    function renderBoard(daySlots, docsByDay) {
-      // docsByDay: { "2025-10-30": [ {id,...}, ... ], ... }
-
-      // Grid dynamisch: wir wollen 5 Spalten pro "Reihe" -> wir packen ALLE Tage in Rows zu je 5
-      const colsPerRow = 5;
-      const totalCols  = daySlots.length;
-      // CSS Grid bleibt 5 Spalten fix; wir rendern mehrere ".board-grid" rows nacheinander
-      // ABER zur Vereinfachung hier machen wir eine einzige boardGrid
-      // und jede 5er-Gruppe bekommt eine zusätzliche Border oben.
-      // (Das ist optisch nah genug an deiner Ansicht.)
-
-      boardGrid.innerHTML = ""; // clear
-
-      daySlots.forEach((slot, idx) => {
-        const dObj = slot.date;
-        const dow  = dObj.toLocaleDateString("de-DE", { weekday:"short" }); // Mo, Di, ...
-        const dstr = dObj.toLocaleDateString("de-DE", { year:"numeric", month:"2-digit", day:"2-digit" });
-
-        // KW berechnen
-        const tmp = new Date(dObj.getTime());
-        const oneJan = new Date(tmp.getFullYear(),0,1);
-        const diff = Math.round(((tmp - oneJan)/86400000)+((oneJan.getDay()+6)%7));
-        const kw = Math.ceil(diff/7);
-
-        const dayCol = document.createElement("div");
-        dayCol.className = "day-col";
-        dayCol.dataset.dateIso = slot.iso;
-
-        // Kopf
-        const head = document.createElement("div");
-        head.className = "day-head";
-
-        const kwLine = document.createElement("div");
-        kwLine.className = "kw";
-        kwLine.textContent = `KW ${String(kw).padStart(2,"0")}  ${dow}`;
-        head.appendChild(kwLine);
-
-        const dateLine = document.createElement("div");
-        dateLine.className = "date-line";
-        dateLine.textContent = dstr;
-        head.appendChild(dateLine);
-
-        dayCol.appendChild(head);
-
-        // Body
-        const body = document.createElement("div");
-        body.className = "day-body";
-
-        const list = docsByDay[slot.iso] || [];
-        if(list.length===0){
-          const dh = document.createElement("div");
-          dh.className = "drop-hint";
-          dh.textContent = "Klicken zum Eintragen · Drag & Drop möglich";
-          dh.addEventListener("click",()=>openEntryDlgNew(slot.iso));
-          body.appendChild(dh);
-        } else {
-          list.forEach(item=>{
-            body.appendChild(renderCard(item, slot.iso));
-          });
-          // Platz für weiteren Klick
-          const dh2=document.createElement("div");
-          dh2.className="drop-hint";
-          dh2.textContent="Klicken zum Eintragen · Drag & Drop möglich";
-          dh2.addEventListener("click",()=>openEntryDlgNew(slot.iso));
-          body.appendChild(dh2);
-        }
-
-        dayCol.appendChild(body);
-        boardGrid.appendChild(dayCol);
-      });
-    }
-
-    // Karte rendern
-    function renderCard(item, isoDate){
-      const div=document.createElement("div");
-      div.className = "card" + (item.status==="urlaub"?" red":"");
-      div.draggable = true;
-      div.dataset.docId   = item.id;
-      div.dataset.dateIso = isoDate;
-
-      // actions (X / bearbeiten)
-      const actions=document.createElement("div");
-      actions.className="card-actions";
-
-      const btnDel=document.createElement("button");
-      btnDel.className="card-btn";
-      btnDel.textContent="X";
-      btnDel.title="Löschen";
-      btnDel.addEventListener("click",(ev)=>{
-        ev.stopPropagation();
-        deleteEntry(item.id);
-      });
-      actions.appendChild(btnDel);
-
-      const btnEdit=document.createElement("button");
-      btnEdit.className="card-btn";
-      btnEdit.textContent="✎";
-      btnEdit.title="Bearbeiten";
-      btnEdit.addEventListener("click",(ev)=>{
-        ev.stopPropagation();
-        openEntryDlgEdit(item);
-      });
-      actions.appendChild(btnEdit);
-
-      div.appendChild(actions);
-
-      // title row
-      const trow=document.createElement("div");
-      trow.className="title-row";
-      const tt=document.createElement("div");
-      tt.textContent = item.title || "(ohne Titel)";
-      trow.appendChild(tt);
-      div.appendChild(trow);
-
-      // subtitle / beschreibung
-      if(item.text){
-        const st=document.createElement("div");
-        st.className="subtitle";
-        st.textContent=item.text;
-        div.appendChild(st);
-      }
-
-      // crew tags
-      if(item.crew && item.crew.length){
-        const tags=document.createElement("div");
-        tags.className="tags";
-        item.crew.forEach(c=>{
-          const tag=document.createElement("div");
-          tag.className="tag-person";
-          tag.textContent=c.trim();
-          tags.appendChild(tag);
-        });
-        div.appendChild(tags);
-      }
-
-      // Drag Events rudimentär
-      div.addEventListener("dragstart",(ev)=>{
-        ev.dataTransfer.setData("text/plain", JSON.stringify({
-          id: item.id,
-          from: isoDate
-        }));
-      });
-
-      return div;
-    }
-
-    /********************************************************
-     * Firestore Laden + Live-Listener
-     ********************************************************/
-    // wir speichern Einträge in Collection "plantafel"
-    // Dokument-Felder:
-    // { title, text, dateIso:"2025-10-30", crew:["Patrick","Herbert"], status:"urlaub"/"normal", ts }
-    async function loadBoardOnceAndListen() {
-      // Listener beenden falls aktiv
-      if(unsubListener){ unsubListener(); unsubListener=null; }
-
-      const qRef = collection(db,"plantafel");
-      // Wir hören auf ALLES und filtern dann im JS auf sichtbaren Zeitraum
-      unsubListener = onSnapshot(qRef, snap=>{
-        const allDocs=[];
-        snap.forEach(docSnap=>{
-          const data=docSnap.data();
-          allDocs.push({
-            id: docSnap.id,
-            title: data.title || "",
-            text: data.text || "",
-            dateIso: data.dateIso || "",
-            crew: Array.isArray(data.crew)? data.crew: [],
-            status: data.status || "normal",
-          });
-        });
-        refreshBoardFromData(allDocs);
-      }, err=>{
-        console.error("onSnapshot Fehler:",err);
-        setOffline();
-      });
-    }
-
-    function refreshBoardFromData(allDocs){
-      const vMode = viewSel.value; // "4w" ...
-      const baseDate = parseDate(startDate.value) || new Date();
-
-      const daySlots = buildDaySlots(baseDate, vMode);
-
-      // nach Tag gruppieren
-      const mapByDay = {};
-      for(const d of daySlots){
-        mapByDay[d.iso]=[];
-      }
-      for(const item of allDocs){
-        if(mapByDay[item.dateIso]){
-          mapByDay[item.dateIso].push(item);
-        }
-      }
-
-      renderBoard(daySlots, mapByDay);
-      setOnline();
-    }
-
-    /********************************************************
-     * CRUD Einträge
-     ********************************************************/
-    async function saveEntry(){
-      const id    = mDocId.value.trim();
-      const title = mTitle.value.trim();
-      const text  = mText.value.trim();
-      const rawDate = mDate.value.trim();
-      const crewStr = mCrew.value.trim();
-      const status  = mStatus.value;
-
-      // Date-Check
-      const parsed = parseDate(rawDate);
-      if(!parsed){
-        alert("Ungültiges Datum. Bitte TT.MM.JJJJ");
-        return;
-      }
-      const iso = parsed.toISOString().slice(0,10);
-
-      const crewArr = crewStr ? crewStr.split(",").map(s=>s.trim()).filter(Boolean) : [];
-
-      const payload = {
-        title,
-        text,
-        dateIso: iso,
-        crew: crewArr,
-        status,
-        ts: serverTimestamp(),
-      };
-
-      try {
-        if(id){
-          // update
-          await updateDoc(doc(db,"plantafel",id), payload);
-        } else {
-          // neu
-          await addDoc(collection(db,"plantafel"), payload);
-        }
-        closeEntryDlg();
-      } catch(e){
-        console.error("Speichern fehlgeschlagen:", e);
-        alert("Konnte nicht speichern.");
-      }
-    }
-
-    async function deleteEntry(id){
-      if(!confirm("Diesen Eintrag wirklich löschen?")) return;
-      try {
+async function deleteJob(id){
+    try{
         await deleteDoc(doc(db,"plantafel",id));
-      } catch(e){
-        console.error("Löschen fehlgeschlagen:", e);
-        alert("Konnte nicht löschen.");
-      }
+        setOnlineState(true);
+    }catch(e){
+        console.error("deleteJob:", e);
+        setOnlineState(false);
     }
+}
 
-    /********************************************************
-     * Stammdaten (Collection "settings", doc "default")
-     ********************************************************/
-    async function loadStammdatenToDialog(){
-      try{
-        const ref = doc(db,"settings","default");
-        const snap = await getDoc(ref);
-        if(snap.exists()){
-          const data = snap.data();
-          mNote.value = data.note || "";
-          mDefaultCrew.value = Array.isArray(data.defaultCrew)
-            ? data.defaultCrew.join(", ")
-            : "";
-        } else {
-          mNote.value = "";
-          mDefaultCrew.value = "";
-        }
-      }catch(e){
-        console.warn("Stammdaten lesen fehlgeschlagen:", e);
-        mNote.value = "";
-        mDefaultCrew.value = "";
-      }
-    }
-
-    async function saveStammdaten(){
-      const note = mNote.value.trim();
-      const crewArr = mDefaultCrew.value.split(",").map(s=>s.trim()).filter(Boolean);
-
-      try{
-        await setDoc(doc(db,"settings","default"), {
-          note,
-          defaultCrew: crewArr,
-          ts: serverTimestamp()
+// Live-Listener auf plantafel
+function subscribeJobs(){
+    // einfache Sortierung nach ts
+    const qJobs = query(collection(db,"plantafel"), orderBy("ts","asc"));
+    onSnapshot(qJobs,(snap)=>{
+        const arr=[];
+        snap.forEach(docSnap=>{
+            const d=docSnap.data();
+            arr.push({
+                id:docSnap.id,
+                title:d.title||"",
+                note:d.note||"",
+                emps:Array.isArray(d.emps)?d.emps:[],
+                vehs:Array.isArray(d.vehs)?d.vehs:[],
+                statusLabel:d.statusLabel||"",
+                statusColor:d.statusColor||"",
+                dayKey:d.dayKey||"",
+                ts:d.ts||null
+            });
         });
-        closeMasterDlg();
-      }catch(e){
-        console.error("Stammdaten speichern fehlgeschlagen:", e);
-        alert("Konnte Stammdaten nicht speichern.");
-      }
-    }
+        jobs=arr;
+        renderBoard();
+    },(err)=>{
+        console.error("onSnapshot plantafel:",err);
+        setOnlineState(false);
+    });
+}
 
-    /********************************************************
-     * Dialogsteuerung
-     ********************************************************/
-    function openEntryDlgNew(prefillIso){
-      mDocId.value="";
-      mTitle.value="";
-      mText.value="";
-      mCrew.value="";
-      mStatus.value="normal";
-      // Datum vorbelegen
-      if(prefillIso){
-        const d=new Date(prefillIso+"T00:00:00");
-        mDate.value = formatDate(d);
-      } else {
-        mDate.value = formatDate(new Date());
-      }
-      entryDlg.showModal();
-    }
-    function openEntryDlgEdit(item){
-      mDocId.value=item.id;
-      mTitle.value=item.title || "";
-      mText.value=item.text || "";
-      mCrew.value=(item.crew||[]).join(", ");
-      mStatus.value=item.status||"normal";
+/* -------------------------------------------------------------------------------------------------
+   4. RENDER BOARD
+--------------------------------------------------------------------------------------------------*/
 
-      if(item.dateIso){
-        const d=new Date(item.dateIso+"T00:00:00");
-        mDate.value=formatDate(d);
-      } else {
-        mDate.value=formatDate(new Date());
-      }
-      entryDlg.showModal();
-    }
-    function closeEntryDlg(){
-      entryDlg.close();
-    }
+const boardEl = document.getElementById("board");
+const fDayTarget = document.getElementById("fDayTarget");
 
-    async function openMasterDlg(){
-      await loadStammdatenToDialog();
-      masterDlg.showModal();
-    }
-    function closeMasterDlg(){
-      masterDlg.close();
-    }
+// Drag & Drop globals
+let dragJobId=null;
 
-    /********************************************************
-     * Verbindung / Status-Anzeige
-     ********************************************************/
-    function setOnline(){
-      cloudDot.classList.remove("offline");
-      cloudText.textContent = "verbunden";
-    }
-    function setOffline(){
-      cloudDot.classList.add("offline");
-      cloudText.textContent = "offline";
-    }
+function renderBoard(){
+    const days = buildDayRange();
 
-    /********************************************************
-     * Zoom
-     ********************************************************/
-    zoomRange.addEventListener("input", ()=>{
-      currentZoom = parseFloat(zoomRange.value)||1;
-      boardGrid.style.transform = `scale(${currentZoom})`;
+    // dayKey Liste für Dialog-Auswahl
+    fDayTarget.innerHTML="";
+    days.forEach(d=>{
+        const dk=dayKeyFromDate(d);
+        const opt=document.createElement("option");
+        opt.value=dk;
+        const txt=`KW ${getKW(d)} ${WD[d.getDay()]} ${d.toLocaleDateString("de-DE")}`;
+        opt.textContent=txt;
+        fDayTarget.appendChild(opt);
     });
 
-    /********************************************************
-     * Events UI
-     ********************************************************/
-    btnAdd.addEventListener("click", ()=>openEntryDlgNew());
-    fabAdd.addEventListener("click", ()=>openEntryDlgNew());
+    // CSS Spaltenanzahl
+    boardEl.style.setProperty("--cols",Math.max(days.length,1));
 
-    btnEntryCancel.addEventListener("click", closeEntryDlg);
-    btnEntrySave.addEventListener("click", saveEntry);
+    // board leeren
+    boardEl.innerHTML="";
 
-    btnStammdaten.addEventListener("click", openMasterDlg);
-    btnMasterCancel.addEventListener("click", closeMasterDlg);
-    btnMasterSave.addEventListener("click", saveStammdaten);
+    // Für jede Spalte Box bauen
+    for(const day of days){
+        const dk   = dayKeyFromDate(day);
+        const kw   = getKW(day);
+        const wd   = WD[day.getDay()];
+        const dateStr = day.toLocaleDateString("de-DE");
 
-    btnReload.addEventListener("click", ()=>{
-      // hart neu laden aus Firestore
-      if(unsubListener){ unsubListener(); unsubListener=null; }
-      loadBoardOnceAndListen();
+        const colDiv=document.createElement("div");
+        colDiv.className="dayCol";
+        colDiv.dataset.dayKey=dk;
+
+        const header=document.createElement("div");
+        header.className="dayHeader";
+
+        const left=document.createElement("div");
+        left.className="left";
+        const kwLine=document.createElement("div");
+        kwLine.className="kw";
+        kwLine.textContent=`KW ${kw} ${wd}`;
+        const dLine=document.createElement("div");
+        dLine.className="dateLine";
+        dLine.textContent=dateStr;
+        left.appendChild(kwLine);
+        left.appendChild(dLine);
+
+        const right=document.createElement("div");
+        right.style.fontSize="11px";
+        right.style.color="var(--text-dim)";
+        right.textContent=dk;
+
+        header.appendChild(left);
+        header.appendChild(right);
+
+        const list=document.createElement("div");
+        list.className="cardList";
+        list.dataset.dayKey=dk;
+
+        // Einträge, die zu diesem Tag gehören
+        const dayJobs=jobs.filter(j=>j.dayKey===dk);
+
+        if(dayJobs.length===0){
+            const hint=document.createElement("div");
+            hint.className="dropHint";
+            hint.textContent="Klicken zum Eintragen · Drag & Drop möglich";
+            list.appendChild(hint);
+        }else{
+            dayJobs.forEach(job=>{
+                const card=buildJobCard(job);
+                list.appendChild(card);
+            });
+        }
+
+        // Klick in leeren Bereich -> neuen Eintrag erstellen
+        list.addEventListener("dblclick",(ev)=>{
+            if(ev.target===list || ev.target.classList.contains("dropHint")){
+                openEntryDialogForNew(dk);
+            }
+        });
+
+        // Drag & Drop Support
+        list.addEventListener("dragover",ev=>{
+            ev.preventDefault();
+        });
+        list.addEventListener("drop",ev=>{
+            ev.preventDefault();
+            if(!dragJobId)return;
+            moveJobToDay(dragJobId,dk);
+            dragJobId=null;
+        });
+
+        colDiv.appendChild(header);
+        colDiv.appendChild(list);
+        boardEl.appendChild(colDiv);
+    }
+}
+
+function buildJobCard(job){
+    const card=document.createElement("div");
+    card.className="jobCard";
+    card.setAttribute("draggable","true");
+    card.dataset.jobId=job.id;
+
+    card.addEventListener("dragstart",()=>{
+        dragJobId=job.id;
+        card.classList.add("dragging");
+    });
+    card.addEventListener("dragend",()=>{
+        card.classList.remove("dragging");
     });
 
-    // Datum Start vorbelegen (heute)
-    startDate.value = formatDate(new Date());
+    // Header
+    const top=document.createElement("div");
+    top.className="cardHeaderRow";
 
-    // Erste Initialisierung
-    loadBoardOnceAndListen();
-  </script>
+    const titleWrap=document.createElement("div");
+    titleWrap.className="titleWrap";
+
+    const titleSpan=document.createElement("span");
+    titleSpan.textContent=job.title||"(ohne Titel)";
+    titleWrap.appendChild(titleSpan);
+
+    if(job.statusLabel){
+        const st=document.createElement("span");
+        st.className="badgeStatus";
+        if(job.statusColor==="red") st.classList.add("red");
+        if(job.statusColor==="green") st.classList.add("green");
+        if(job.statusColor==="blue") st.classList.add("blue");
+        st.textContent=job.statusLabel;
+        titleWrap.appendChild(st);
+    }
+
+    const actDiv=document.createElement("div");
+    actDiv.className="cardActions";
+
+    const btnEdit=document.createElement("button");
+    btnEdit.className="tinyBtn";
+    btnEdit.textContent="✎";
+    btnEdit.title="Bearbeiten";
+    btnEdit.addEventListener("click",()=>{
+        openEntryDialogForEdit(job.id);
+    });
+
+    const btnDup=document.createElement("button");
+    btnDup.className="tinyBtn";
+    btnDup.textContent="⧉";
+    btnDup.title="Duplizieren";
+    btnDup.addEventListener("click",()=>{
+        duplicateJob(job.id);
+    });
+
+    const btnDel=document.createElement("button");
+    btnDel.className="tinyBtn";
+    btnDel.textContent="X";
+    btnDel.title="Löschen";
+    btnDel.addEventListener("click",()=>{
+        if(confirm("Diesen Eintrag wirklich löschen?")){
+            deleteJob(job.id);
+        }
+    });
+
+    actDiv.appendChild(btnEdit);
+    actDiv.appendChild(btnDup);
+    actDiv.appendChild(btnDel);
+
+    top.appendChild(titleWrap);
+    top.appendChild(actDiv);
+
+    // Body
+    const body=document.createElement("div");
+    body.className="cardBody";
+
+    if(job.note){
+        const n=document.createElement("div");
+        n.className="pill";
+        n.textContent=job.note;
+        body.appendChild(n);
+    }
+    if(job.emps && job.emps.length){
+        const e=document.createElement("div");
+        e.className="pill";
+        e.textContent=job.emps.join(", ");
+        body.appendChild(e);
+    }
+    if(job.vehs && job.vehs.length){
+        const v=document.createElement("div");
+        v.className="pill";
+        v.textContent=job.vehs.join(", ");
+        body.appendChild(v);
+    }
+
+    card.appendChild(top);
+    card.appendChild(body);
+
+    // Doppelklick ganze Karte -> bearbeiten
+    card.addEventListener("dblclick",()=>{
+        openEntryDialogForEdit(job.id);
+    });
+
+    return card;
+}
+
+async function moveJobToDay(jobId,newDayKey){
+    const j = jobs.find(x=>x.id===jobId);
+    if(!j)return;
+    j.dayKey=newDayKey;
+    await createOrUpdateJob(j);
+}
+
+/* -------------------------------------------------------------------------------------------------
+   5. DIALOG: EINTRAG
+--------------------------------------------------------------------------------------------------*/
+
+const entryDlg        = document.getElementById("entryDlg");
+const btnEntryCancel  = document.getElementById("btnEntryCancel");
+const btnEntrySave    = document.getElementById("btnEntrySave");
+const btnDeleteEntry  = document.getElementById("btnDeleteEntry");
+
+const fDocId   = document.getElementById("fDocId");
+const fTitle   = document.getElementById("fTitle");
+const fNote    = document.getElementById("fNote");
+
+const empChips = document.getElementById("empChips");
+const vehChips = document.getElementById("vehChips");
+const statusChips = document.getElementById("statusChips");
+
+function renderChipList(container,items,selectedArr){
+    container.innerHTML="";
+    items.forEach(val=>{
+        let label,valColor;
+        if(typeof val==="string"){
+            label=val;
+            valColor=null;
+        }else{
+            // status {label,color}
+            label=val.label;
+            valColor=val.color;
+        }
+
+        const chip=document.createElement("div");
+        chip.className="chipToggle";
+
+        if(valColor){
+            // farbige status chips
+            if(valColor==="red") chip.style.background="#8a1f1f";
+            if(valColor==="green") chip.style.background="#1f8a34";
+            if(valColor==="blue") chip.style.background="#1f3f8a";
+        }
+
+        const active = selectedArr.includes(label);
+        if(!active) chip.classList.add("off");
+
+        chip.textContent=label;
+        chip.addEventListener("click",()=>{
+            if(chip.classList.contains("off")){
+                chip.classList.remove("off");
+            }else{
+                chip.classList.add("off");
+            }
+        });
+        container.appendChild(chip);
+    });
+}
+
+function getSelectedFrom(container){
+    const out=[];
+    [...container.children].forEach(ch=>{
+        if(!ch.classList.contains("off")){
+            out.push(ch.textContent.trim());
+        }
+    });
+    return out;
+}
+
+// bei Status erlauben wir nur EINEN aktiv
+function renderStatusChips(selectedLabel){
+    statusChips.innerHTML="";
+    statuses.forEach(st=>{
+        const chip=document.createElement("div");
+        chip.className="chipToggle";
+        // farbstil
+        if(st.color==="red") chip.style.background="#8a1f1f";
+        if(st.color==="green") chip.style.background="#1f8a34";
+        if(st.color==="blue") chip.style.background="#1f3f8a";
+
+        if(st.label!==selectedLabel){
+            chip.classList.add("off");
+        }
+
+        chip.textContent=st.label;
+        chip.addEventListener("click",()=>{
+            // single select
+            [...statusChips.children].forEach(o=>o.classList.add("off"));
+            chip.classList.remove("off");
+        });
+        statusChips.appendChild(chip);
+    });
+}
+function getSelectedStatus(){
+    let chosen=null;
+    [...statusChips.children].forEach(ch=>{
+        if(!ch.classList.contains("off")){
+            chosen=ch.textContent.trim();
+        }
+    });
+    if(!chosen) return {label:"",color:""};
+    const stObj = statuses.find(s=>s.label===chosen);
+    if(!stObj) return {label:chosen,color:""};
+    return {label:stObj.label,color:stObj.color||""};
+}
+
+function openEntryDialogForNew(dayKey){
+    fDocId.value="";
+    fTitle.value="";
+    fNote.value="";
+
+    // Mitarbeiter/Fahrzeuge Chips leer (alle off)
+    renderChipList(empChips, employees, []);
+    renderChipList(vehChips, vehicles, []);
+    renderStatusChips("");
+
+    // Ziel-Tag auswählen
+    fDayTarget.value=dayKey || "";
+
+    entryDlg.showModal();
+}
+
+function openEntryDialogForEdit(jobId){
+    const job = jobs.find(j=>j.id===jobId);
+    if(!job)return;
+
+    fDocId.value=job.id;
+    fTitle.value=job.title||"";
+    fNote.value=job.note||"";
+
+    renderChipList(empChips, employees, job.emps||[]);
+    renderChipList(vehChips, vehicles, job.vehs||[]);
+    renderStatusChips(job.statusLabel||"");
+
+    fDayTarget.value=job.dayKey||"";
+
+    entryDlg.showModal();
+}
+
+btnEntryCancel.addEventListener("click",()=>{
+    entryDlg.close();
+});
+
+btnDeleteEntry.addEventListener("click",async()=>{
+    const id = fDocId.value;
+    if(id){
+        if(confirm("Wirklich löschen?")){
+            await deleteJob(id);
+            entryDlg.close();
+        }
+    }else{
+        // neuer Eintrag, noch nicht gespeichert -> einfach schließen
+        entryDlg.close();
+    }
+});
+
+btnEntrySave.addEventListener("click",async()=>{
+    const id = fDocId.value || null;
+
+    const selEmps = getSelectedFrom(empChips);
+    const selVehs = getSelectedFrom(vehChips);
+    const stObj   = getSelectedStatus();
+
+    const rec = {
+        id,
+        title: fTitle.value.trim(),
+        note:  fNote.value.trim(),
+        emps:  selEmps,
+        vehs:  selVehs,
+        statusLabel: stObj.label,
+        statusColor: stObj.color,
+        dayKey: fDayTarget.value
+    };
+
+    await createOrUpdateJob(rec);
+    entryDlg.close();
+});
+
+/* -------------------------------------------------------------------------------------------------
+   6. DIALOG: STAMMDATEN
+--------------------------------------------------------------------------------------------------*/
+
+const masterDlg     = document.getElementById("masterDlg");
+const btnMasterData = document.getElementById("btnMasterData");
+const btnMasterClose= document.getElementById("btnMasterClose");
+const btnMasterCancel= document.getElementById("btnMasterCancel");
+const btnMasterSave = document.getElementById("btnMasterSave");
+
+const mEmployees = document.getElementById("mEmployees");
+const mVehicles  = document.getElementById("mVehicles");
+const mStatuses  = document.getElementById("mStatuses");
+
+btnMasterData.addEventListener("click",()=>{
+    // bestehende Stammdaten reinschreiben
+    mEmployees.value = employees.join("\n");
+    mVehicles.value  = vehicles.join("\n");
+    mStatuses.value  = statuses.map(s=>`${s.label}|${s.color}`).join("\n");
+    masterDlg.showModal();
+});
+btnMasterClose.addEventListener("click",()=> masterDlg.close());
+btnMasterCancel.addEventListener("click",()=> masterDlg.close());
+
+btnMasterSave.addEventListener("click",async()=>{
+    const empLines = mEmployees.value.split("\n").map(v=>v.trim()).filter(Boolean);
+    const vehLines = mVehicles.value.split("\n").map(v=>v.trim()).filter(Boolean);
+
+    const statLines = mStatuses.value.split("\n").map(v=>v.trim()).filter(Boolean);
+    const newStats=[];
+    statLines.forEach(line=>{
+        const [lbl,color] = line.split("|");
+        if(lbl){
+            newStats.push({
+                label:lbl.trim(),
+                color:(color||"").trim()
+            });
+        }
+    });
+
+    employees = empLines;
+    vehicles  = vehLines;
+    statuses  = newStats;
+
+    await saveSettings();
+    masterDlg.close();
+});
+
+/* -------------------------------------------------------------------------------------------------
+   7. OBERE BUTTONS / AUTO-RELOAD
+--------------------------------------------------------------------------------------------------*/
+
+const btnReload     = document.getElementById("btnReload");
+const btnNewEntry   = document.getElementById("btnNewEntry");
+
+btnNewEntry.addEventListener("click",()=>{
+    // Standard: erster Tag der aktuellen Ansicht
+    const days = buildDayRange();
+    const dk = days.length? dayKeyFromDate(days[0]):"";
+    openEntryDialogForNew(dk);
+});
+
+btnReload.addEventListener("click",()=>{
+    renderBoard(); // lokal neuzeichnen
+});
+
+viewSel.addEventListener("change",()=>{
+    renderBoard();
+});
+startDateInp.addEventListener("change",()=>{
+    renderBoard();
+});
+
+let autoReloadTimer=null;
+function setupAutoReload(){
+    if(autoReloadTimer){
+        clearInterval(autoReloadTimer);
+        autoReloadTimer=null;
+    }
+    if(autoReloadChk.checked){
+        autoReloadTimer=setInterval(()=>{
+            renderBoard(); // einfach nochmal zeichnen
+        },5000); // alle 5s einfach neuzeichnen
+    }
+}
+autoReloadChk.addEventListener("change",setupAutoReload);
+
+/* -------------------------------------------------------------------------------------------------
+   8. INIT FLOW
+--------------------------------------------------------------------------------------------------*/
+
+async function initApp(){
+    // Startwert für Datum: heute
+    const today=new Date();
+    const y=today.getFullYear();
+    const m=String(today.getMonth()+1).padStart(2,"0");
+    const d=String(today.getDate()).padStart(2,"0");
+    startDateInp.value=`${y}-${m}-${d}`;
+
+    // Stammdaten laden
+    await loadSettingsOnce();
+
+    // Live Jobs hören
+    subscribeJobs();
+
+    // erstes Rendering (leer bis Daten kommen)
+    renderBoard();
+
+    setupAutoReload();
+}
+
+initApp();
+</script>
 </body>
 </html>
