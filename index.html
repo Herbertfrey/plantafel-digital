@@ -1,893 +1,1499 @@
 <!DOCTYPE html>
 <html lang="de">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Plantafel Digital</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Plantafel Digital</title>
 
-<style>
-  :root {
-    --bg-main: #121212;
-    --bg-card: #1f1f1f;
-    --bg-toolbar: #1f1f1f;
-    --bg-border: #333;
-    --txt-main: #fff;
-    --txt-dim: #aaa;
-    --accent: #2962ff;
-    --danger: #d32f2f;
-    --radius-card: 8px;
-    --radius-btn: 6px;
-    --gap: 8px;
-    --col-border: 1px solid #333;
-    --card-border: 1px solid #444;
-  }
+  <!-- Dark Theme + Layout -->
+  <style>
+    :root {
+      --bg-main: #121212;
+      --bg-card: #1e1e1e;
+      --bg-toolbar: #1f1f1f;
+      --bg-border: #333;
+      --txt-main: #fff;
+      --txt-dim: #aaa;
+      --accent: #2962ff;
+      --danger: #d32f2f;
+      --radius-card: 8px;
+      --radius-btn: 6px;
+      --gap: 12px;
+      --border-card: 1px solid rgba(255,255,255,0.08);
+      --border-focus: 1px solid rgba(41,98,255,.6);
+      --shadow-card: 0 8px 24px rgba(0,0,0,0.6);
+      --shadow-dialog: 0 32px 64px rgba(0,0,0,0.8);
+      --toolbar-h: auto;
+    }
 
-  body {
-    margin: 0;
-    background: var(--bg-main);
-    color: var(--txt-main);
-    font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-    display: flex;
-    flex-direction: column;
-    min-height: 100vh;
-  }
+    * {
+      box-sizing: border-box;
+      -webkit-font-smoothing: antialiased;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Inter", Roboto, "Helvetica Neue", Arial, sans-serif;
+    }
 
-  header.toolbar {
-    background: var(--bg-toolbar);
-    color: var(--txt-main);
-    display: flex;
-    flex-wrap: wrap;
-    align-items: flex-start;
-    gap: var(--gap);
-    padding: 10px;
-    border-bottom: var(--col-border);
-  }
+    body {
+      background: radial-gradient(circle at 20% 20%, rgba(60,60,60,.2) 0%, rgba(0,0,0,0) 60%), var(--bg-main);
+      color: var(--txt-main);
+      margin: 0;
+      min-height: 100dvh;
+      display: flex;
+      flex-direction: column;
+    }
 
-  header .row {
-    display: flex;
-    flex-wrap: wrap;
-    align-items: center;
-    gap: var(--gap);
-  }
+    header.toolbar {
+      background-color: var(--bg-toolbar);
+      color: var(--txt-main);
+      border-bottom: 1px solid rgba(255,255,255,0.08);
+      box-shadow: 0 16px 32px rgba(0,0,0,0.8);
+      padding: 12px clamp(12px,1.5vw,20px) 16px;
+      display: flex;
+      flex-wrap: wrap;
+      row-gap: 10px;
+      column-gap: 12px;
+      align-items: flex-start;
+    }
 
-  .statusDot {
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    background: #2a2a2a;
-    border: var(--col-border);
-    border-radius: var(--radius-btn);
-    padding: 6px 10px;
-    font-size: 14px;
-    font-weight: 500;
-  }
+    /* Toolbar groups */
+    .tool-col {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      min-width: max-content;
+    }
 
-  .statusDot .dot {
-    width: 10px;
-    height: 10px;
-    background: #4caf50; /* grün verbunden */
-    border-radius: 50%;
-  }
+    .tool-row {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      column-gap: 8px;
+      row-gap: 8px;
+    }
 
-  label {
-    font-size: 13px;
-    color: var(--txt-dim);
-    display: block;
-    line-height: 1.2;
-  }
+    .online-dot {
+      width:10px;
+      height:10px;
+      border-radius:50%;
+      background:#2ecc71;
+      margin-right:8px;
+      box-shadow:0 0 8px #2ecc71;
+    }
+    .online-wrap {
+      background:#1b1f1c;
+      border:1px solid rgba(46,204,113,.4);
+      color:#2ecc71;
+      font-size:14px;
+      line-height:1.2;
+      font-weight:500;
+      padding:8px 12px;
+      border-radius:var(--radius-btn);
+      display:flex;
+      align-items:center;
+      gap:8px;
+      min-width:max-content;
+      box-shadow:0 8px 20px rgba(0,0,0,.8);
+    }
 
-  .ctrl-block {
-    background: #2a2a2a;
-    border: var(--col-border);
-    border-radius: var(--radius-btn);
-    padding: 6px 10px;
-    display: flex;
-    flex-direction: column;
-  }
+    label.small-label {
+      font-size:13px;
+      font-weight:500;
+      color:var(--txt-dim);
+      display:block;
+      margin-bottom:4px;
+    }
 
-  .ctrl-inline {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-  }
+    select,
+    input[type="date"],
+    input[type="text"] {
+      background-color:#0f0f10;
+      border:1px solid rgba(255,255,255,0.15);
+      border-radius:var(--radius-btn);
+      color:var(--txt-main);
+      font-size:14px;
+      padding:9px 10px;
+      min-width:160px;
+      box-shadow:0 8px 24px rgba(0,0,0,0.8);
+    }
+    select:focus,
+    input:focus {
+      outline:none;
+      border:1px solid rgba(41,98,255,.7);
+      box-shadow:0 0 0 2px rgba(41,98,255,.3),0 24px 48px rgba(0,0,0,.9);
+    }
 
-  select,
-  input[type="date"],
-  input[type="text"],
-  input[type="checkbox"] {
-    background: #1e1e1e;
-    border: var(--col-border);
-    border-radius: var(--radius-btn);
-    color: var(--txt-main);
-    font-size: 14px;
-    padding: 6px 8px;
-  }
+    button,
+    .btn {
+      appearance:none;
+      border:none;
+      cursor:pointer;
+      font-size:14px;
+      line-height:1.2;
+      font-weight:500;
+      border-radius:var(--radius-btn);
+      padding:9px 12px;
+      display:inline-flex;
+      align-items:center;
+      gap:6px;
+      min-height:36px;
+      box-shadow:0 12px 32px rgba(0,0,0,.8);
+      user-select:none;
+      -webkit-user-select:none;
+      background-color:#2a2a2f;
+      color:#fff;
+      border:1px solid rgba(255,255,255,0.12);
+    }
+    button.primary,
+    .btn.primary {
+      background-color:var(--accent);
+      border:1px solid rgba(41,98,255,.6);
+      box-shadow:0 16px 32px rgba(41,98,255,.4);
+      color:#fff;
+      font-weight:600;
+    }
+    button.danger {
+      background-color:#2a1a1a;
+      border:1px solid rgba(211,47,47,.6);
+      color:#ff8080;
+      box-shadow:0 16px 32px rgba(211,47,47,.4);
+    }
+    button.ghost {
+      background:transparent;
+      border:1px solid rgba(255,255,255,.15);
+      color:#fff;
+    }
+    button:active {
+      transform:scale(.98);
+    }
 
-  button.btn {
-    background: #2a2a2a;
-    color: var(--txt-main);
-    border: var(--col-border);
-    border-radius: var(--radius-btn);
-    font-size: 14px;
-    padding: 8px 10px;
-    cursor: pointer;
-  }
+    .chk-wrap {
+      display:flex;
+      flex-wrap:nowrap;
+      align-items:center;
+      gap:8px;
+      font-size:14px;
+      font-weight:500;
+      background:#1a1a1f;
+      padding:9px 12px;
+      border-radius:var(--radius-btn);
+      border:1px solid rgba(255,255,255,.12);
+      box-shadow:0 12px 32px rgba(0,0,0,.8);
+      color:#fff;
+      min-height:36px;
+    }
+    .chk-wrap input[type="checkbox"]{
+      width:16px;
+      height:16px;
+      accent-color:var(--accent);
+      cursor:pointer;
+    }
 
-  button.btn.primary {
-    background: var(--accent);
-    color: #fff;
-    border: none;
-  }
+    main {
+      flex:1;
+      display:flex;
+      flex-direction:column;
+      gap:var(--gap);
+      padding:16px clamp(12px,1.5vw,20px) 96px;
+      color:var(--txt-main);
+    }
 
-  button.btn.danger {
-    background: var(--danger);
-    color: #fff;
-    border: none;
-  }
+    .hint-row{
+      font-size:13px;
+      color:var(--txt-dim);
+      line-height:1.4;
+    }
 
-  main#boardWrapper {
-    flex: 1;
-    overflow-y: auto;
-    padding: 10px;
-  }
+    .board-grid {
+      display:grid;
+      grid-template-columns:repeat(auto-fit,minmax(min(280px,100%),1fr));
+      gap:var(--gap);
+      align-items:flex-start;
+    }
 
-  .boardHint {
-    color: var(--txt-dim);
-    font-size: 13px;
-    margin-bottom: 10px;
-  }
+    /* Wochen-Column */
+    .week-col {
+      background:var(--bg-card);
+      border:var(--border-card);
+      border-radius:var(--radius-card);
+      box-shadow:var(--shadow-card);
+      display:flex;
+      flex-direction:column;
+      min-height:220px;
+      max-height:90vh;
+      overflow:hidden;
+      position:relative;
+    }
 
-  /* Kalender-GRID */
-  .weekRow {
-    background: #181818;
-    border: var(--col-border);
-    border-radius: var(--radius-card);
-    margin-bottom: 12px;
-    padding: 10px;
-  }
+    .week-head {
+      display:flex;
+      align-items:flex-start;
+      justify-content:space-between;
+      padding:12px;
+      border-bottom:1px solid rgba(255,255,255,.07);
+      background:rgba(255,255,255,0.02);
+    }
 
-  .weekHeader {
-    color: var(--txt-main);
-    font-size: 14px;
-    font-weight: 600;
-    margin-bottom: 8px;
-    display: flex;
-    justify-content: space-between;
-    flex-wrap: wrap;
-  }
+    .week-head-left {
+      display:flex;
+      flex-direction:column;
+      font-size:13px;
+      line-height:1.3;
+    }
+    .kw-title {
+      color:#6fa2ff;
+      font-weight:600;
+      font-size:13px;
+      margin-bottom:4px;
+    }
+    .kw-date {
+      font-size:13px;
+      color:var(--txt-dim);
+      font-weight:400;
+    }
 
-  .daysRow {
-    display: grid;
-    grid-template-columns: repeat(auto-fit,minmax(220px,1fr));
-    gap: 10px;
-  }
+    .week-head-right {
+      display:flex;
+      gap:6px;
+    }
+    .mini-btn {
+      width:24px;
+      height:24px;
+      border-radius:6px;
+      background:#2a2a2f;
+      border:1px solid rgba(255,255,255,.15);
+      color:#fff;
+      font-size:16px;
+      line-height:1;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      cursor:pointer;
+      box-shadow:0 12px 32px rgba(0,0,0,.8);
+      user-select:none;
+    }
+    .mini-btn:active {
+      transform:scale(.95);
+    }
 
-  .dayCol {
-    background: var(--bg-card);
-    border: var(--card-border);
-    border-radius: var(--radius-card);
-    display: flex;
-    flex-direction: column;
-  }
+    /* Slot / Kartenbereich */
+    .slot-area{
+      flex:1;
+      min-height:120px;
+      padding:12px;
+      display:flex;
+      flex-direction:column;
+      gap:12px;
+      overflow-y:auto;
+      scrollbar-width:thin;
+      scrollbar-color:#555 transparent;
+      font-size:13px;
+      line-height:1.4;
+      color:var(--txt-dim);
+    }
+    .slot-area::-webkit-scrollbar{
+      width:6px;
+    }
+    .slot-area::-webkit-scrollbar-track{
+      background:rgba(255,255,255,0.03);
+    }
+    .slot-area::-webkit-scrollbar-thumb{
+      background:#555;
+      border-radius:3px;
+    }
 
-  .dayHeader {
-    border-bottom: var(--col-border);
-    padding: 8px 10px;
-    font-size: 13px;
-    display: flex;
-    justify-content: space-between;
-    align-items: baseline;
-    flex-wrap: wrap;
-    gap:4px;
-  }
+    /* Einsatzkarte */
+    .card {
+      background:#1b1f2b;
+      border:var(--border-focus);
+      border-radius:var(--radius-card);
+      box-shadow:0 20px 32px rgba(0,0,0,.9),0 0 20px rgba(41,98,255,.4);
+      padding:12px;
+      display:flex;
+      flex-direction:column;
+      gap:8px;
+      color:#fff;
+      font-size:14px;
+      position:relative;
+    }
+    .card.red {
+      background:#2a1a1a;
+      border:1px solid rgba(211,47,47,.6);
+      box-shadow:0 20px 32px rgba(0,0,0,.9),0 0 20px rgba(211,47,47,.4);
+    }
 
-  .dayHeaderTitle {
-    font-weight: 600;
-    color: var(--accent);
-    font-size: 13px;
-  }
+    .card-row-top{
+      font-size:15px;
+      font-weight:600;
+      color:#fff;
+      line-height:1.3;
+      word-break:break-word;
+    }
 
-  .dayHeaderDate {
-    color: var(--txt-dim);
-    font-size: 12px;
-  }
+    .card-row-middle{
+      display:flex;
+      flex-wrap:wrap;
+      align-items:center;
+      gap:6px 8px;
+    }
 
-  .dayBody {
-    padding: 8px 10px;
-    flex: 1;
-    min-height: 80px;
-    font-size: 13px;
-  }
+    .pill{
+      font-size:12px;
+      line-height:1.2;
+      font-weight:500;
+      background:#2a2f3a;
+      color:#fff;
+      border:1px solid rgba(255,255,255,.18);
+      border-radius:999px;
+      padding:4px 8px;
+      box-shadow:0 12px 24px rgba(0,0,0,.9);
+    }
+    .pill.worker{
+      background:#263238;
+    }
+    .pill.car{
+      background:#1a237e;
+      border-color:rgba(96,125,139,.6);
+    }
+    .pill.red{
+      background:#3a1e1e;
+      border-color:rgba(211,47,47,.6);
+      color:#ff8a80;
+    }
 
-  /* einzelne Karten (Einsätze) */
-  .jobCard {
-    background: #1e1e2a;
-    border: 1px solid #3a3a5a;
-    border-radius: var(--radius-card);
-    padding: 8px;
-    margin-bottom: 8px;
-    cursor: grab;
-  }
-  .jobCard.urlaub {
-    background: rgba(211,47,47,0.15);
-    border: 1px solid #d32f2f;
-  }
+    .card-row-bottom{
+      font-size:12px;
+      line-height:1.2;
+      color:var(--txt-dim);
+      display:flex;
+      flex-wrap:wrap;
+      gap:8px;
+    }
 
-  .jobTitleRow {
-    display: flex;
-    justify-content: space-between;
-    align-items: flex-start;
-    font-size: 13px;
-    font-weight: 600;
-    color: #fff;
-  }
+    .card-actions{
+      position:absolute;
+      top:8px;
+      right:8px;
+      display:flex;
+      gap:4px;
+    }
+    .card-act-btn{
+      width:22px;
+      height:22px;
+      border-radius:4px;
+      background:#00000066;
+      border:1px solid rgba(255,255,255,.25);
+      color:#fff;
+      font-size:12px;
+      line-height:1;
+      text-align:center;
+      cursor:pointer;
+      box-shadow:0 12px 24px rgba(0,0,0,.9);
+      user-select:none;
+      padding-top:3px;
+    }
+    .card-act-btn.danger{
+      border-color:rgba(211,47,47,.7);
+      color:#ff8a80;
+    }
 
-  .jobClose {
-    cursor: pointer;
-    color: var(--txt-dim);
-    font-size: 12px;
-    padding-left: 6px;
-  }
+    footer.statusbar {
+      color: var(--txt-dim);
+      font-size: 12px;
+      line-height:1.4;
+      padding: 8px 12px 80px;
+    }
 
-  .jobMeta {
-    font-size: 12px;
-    margin-top: 4px;
-    color: var(--txt-dim);
-    line-height: 1.4;
-  }
+    /* Floating + Button unten rechts */
+    .fab-wrap {
+      position: fixed;
+      right: 16px;
+      bottom: 16px;
+      display:flex;
+      flex-direction:column;
+      align-items:flex-end;
+      gap:8px;
+      z-index:999;
+      pointer-events:none;
+    }
+    .fab-main {
+      pointer-events:auto;
+      background:var(--accent);
+      color:#fff;
+      font-size:28px;
+      line-height:1;
+      width:52px;
+      height:52px;
+      border-radius:50%;
+      border:1px solid rgba(41,98,255,.6);
+      box-shadow:0 24px 32px rgba(41,98,255,.5),0 24px 64px rgba(0,0,0,.9);
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      font-weight:500;
+    }
+    .fab-main:active { transform:scale(.96); }
 
-  .fabPlus {
-    position: fixed;
-    right: 20px;
-    bottom: 20px;
-    width: 52px;
-    height: 52px;
-    background: var(--accent);
-    color: #fff;
-    border-radius: 50%;
-    font-size: 30px;
-    line-height: 52px;
-    text-align: center;
-    cursor: pointer;
-    box-shadow: 0 8px 24px rgba(0,0,0,0.6);
-  }
+    /* Dialoge */
+    dialog {
+      background:#1b1c22;
+      color:#fff;
+      border-radius:16px;
+      border:1px solid rgba(255,255,255,.1);
+      box-shadow:var(--shadow-dialog);
+      padding:0;
+      width:min(400px,90vw);
+      max-width:90vw;
+      max-height:90vh;
+      border-top:1px solid rgba(255,255,255,.2);
+      overflow:hidden;
+    }
+    dialog::backdrop{
+      background:rgba(0,0,0,.6);
+      backdrop-filter:blur(4px);
+    }
 
-  footer {
-    background: var(--bg-toolbar);
-    color: var(--txt-dim);
-    border-top: var(--col-border);
-    font-size: 12px;
-    padding: 8px 10px;
-    text-align: left;
-  }
+    .dlg-head{
+      background:#2a2a30;
+      border-bottom:1px solid rgba(255,255,255,.08);
+      padding:16px;
+      font-size:15px;
+      font-weight:600;
+      line-height:1.3;
+      display:flex;
+      justify-content:space-between;
+      align-items:flex-start;
+      gap:12px;
+    }
+    .dlg-head button{
+      background:#0000;
+      box-shadow:none;
+      border:0;
+      font-size:14px;
+      color:var(--txt-dim);
+      padding:4px 8px;
+      line-height:1.2;
+    }
+    .dlg-body{
+      padding:16px;
+      display:flex;
+      flex-direction:column;
+      gap:12px;
+      font-size:14px;
+      line-height:1.4;
+    }
+    .dlg-row{
+      display:flex;
+      flex-direction:column;
+      gap:6px;
+    }
+    .dlg-row label{
+      font-size:13px;
+      color:var(--txt-dim);
+      font-weight:500;
+    }
+    .dlg-row input,
+    .dlg-row textarea,
+    .dlg-row select{
+      width:100%;
+      border-radius:var(--radius-btn);
+      border:1px solid rgba(255,255,255,.15);
+      background:#0f0f10;
+      color:#fff;
+      font-size:14px;
+      padding:10px 12px;
+      line-height:1.4;
+      min-height:38px;
+      box-shadow:0 12px 32px rgba(0,0,0,.8);
+    }
+    .dlg-row textarea{
+      resize:none;
+      min-height:60px;
+    }
 
-  /* Dialoge */
-  dialog {
-    background: #1f1f1f;
-    color: var(--txt-main);
-    border: var(--col-border);
-    border-radius: var(--radius-card);
-    padding: 16px;
-    max-width: 360px;
-    width: 90%;
-  }
+    .tag-line{
+      display:flex;
+      flex-wrap:wrap;
+      gap:6px;
+      font-size:12px;
+    }
 
-  dialog::backdrop {
-    background: rgba(0,0,0,0.6);
-  }
+    .dlg-foot{
+      border-top:1px solid rgba(255,255,255,.08);
+      background:#2a2a30;
+      padding:16px;
+      display:flex;
+      justify-content:flex-end;
+      flex-wrap:wrap;
+      gap:8px;
+    }
 
-  .dlg-head {
-    font-weight: 600;
-    margin-bottom: 10px;
-    font-size: 15px;
-  }
+    /* Stammdaten-Abschnitt im Dialog */
+    .subbox{
+      background:#26262f;
+      border:1px solid rgba(255,255,255,.1);
+      border-radius:var(--radius-card);
+      padding:12px;
+      display:flex;
+      flex-direction:column;
+      gap:8px;
+      box-shadow:0 20px 32px rgba(0,0,0,.9);
+    }
+    .subbox-head{
+      font-size:13px;
+      font-weight:600;
+      color:#fff;
+      display:flex;
+      justify-content:space-between;
+      align-items:flex-start;
+    }
+    .subbox-list{
+      display:flex;
+      flex-wrap:wrap;
+      gap:6px;
+      font-size:12px;
+      line-height:1.2;
+    }
+    .sub-pill{
+      background:#30303a;
+      border:1px solid rgba(255,255,255,.18);
+      border-radius:999px;
+      line-height:1.2;
+      padding:4px 8px;
+      color:#fff;
+      box-shadow:0 16px 32px rgba(0,0,0,.9);
+      display:flex;
+      gap:6px;
+      align-items:center;
+    }
+    .sub-pill .x{
+      cursor:pointer;
+      color:#ff8a80;
+      font-weight:600;
+    }
 
-  .dlg-row {
-    display: flex;
-    flex-direction: column;
-    margin-bottom: 10px;
-  }
+    /* kleine Statuszeile */
+    .legend-row{
+      font-size:12px;
+      line-height:1.3;
+      color:var(--txt-dim);
+      display:flex;
+      flex-wrap:wrap;
+      gap:8px;
+      align-items:center;
+    }
+    .legend-dot{
+      width:8px;
+      height:8px;
+      border-radius:50%;
+      background:var(--danger);
+      box-shadow:0 0 6px var(--danger);
+    }
 
-  .dlg-row label {
-    font-size: 12px;
-    color: var(--txt-dim);
-    margin-bottom: 4px;
-  }
-
-  .dlg-row input,
-  .dlg-row textarea,
-  .dlg-row select {
-    width: 100%;
-    background: #2a2a2a;
-    border: var(--col-border);
-    border-radius: var(--radius-btn);
-    color: var(--txt-main);
-    font-size: 14px;
-    padding: 6px 8px;
-  }
-
-  .dlg-foot {
-    display: flex;
-    justify-content: flex-end;
-    gap: 8px;
-    margin-top: 12px;
-  }
-
-  .ghost {
-    background: transparent;
-    border: var(--col-border);
-    color: var(--txt-main);
-  }
-
-  /* kleine Infoleisten */
-  .infoRow {
-    font-size: 12px;
-    color: var(--txt-dim);
-    margin-top:4px;
-  }
-
-</style>
+    @media(min-width:900px){
+      header.toolbar {
+        flex-wrap:nowrap;
+        align-items:flex-start;
+      }
+      .tool-col {
+        flex-direction:column;
+        min-width:auto;
+      }
+      .tool-row.wrap-break {
+        flex-wrap:nowrap;
+      }
+    }
+  </style>
 </head>
 <body>
 
-<header class="toolbar">
-  <div class="row" style="flex-wrap:wrap;gap:10px;">
-    <div class="statusDot">
-      <span class="dot" id="cloudDot"></span>
-      <span id="cloudTxt">verbunden</span>
+  <!-- Toolbar -->
+  <header class="toolbar">
+    <!-- Status / Verbunden -->
+    <div class="tool-col">
+      <div class="online-wrap">
+        <div class="online-dot" id="cloudDot"></div>
+        <span id="cloudTxt">verbunden</span>
+      </div>
+
+      <div class="legend-row">
+        <div class="legend-dot"></div>
+        <span>Status rot = Urlaub/Krank/Schule</span>
+      </div>
     </div>
 
-    <div class="ctrl-block">
-      <label>Ansicht</label>
-      <select id="viewSel">
-        <option value="4w" selected>4 Wochen (Mo–Fr)</option>
-        <option value="14t">14 Tage</option>
-        <option value="12m">12 Monate</option>
-      </select>
+    <!-- Ansicht + Start + Reload -->
+    <div class="tool-col" style="flex:1 1 auto; min-width:220px;">
+      <div class="tool-row wrap-break">
+        <div>
+          <label class="small-label" for="viewSel">Ansicht:</label>
+          <select id="viewSel">
+            <option value="4w">4 Wochen (Mo–Fr)</option>
+            <option value="2w">2 Wochen (Mo–Fr)</option>
+            <option value="1w">1 Woche (Mo–Fr)</option>
+          </select>
+        </div>
+
+        <div>
+          <label class="small-label" for="startDate">Start:</label>
+          <input id="startDate" type="date" />
+        </div>
+
+        <div style="align-self:flex-end;">
+          <button class="btn ghost" id="btnReload">Neu laden</button>
+        </div>
+      </div>
+
+      <div class="tool-row">
+        <label class="chk-wrap">
+          <input id="chkUrlaub" type="checkbox" />
+          <span>Urlaub/Krank/Schule</span>
+        </label>
+
+        <label class="chk-wrap">
+          <input id="chkAutoReload" type="checkbox" />
+          <span>Auto-Reload</span>
+        </label>
+
+        <button class="btn ghost" id="btnMaster">Stammdaten</button>
+
+        <button class="btn primary" id="btnAdd">+ Eintrag</button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Hinweiszeile direkt unter Toolbar -->
+  <main>
+    <div class="hint-row">
+      Drag &amp; Drop: Karte auf Ziel ziehen → „Verschieben“ oder „Duplizieren“. Klick auf Karte = bearbeiten, X = löschen.
     </div>
 
-    <div class="ctrl-block">
-      <label>Start</label>
-      <input id="startDate" type="date" />
-      <button class="btn" id="btnReload">Neu laden</button>
+    <!-- Board -->
+    <div id="board" class="board-grid">
+      <!-- Dynamisch befüllt -->
     </div>
+  </main>
 
-    <div class="ctrl-inline ctrl-block" style="flex-direction:row;align-items:center;">
-      <input id="chkUrlaub" type="checkbox" />
-      <label for="chkUrlaub" style="margin:0;">Urlaub/Krank/Schule</label>
-    </div>
-
-    <div class="ctrl-inline ctrl-block" style="flex-direction:row;align-items:center;">
-      <input id="chkAuto" type="checkbox" />
-      <label for="chkAuto" style="margin:0;">Auto-Reload</label>
-    </div>
-
-    <button class="btn" id="btnMaster">Stammdaten</button>
-    <button class="btn primary" id="btnAdd">+ Eintrag</button>
-  </div>
-
-  <div class="row" style="flex-wrap:wrap;gap:10px;">
-    <div class="ctrl-block">
-      <label>Zoom</label>
-      <input id="zoomRange" type="range" min="0.8" max="1.4" step="0.05" value="1.0" />
-    </div>
-  </div>
-</header>
-
-<main id="boardWrapper">
-  <div class="boardHint">
-    Drag &amp; Drop: Karte auf Ziel ziehen → „Verschieben“ oder „Duplizieren“. Klick auf Karte = bearbeiten, X = löschen.
-    <br/>
+  <footer class="statusbar">
     Status rot = Urlaub/Krank/Schule
+  </footer>
+
+  <!-- FAB unten rechts -->
+  <div class="fab-wrap">
+    <div class="fab-main" id="fabPlus">+</div>
   </div>
 
-  <div id="weeksContainer"></div>
-</main>
-
-<footer>
-  © Plantafel Frey — Live Sync mit Firestore • Keine Winter-Kurzarbeit 😉
-</footer>
-
-<!-- schwebender + Button -->
-<div class="fabPlus" id="fabPlus">+</div>
-
-<!-- Dialog Neuer / Bearbeiten -->
-<dialog id="entryDlg">
-  <div class="dlg-head" id="dlgTitle">Neuer Eintrag</div>
-
-  <div class="dlg-row">
-    <label for="fTitle">Titel / Projekt</label>
-    <input id="fTitle" type="text" placeholder="z.B. Dachsanierung Müller"/>
-  </div>
-
-  <div class="dlg-row">
-    <label for="fWho">Mitarbeiter / Fahrzeug</label>
-    <input id="fWho" type="text" placeholder="z.B. Patrick, Mercedes Bus"/>
-  </div>
-
-  <div class="dlg-row">
-    <label for="fDay">Tag (YYYY-MM-DD)</label>
-    <input id="fDay" type="date"/>
-  </div>
-
-  <div class="dlg-row">
-    <label for="fNote">Team-Notiz</label>
-    <textarea id="fNote" rows="2" placeholder="optional"></textarea>
-  </div>
-
-  <div class="dlg-row ctrl-inline" style="justify-content:flex-start;">
-    <input type="checkbox" id="fIsUrlaub"/>
-    <label for="fIsUrlaub" style="margin:0;">Urlaub/Krank/Schule (rot)</label>
-  </div>
-
-  <div class="infoRow" id="fInfoRow" style="display:none;"></div>
-
-  <div class="dlg-foot">
-    <button class="btn ghost" id="btnCancel">Abbrechen</button>
-    <button class="btn danger" id="btnDelete" style="display:none;">Löschen</button>
-    <button class="btn primary" id="btnSave">Speichern</button>
-  </div>
-</dialog>
-
-<!-- Dialog Stammdaten -->
-<dialog id="masterDlg">
-  <div class="dlg-head">Stammdaten</div>
-
-  <div class="dlg-row">
-    <label>Mitarbeiter / Fahrzeuge verwalten</label>
-    <div class="infoRow">
-      (In dieser Version nur Anzeige/Notiz – Erweiterung möglich)
+  <!-- Dialog Neuer Eintrag / Bearbeiten -->
+  <dialog id="entryDlg">
+    <div class="dlg-head">
+      <div>
+        <div id="dlgTitle" style="font-weight:600;">Neuer Eintrag</div>
+        <div style="font-size:12px;color:var(--txt-dim);line-height:1.4;">
+          Einsatz planen / bearbeiten
+        </div>
+      </div>
+      <button id="btnEntryClose">✕</button>
     </div>
-  </div>
 
-  <div class="dlg-foot">
-    <button class="btn ghost" id="btnMasterCancel">Schließen</button>
-  </div>
-</dialog>
-
-<script type="module">
-/*
-  Import Firebase SDK (ohne AppCheck, stabil)
-*/
-import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-app.js";
-import {
-  getFirestore, collection, addDoc, setDoc, updateDoc, deleteDoc,
-  doc, getDocs, onSnapshot, query, where, orderBy, serverTimestamp
-} from "https://www.gstatic.com/firebasejs/11.0.1/firebase-firestore.js";
-
-/*
-  Deine Firebase-Konfiguration
-*/
-const firebaseConfig = {
-  apiKey: "AIzaSyDPWf-Xn023Bx-ebCvg6a42Drxm9f4SxDI",
-  authDomain: "plantafelfreyllich100.firebaseapp.com",
-  projectId: "plantafelfreyllich100",
-  storageBucket: "plantafelfreyllich100.appspot.com",
-  messagingSenderId: "96295193135",
-  appId: "1:96295193135:web:e44627944781c5e0ef914da",
-  measurementId: "G-W5VGSLTRC"
-};
-
-// Init Firebase
-const app = initializeApp(firebaseConfig);
-const db = getFirestore(app);
-
-// UI-Elemente holen
-const weeksContainer = document.getElementById("weeksContainer");
-const cloudDot = document.getElementById("cloudDot");
-const cloudTxt = document.getElementById("cloudTxt");
-
-const viewSel = document.getElementById("viewSel");
-const startDateInput = document.getElementById("startDate");
-const btnReload = document.getElementById("btnReload");
-const chkUrlaub = document.getElementById("chkUrlaub");
-const chkAuto = document.getElementById("chkAuto");
-const btnMaster = document.getElementById("btnMaster");
-const btnAdd = document.getElementById("btnAdd");
-const zoomRange = document.getElementById("zoomRange");
-const fabPlus = document.getElementById("fabPlus");
-
-// Dialog + Felder
-const entryDlg = document.getElementById("entryDlg");
-const dlgTitle = document.getElementById("dlgTitle");
-const fTitle = document.getElementById("fTitle");
-const fWho = document.getElementById("fWho");
-const fDay = document.getElementById("fDay");
-const fNote = document.getElementById("fNote");
-const fIsUrlaub = document.getElementById("fIsUrlaub");
-const fInfoRow = document.getElementById("fInfoRow");
-const btnCancel = document.getElementById("btnCancel");
-const btnDelete = document.getElementById("btnDelete");
-const btnSave = document.getElementById("btnSave");
-
-// Stammdaten-Dialog
-const masterDlg = document.getElementById("masterDlg");
-const btnMasterCancel = document.getElementById("btnMasterCancel");
-
-// interner Zustand
-let allItems = [];     // alle Einsätze aus Firestore
-let editId = null;     // welche Karte wird gerade editiert?
-let autoReloadTimer = null;
-
-// Hilfsfunktionen Datum
-function fmtDateISO(d) {
-  // d = Date
-  const y = d.getFullYear();
-  const m = String(d.getMonth()+1).padStart(2,"0");
-  const day = String(d.getDate()).padStart(2,"0");
-  return `${y}-${m}-${day}`;
-}
-function parseISO(s) {
-  // "2025-10-30" -> Date
-  const [yy,mm,dd] = s.split("-");
-  return new Date(Number(yy), Number(mm)-1, Number(dd));
-}
-
-function getStartDate() {
-  const v = startDateInput.value;
-  if (!v) {
-    const today = new Date();
-    startDateInput.value = fmtDateISO(today);
-    return today;
-  }
-  return parseISO(v);
-}
-
-// baue die Wochenansicht (4 Wochen standard)
-function buildView() {
-  weeksContainer.innerHTML = "";
-
-  // Zoom auf Karten anwenden
-  weeksContainer.style.fontSize = (zoomRange.value || "1.0") + "rem";
-
-  const start = getStartDate(); // Date
-  const mode = viewSel.value;   // "4w", "14t", "12m"
-  // Wir zeigen aktuell immer 4 Wochen Mo–Fr in Spalten
-  // (wir lassen die anderen Optionen erstmal gleich rendern -> später ausbauen)
-
-  // Wir generieren 4 Wochen (28 Tage) ab Start
-  const daysToShow = (mode==="14t") ? 14 : (mode==="12m"? 365 : 28);
-
-  // Wir gruppieren nach Kalenderwoche
-  // Map<KW, {kwLabel, days:[{date,title}]}>
-  const cal = new Map();
-
-  for (let i=0;i<daysToShow;i++){
-    const d = new Date(start.getTime());
-    d.setDate(d.getDate()+i);
-
-    const iso = fmtDateISO(d);
-    const weekday = d.toLocaleDateString("de-DE",{weekday:"short"});
-    const dateLabel = d.toLocaleDateString("de-DE",{year:"numeric",month:"2-digit",day:"2-digit"});
-
-    // KW berechnen (vereinfachte Variante)
-    const tmp = new Date(d.getTime());
-    // ISO-Wochen-Nr grob
-    const dayNum = (tmp.getDay()+6)%7 + 1;
-    tmp.setDate(tmp.getDate() + (4-dayNum));
-    const yearStart = new Date(tmp.getFullYear(),0,1);
-    const weekNo = Math.floor((((tmp - yearStart)/86400000)+1)/7)+1;
-    const kwKey = `KW ${weekNo} ${weekday}`;
-
-    if (!cal.has(weekNo)) {
-      cal.set(weekNo, {
-        weekNo,
-        label: `KW ${weekNo}`,
-        days: []
-      });
-    }
-
-    cal.get(weekNo).days.push({
-      iso,
-      weekday,
-      dateLabel
-    });
-  }
-
-  // Jetzt jede KW rendern
-  for (const {weekNo,label,days} of cal.values()) {
-    const weekDiv = document.createElement("div");
-    weekDiv.className = "weekRow";
-
-    const head = document.createElement("div");
-    head.className = "weekHeader";
-    head.innerHTML = `
-      <div>${label}</div>
-      <div style="font-size:12px;color:#888;">Klicken zum Eintragen · Drag & Drop möglich</div>
-    `;
-    weekDiv.appendChild(head);
-
-    const daysGrid = document.createElement("div");
-    daysGrid.className = "daysRow";
-
-    // pro Tag: Spalte
-    for (const day of days) {
-      const col = document.createElement("div");
-      col.className = "dayCol";
-      col.dataset.day = day.iso; // wichtig für Zuordnung
-
-      const h = document.createElement("div");
-      h.className = "dayHeader";
-      h.innerHTML = `
-        <div class="dayHeaderTitle">${day.weekday}</div>
-        <div class="dayHeaderDate">${day.dateLabel}</div>
-        <div style="font-size:12px;color:#888;cursor:pointer;" data-plus="${day.iso}">+</div>
-      `;
-      col.appendChild(h);
-
-      const body = document.createElement("div");
-      body.className = "dayBody";
-      body.innerHTML = `<div style="color:#666;">Klicken zum Eintragen · Drag & Drop möglich</div>`;
-      col.appendChild(body);
-
-      daysGrid.appendChild(col);
-    }
-
-    weekDiv.appendChild(daysGrid);
-    weeksContainer.appendChild(weekDiv);
-  }
-
-  // Jetzt Karten reinsetzen
-  renderCardsIntoColumns();
-}
-
-// Einsätze filtern + in die Spalten schreiben
-function renderCardsIntoColumns() {
-  // alle Day-Container leeren
-  document.querySelectorAll(".dayCol .dayBody").forEach(b=>{
-    b.innerHTML = ""; 
-  });
-
-  const showUrlaub = chkUrlaub.checked;
-
-  // sortiere allItems nach timestamp (falls vorhanden)
-  const itemsSorted = [...allItems].sort((a,b)=>{
-    const da = a.day || "";
-    const db = b.day || "";
-    if (da<db) return -1;
-    if (da>db) return 1;
-    return 0;
-  });
-
-  for (const it of itemsSorted) {
-    if (!it.day) continue;
-    const dayCol = document.querySelector(`.dayCol[data-day="${it.day}"] .dayBody`);
-    if (!dayCol) continue;
-
-    if (it.isUrlaub && !showUrlaub) {
-      // Urlaub verstecken wenn Schalter aus
-      continue;
-    }
-
-    const card = document.createElement("div");
-    card.className = "jobCard" + (it.isUrlaub ? " urlaub":"");
-    card.dataset.id = it.id || "";
-
-    card.innerHTML = `
-      <div class="jobTitleRow">
-        <div>${escapeHTML(it.title || "(ohne Titel)")}</div>
-        <div class="jobClose" data-del="${it.id}">✕</div>
+    <div class="dlg-body">
+      <div class="dlg-row">
+        <label for="fTitle">Titel / Projekt</label>
+        <input id="fTitle" placeholder="z.B. Dachsanierung Müller" />
       </div>
-      <div class="jobMeta">
-        ${escapeHTML(it.who || "")}<br/>
-        ${escapeHTML(it.note || "")}
+
+      <div class="dlg-row">
+        <label for="fWorkers">Mitarbeiter</label>
+        <input id="fWorkers" placeholder="z.B. Herbert, Patrick" />
+        <div class="tag-line" id="tagWorkers"></div>
       </div>
-    `;
 
-    // Klick auf Karte -> bearbeiten
-    card.addEventListener("click", (ev)=>{
-      // wenn auf das X geklickt wird, nicht öffnen
-      if (ev.target && ev.target.dataset && ev.target.dataset.del) return;
-      openEditDialog(it);
-      ev.stopPropagation();
-    });
+      <div class="dlg-row">
+        <label for="fVehicles">Fahrzeuge / Geräte</label>
+        <input id="fVehicles" placeholder="z.B. Mercedes Bus, Kran" />
+        <div class="tag-line" id="tagVehicles"></div>
+      </div>
 
-    // Klick auf X -> löschen
-    card.querySelector("[data-del]").addEventListener("click", async(ev)=>{
-      ev.stopPropagation();
-      if (it.id) {
-        const ok = confirm("Diesen Eintrag löschen?");
-        if (ok) {
-          await deleteDoc(doc(db,"plantafel",it.id));
-        }
+      <div class="dlg-row">
+        <label for="fDate">Tag</label>
+        <input id="fDate" type="date" />
+      </div>
+
+      <div class="dlg-row">
+        <label for="fNote">Team-Notiz</label>
+        <textarea id="fNote" placeholder="optional"></textarea>
+      </div>
+    </div>
+
+    <div class="dlg-foot">
+      <button class="ghost" id="btnEntryCancel">Abbrechen</button>
+      <button class="primary" id="btnEntrySave">Speichern</button>
+    </div>
+  </dialog>
+
+  <!-- Dialog Stammdaten -->
+  <dialog id="masterDlg">
+    <div class="dlg-head">
+      <div>
+        <div style="font-weight:600;">Stammdaten</div>
+        <div style="font-size:12px;color:var(--txt-dim);line-height:1.4;">
+          Mitarbeiter &amp; Fahrzeuge verwalten
+        </div>
+      </div>
+      <button id="btnMasterClose">✕</button>
+    </div>
+
+    <div class="dlg-body" style="max-height:60vh;overflow-y:auto;">
+      <!-- Mitarbeiter -->
+      <div class="subbox">
+        <div class="subbox-head">
+          <span>Mitarbeiter</span>
+        </div>
+        <div class="subbox-list" id="listWorkers">
+          <!-- wird aus Firestore geladen -->
+        </div>
+
+        <div class="dlg-row">
+          <label for="mNewWorker">Neuen Mitarbeiter hinzufügen</label>
+          <input id="mNewWorker" placeholder="Name" />
+        </div>
+        <div class="dlg-row">
+          <button class="primary" id="btnAddWorker">+ Mitarbeiter speichern</button>
+        </div>
+      </div>
+
+      <!-- Fahrzeuge -->
+      <div class="subbox">
+        <div class="subbox-head">
+          <span>Fahrzeuge / Geräte</span>
+        </div>
+        <div class="subbox-list" id="listVehicles">
+          <!-- wird aus Firestore geladen -->
+        </div>
+
+        <div class="dlg-row">
+          <label for="mNewVehicle">Neues Fahrzeug/ Gerät hinzufügen</label>
+          <input id="mNewVehicle" placeholder="z.B. Mercedes Bus" />
+        </div>
+        <div class="dlg-row">
+          <button class="primary" id="btnAddVehicle">+ Fahrzeug speichern</button>
+        </div>
+      </div>
+
+      <div style="font-size:12px;color:var(--txt-dim);line-height:1.4;">
+        Tipp: Mit diesen Stammdaten kannst du in den Einsätzen schneller Mitarbeiter/Fahrzeuge auswählen.
+      </div>
+    </div>
+
+    <div class="dlg-foot">
+      <button class="ghost" id="btnMasterCancel">Schließen</button>
+    </div>
+  </dialog>
+
+  <!-- Firebase + App Logik -->
+  <script type="module">
+    /********************************
+     * Firebase SDK (stabil, ohne AppCheck)
+     ********************************/
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-app.js";
+    import {
+      getFirestore,
+      collection,
+      doc,
+      addDoc,
+      setDoc,
+      updateDoc,
+      deleteDoc,
+      getDoc,
+      getDocs,
+      onSnapshot,
+      query,
+      where,
+      orderBy,
+      serverTimestamp
+    } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-firestore.js";
+
+    // ---- Deine Firebase-Konfiguration (aus der Konsole) ----
+    const firebaseConfig = {
+      apiKey: "AIzaSyDpWF-XnO23Bx-ebCVg6a42Drxm9f4SxDI",
+      authDomain: "plantafelfreyllich100.firebaseapp.com",
+      projectId: "plantafelfreyllich100",
+      storageBucket: "plantafelfreyllich100.firebasestorage.app",
+      messagingSenderId: "962959139135",
+      appId: "1:962959139135:web:e4462794477815c0ef914da",
+      measurementId: "G-W5VGSSLTRC"
+    };
+
+    // Init Firebase
+    const app = initializeApp(firebaseConfig);
+    const db  = getFirestore(app);
+
+    // Verbindungsanzeige
+    const cloudDot  = document.getElementById('cloudDot');
+    const cloudTxt  = document.getElementById('cloudTxt');
+
+    function setOnlineStatus(ok) {
+      if (ok) {
+        cloudDot.style.background = '#2ecc71';
+        cloudDot.style.boxShadow  = '0 0 8px #2ecc71';
+        cloudTxt.textContent = 'verbunden';
+      } else {
+        cloudDot.style.background = '#d32f2f';
+        cloudDot.style.boxShadow  = '0 0 8px #d32f2f';
+        cloudTxt.textContent = 'offline';
       }
-    });
-
-    dayCol.appendChild(card);
-  }
-}
-
-// Escaping damit keine HTML-Injection passiert wenn du z.B. Sonderzeichen eingibst
-function escapeHTML(str="") {
-  return str.replace(/[&<>"']/g, (c)=>{
-    switch(c){
-      case "&": return "&amp;";
-      case "<": return "&lt;";
-      case ">": return "&gt;";
-      case "\"": return "&quot;";
-      case "'": return "&#039;";
     }
-    return c;
-  });
-}
 
-// Dialog zum Neuerstellen
-function openNewDialog(prefillDay) {
-  editId = null;
-  dlgTitle.textContent = "Neuer Eintrag";
-  fTitle.value = "";
-  fWho.value = "";
-  fDay.value = prefillDay || fmtDateISO(getStartDate());
-  fNote.value = "";
-  fIsUrlaub.checked = false;
-  btnDelete.style.display = "none";
-  fInfoRow.style.display = "none";
-  entryDlg.showModal();
-}
-
-function openEditDialog(item) {
-  editId = item.id || null;
-  dlgTitle.textContent = "Eintrag bearbeiten";
-  fTitle.value = item.title || "";
-  fWho.value = item.who || "";
-  fDay.value = item.day || fmtDateISO(getStartDate());
-  fNote.value = item.note || "";
-  fIsUrlaub.checked = !!item.isUrlaub;
-  btnDelete.style.display = "inline-block";
-  fInfoRow.style.display = "block";
-  fInfoRow.textContent = "ID: " + (item.id || "neu") + " • zuletzt geändert: " + (item.updated || "");
-  entryDlg.showModal();
-}
-
-// Speichern (neu oder update)
-async function saveEntry() {
-  const data = {
-    title: fTitle.value.trim(),
-    who: fWho.value.trim(),
-    day: fDay.value,
-    note: fNote.value.trim(),
-    isUrlaub: fIsUrlaub.checked,
-    updated: new Date().toISOString(),
-    ts: serverTimestamp()
-  };
-
-  if (!data.title || !data.day) {
-    alert("Titel und Tag sind Pflicht.");
-    return;
-  }
-
-  if (editId) {
-    // update
-    await updateDoc(doc(db,"plantafel",editId), data);
-  } else {
-    // neu
-    await addDoc(collection(db,"plantafel"), data);
-  }
-
-  entryDlg.close();
-}
-
-// Löschen aus Dialog
-async function deleteEntry() {
-  if (!editId) return;
-  const ok = confirm("Wirklich löschen?");
-  if (!ok) return;
-  await deleteDoc(doc(db,"plantafel",editId));
-  entryDlg.close();
-}
-
-// Stammdaten-Dialog
-function openMasterDialog() {
-  masterDlg.showModal();
-}
-
-// === LIVE FIRESTORE ===
-// wir hören live auf die Collection "plantafel"
-function startLiveListener() {
-  cloudDot.style.background = "#4caf50";
-  cloudTxt.textContent = "verbunden";
-
-  const qRef = query(collection(db,"plantafel"), orderBy("day","asc"));
-  onSnapshot(qRef, (snap)=>{
-    const items = [];
-    snap.forEach(docSnap=>{
-      const d = docSnap.data();
-      items.push({
-        id: docSnap.id,
-        title: d.title || "",
-        who: d.who || "",
-        day: d.day || "",
-        note: d.note || "",
-        isUrlaub: !!d.isUrlaub,
-        updated: d.updated || ""
-      });
-    });
-    allItems = items;
-    buildView();
-  }, (err)=>{
-    console.error("onSnapshot error", err);
-    cloudDot.style.background = "#d32f2f";
-    cloudTxt.textContent = "Fehler";
-  });
-}
-
-// Manueller Reload
-async function manualReload() {
-  cloudDot.style.background = "#ffa000"; // orange
-  cloudTxt.textContent = "lädt...";
-
-  const qRef = query(collection(db,"plantafel"), orderBy("day","asc"));
-  const snap = await getDocs(qRef);
-  const items = [];
-  snap.forEach(docSnap=>{
-    const d = docSnap.data();
-    items.push({
-      id: docSnap.id,
-      title: d.title || "",
-      who: d.who || "",
-      day: d.day || "",
-      note: d.note || "",
-      isUrlaub: !!d.isUrlaub,
-      updated: d.updated || ""
-    });
-  });
-  allItems = items;
-  buildView();
-
-  cloudDot.style.background = "#4caf50";
-  cloudTxt.textContent = "verbunden";
-}
-
-// Auto-Reload an/aus
-function handleAutoReloadToggle() {
-  if (chkAuto.checked) {
-    // alle 20 Sekunden neu laden (fallback zusätzlich zu onSnapshot)
-    autoReloadTimer = setInterval(manualReload, 20000);
-  } else {
-    if (autoReloadTimer) {
-      clearInterval(autoReloadTimer);
-      autoReloadTimer = null;
+    // Wir versuchen regelmäßig was aus Firestore zu lesen:
+    async function heartbeat() {
+      try {
+        // winziger Zugriff: lies eine (ggf. nicht vorhandene) Dummy-Collection
+        const testCol = collection(db, "_heartbeat");
+        await getDocs(testCol);
+        setOnlineStatus(true);
+      } catch (err) {
+        console.warn("heartbeat fail:", err);
+        setOnlineStatus(false);
+      }
     }
-  }
-}
+    heartbeat();
+    setInterval(heartbeat, 15000); // alle 15s prüfen
 
-// Klick-Listener für + im jeweiligen Tag
-weeksContainer.addEventListener("click", (ev)=>{
-  const plusDay = ev.target?.dataset?.plus;
-  if (plusDay) {
-    openNewDialog(plusDay);
-  }
-});
+    /********************************
+     * DOM-Referenzen
+     ********************************/
+    const boardEl        = document.getElementById('board');
+    const viewSel        = document.getElementById('viewSel');
+    const startDateInp   = document.getElementById('startDate');
+    const chkUrlaub      = document.getElementById('chkUrlaub');
+    const chkAutoReload  = document.getElementById('chkAutoReload');
+    const btnReload      = document.getElementById('btnReload');
+    const btnAdd         = document.getElementById('btnAdd');
+    const btnMaster      = document.getElementById('btnMaster');
+    const fabPlus        = document.getElementById('fabPlus');
 
-// Buttons / Controls
-btnAdd.addEventListener("click", ()=>openNewDialog());
-fabPlus.addEventListener("click", ()=>openNewDialog());
-btnMaster.addEventListener("click", openMasterDialog);
-btnMasterCancel.addEventListener("click", ()=>masterDlg.close());
+    // Dialog Neuer Eintrag
+    const entryDlg       = document.getElementById('entryDlg');
+    const btnEntryClose  = document.getElementById('btnEntryClose');
+    const btnEntryCancel = document.getElementById('btnEntryCancel');
+    const btnEntrySave   = document.getElementById('btnEntrySave');
+    const dlgTitle       = document.getElementById('dlgTitle');
 
-btnCancel.addEventListener("click", ()=>entryDlg.close());
-btnDelete.addEventListener("click", deleteEntry);
-btnSave.addEventListener("click", saveEntry);
+    const fTitle         = document.getElementById('fTitle');
+    const fWorkers       = document.getElementById('fWorkers');
+    const fVehicles      = document.getElementById('fVehicles');
+    const fDate          = document.getElementById('fDate');
+    const fNote          = document.getElementById('fNote');
 
-btnReload.addEventListener("click", manualReload);
-chkUrlaub.addEventListener("change", buildView);
-chkAuto.addEventListener("change", handleAutoReloadToggle);
-zoomRange.addEventListener("input", buildView);
-viewSel.addEventListener("change", buildView);
-startDateInput.addEventListener("change", buildView);
+    const tagWorkers     = document.getElementById('tagWorkers');
+    const tagVehicles    = document.getElementById('tagVehicles');
 
-// Start
-(function init(){
-  // Startdatum auf heute setzen falls leer
-  if (!startDateInput.value) {
-    startDateInput.value = fmtDateISO(new Date());
-  }
-  // Erste Ansicht
-  buildView();
-  // Live Sync starten
-  startLiveListener();
-})();
-</script>
+    // Dialog Stammdaten
+    const masterDlg      = document.getElementById('masterDlg');
+    const btnMasterClose = document.getElementById('btnMasterClose');
+    const btnMasterCancel= document.getElementById('btnMasterCancel');
+    const btnAddWorker   = document.getElementById('btnAddWorker');
+    const btnAddVehicle  = document.getElementById('btnAddVehicle');
+    const mNewWorker     = document.getElementById('mNewWorker');
+    const mNewVehicle    = document.getElementById('mNewVehicle');
+    const listWorkers    = document.getElementById('listWorkers');
+    const listVehicles   = document.getElementById('listVehicles');
 
+    /********************************
+     * Helfer / State
+     ********************************/
+    let currentEditId = null;    // welcher Eintrag wird bearbeitet
+    let autoReloadTimer = null;  // Intervall fürs Auto-Reload
+
+    // Startdatum initial = heute
+    const todayISO = new Date().toISOString().slice(0,10);
+    startDateInp.value = todayISO;
+
+    // Ansicht initial
+    viewSel.value = "4w";
+
+    // Urlaub/Krank default AUS (false)
+    chkUrlaub.checked = false;
+
+    // autoReload default AUS
+    chkAutoReload.checked = false;
+
+    // Dummy-Liste Mitarbeiter / Fahrzeuge lokal (wird aus Firestore geladen)
+    let cachedWorkers  = [];
+    let cachedVehicles = [];
+
+    /********************************
+     * Firestore Zugriff
+     ********************************/
+
+    // Collections:
+    // - "plantafel"  -> einzelne Einsätze mit Feldern:
+    //    { title, workers[], vehicles[], date (YYYY-MM-DD), note, redFlag (bool), ts }
+    // - "settings/workers"  -> { list: ["Herbert","Patrick", ...] }
+    // - "settings/vehicles" -> { list: ["Mercedes Bus","Kran", ...] }
+
+    async function loadStammdaten() {
+        try {
+            const workersDocRef = doc(db, "settings", "workers");
+            const workersSnap   = await getDoc(workersDocRef);
+            cachedWorkers = workersSnap.exists() ? (workersSnap.data().list || []) : [];
+
+            const vehiclesDocRef = doc(db, "settings", "vehicles");
+            const vehiclesSnap   = await getDoc(vehiclesDocRef);
+            cachedVehicles = vehiclesSnap.exists() ? (vehiclesSnap.data().list || []) : [];
+
+            renderStammdaten();
+        } catch (err) {
+            console.error("loadStammdaten error:", err);
+        }
+    }
+
+    async function saveWorkers() {
+        const ref = doc(db, "settings", "workers");
+        await setDoc(ref, { list: cachedWorkers, ts: serverTimestamp() });
+    }
+    async function saveVehicles() {
+        const ref = doc(db, "settings", "vehicles");
+        await setDoc(ref, { list: cachedVehicles, ts: serverTimestamp() });
+    }
+
+    async function addWorker(name) {
+        if (!name.trim()) return;
+        if (!cachedWorkers.includes(name.trim())) {
+            cachedWorkers.push(name.trim());
+            await saveWorkers();
+            renderStammdaten();
+        }
+    }
+    async function removeWorker(name) {
+        cachedWorkers = cachedWorkers.filter(w => w !== name);
+        await saveWorkers();
+        renderStammdaten();
+    }
+    async function addVehicle(v) {
+        if (!v.trim()) return;
+        if (!cachedVehicles.includes(v.trim())) {
+            cachedVehicles.push(v.trim());
+            await saveVehicles();
+            renderStammdaten();
+        }
+    }
+    async function removeVehicle(v) {
+        cachedVehicles = cachedVehicles.filter(x => x !== v);
+        await saveVehicles();
+        renderStammdaten();
+    }
+
+    // Einsätze laden innerhalb eines Bereichs
+    async function loadEntries(startIso, numDays){
+        // wir holen ALLE Einträge zwischen startIso .. startIso+numDays
+        // in Collection "plantafel"
+        try {
+            const colRef = collection(db, "plantafel");
+            // einfache Variante: hol ALLES, filter dann in JS
+            const snap = await getDocs(colRef);
+            const all = [];
+            snap.forEach(d=>{
+                const data = d.data();
+                all.push({
+                    id: d.id,
+                    ...data
+                });
+            });
+
+            // Filter per Datum
+            const startMs = Date.parse(startIso);
+            const endMs   = startMs + (numDays*24*60*60*1000);
+
+            const filtered = all.filter(it=>{
+                if(!it.date) return false;
+                const t = Date.parse(it.date);
+                return (t>=startMs && t<endMs);
+            });
+
+            return filtered;
+        } catch(err){
+            console.error("loadEntries error:",err);
+            return [];
+        }
+    }
+
+    async function saveEntry(obj) {
+        // neu oder update?
+        if (currentEditId) {
+            const ref = doc(db,"plantafel",currentEditId);
+            await updateDoc(ref,{
+                title:obj.title||"",
+                workers:obj.workers||[],
+                vehicles:obj.vehicles||[],
+                date:obj.date||todayISO,
+                note:obj.note||"",
+                redFlag:!!obj.redFlag,
+                ts: serverTimestamp()
+            });
+        } else {
+            const colRef = collection(db,"plantafel");
+            await addDoc(colRef,{
+                title:obj.title||"",
+                workers:obj.workers||[],
+                vehicles:obj.vehicles||[],
+                date:obj.date||todayISO,
+                note:obj.note||"",
+                redFlag:!!obj.redFlag,
+                ts: serverTimestamp()
+            });
+        }
+    }
+
+    async function deleteEntry(id){
+        const ref = doc(db,"plantafel",id);
+        await deleteDoc(ref);
+    }
+
+    /********************************
+     * Render Stammdaten-Dialog
+     ********************************/
+    function renderStammdaten(){
+        // Mitarbeiter
+        listWorkers.innerHTML = "";
+        cachedWorkers.forEach(w=>{
+            const pill = document.createElement("div");
+            pill.className = "sub-pill";
+            pill.innerHTML = `
+              <span>${w}</span>
+              <span class="x" data-w="${w}">✕</span>
+            `;
+            listWorkers.appendChild(pill);
+        });
+
+        // Fahrzeuge
+        listVehicles.innerHTML = "";
+        cachedVehicles.forEach(v=>{
+            const pill = document.createElement("div");
+            pill.className = "sub-pill";
+            pill.innerHTML = `
+              <span>${v}</span>
+              <span class="x" data-v="${v}">✕</span>
+            `;
+            listVehicles.appendChild(pill);
+        });
+    }
+
+    listWorkers.addEventListener("click", (e)=>{
+        const x = e.target.closest(".x");
+        if(!x) return;
+        const name = x.getAttribute("data-w");
+        if(!name) return;
+        removeWorker(name);
+    });
+
+    listVehicles.addEventListener("click", (e)=>{
+        const x = e.target.closest(".x");
+        if(!x) return;
+        const name = x.getAttribute("data-v");
+        if(!name) return;
+        removeVehicle(name);
+    });
+
+    btnAddWorker.addEventListener("click", async ()=>{
+        await addWorker(mNewWorker.value||"");
+        mNewWorker.value="";
+    });
+    btnAddVehicle.addEventListener("click", async ()=>{
+        await addVehicle(mNewVehicle.value||"");
+        mNewVehicle.value="";
+    });
+
+    /********************************
+     * Render Board / Wochen
+     ********************************/
+
+    function getViewRangeDays(){
+        // für "4w" zeigen wir 20 Tage (Mo-Fr x4)
+        // für "2w" -> 10 Tage
+        // für "1w" -> 5 Tage
+        switch(viewSel.value){
+            case "2w": return 10;
+            case "1w": return 5;
+            default: return 20;
+        }
+    }
+
+    function buildDayBuckets(startIso, numDays){
+        // wir gruppieren nach einzelnen Tagen,
+        // packen dann je Tag in "KW xx <Wochentag>"
+        // -> später können wir Tage einer KW auch zusammenfassen
+        const buckets = [];
+        const startMs = Date.parse(startIso);
+
+        for(let i=0;i<numDays;i++){
+            const dMs = startMs + i*24*60*60*1000;
+            const d   = new Date(dMs);
+            const iso = d.toISOString().slice(0,10);
+
+            // KW berechnen (ISO Woche)
+            const tmp = new Date(d);
+            // ISO Week
+            const dayNum = (d.getDay()+6)%7 + 1;
+            tmp.setDate(d.getDate() - dayNum + 3);
+            const firstThursday = tmp.getTime();
+            tmp.setMonth(0,1);
+            tmp.setDate(tmp.getDate() + 3 - ((tmp.getDay()+6)%7 + 1));
+            const week = 1 + Math.round((firstThursday - tmp.getTime()) / 604800000);
+
+            const weekdayNames = ["So","Mo","Di","Mi","Do","Fr","Sa"];
+            const wdShort = weekdayNames[d.getDay()] || "";
+
+            buckets.push({
+                iso,
+                week,
+                weekday: wdShort,
+                entries: []
+            });
+        }
+        return buckets;
+    }
+
+    function renderBoard(buckets){
+        boardEl.innerHTML = "";
+
+        // wir gruppieren Tage mit gleichem week zusammen in Spalten
+        const byWeek = {};
+        for(const b of buckets){
+            if(!byWeek[b.week]) byWeek[b.week] = [];
+            byWeek[b.week].push(b);
+        }
+
+        Object.keys(byWeek).sort((a,b)=>Number(a)-Number(b)).forEach(kw=>{
+            const days = byWeek[kw];
+
+            // Spalten-Element
+            const col = document.createElement("div");
+            col.className = "week-col";
+
+            // Kopf
+            const head = document.createElement("div");
+            head.className = "week-head";
+
+            const left = document.createElement("div");
+            left.className = "week-head-left";
+
+            // z.B. "KW 44 Do"
+            const firstDay = days[0];
+            const titleTxt = `KW ${kw} ${firstDay.weekday}`;
+            const dateTxt  = firstDay.iso;
+
+            const titleEl = document.createElement("div");
+            titleEl.className = "kw-title";
+            titleEl.textContent = titleTxt;
+
+            const dateEl = document.createElement("div");
+            dateEl.className = "kw-date";
+            dateEl.textContent = dateTxt;
+
+            left.appendChild(titleEl);
+            left.appendChild(dateEl);
+
+            const right = document.createElement("div");
+            right.className = "week-head-right";
+
+            // plus-button (hinzufügen in dieser Spalte)
+            const plusBtn = document.createElement("div");
+            plusBtn.className = "mini-btn";
+            plusBtn.textContent = "+";
+            plusBtn.title = "Neuer Eintrag für diesen Tag";
+            plusBtn.addEventListener("click", ()=>{
+                openEntryDialogForNew(dateTxt);
+            });
+
+            right.appendChild(plusBtn);
+
+            head.appendChild(left);
+            head.appendChild(right);
+
+            col.appendChild(head);
+
+            // Inhaltstage in dieser KW zusammen rendern
+            const bodyArea = document.createElement("div");
+            bodyArea.className = "slot-area";
+
+            // Jeder Tag kriegt Überschrift + Karten
+            days.forEach(day=>{
+                // Tag-Titel in Spalte
+                const subHead = document.createElement("div");
+                subHead.style.color = "var(--txt-dim)";
+                subHead.style.fontSize = "12px";
+                subHead.style.fontWeight = "500";
+                subHead.style.marginBottom = "4px";
+                subHead.textContent = day.iso + " ("+day.weekday+")";
+                bodyArea.appendChild(subHead);
+
+                if(day.entries.length===0){
+                    const empty = document.createElement("div");
+                    empty.style.border="1px dashed rgba(255,255,255,.15)";
+                    empty.style.borderRadius="6px";
+                    empty.style.padding="10px";
+                    empty.style.fontSize="12px";
+                    empty.style.color="var(--txt-dim)";
+                    empty.style.lineHeight="1.4";
+                    empty.textContent="Klicken zum Eintragen · Drag & Drop möglich";
+                    // Klick = neuer Eintrag auf genau dieses Datum
+                    empty.addEventListener("click", ()=>{
+                        openEntryDialogForNew(day.iso);
+                    });
+                    bodyArea.appendChild(empty);
+                } else {
+                    day.entries.forEach(ent=>{
+                        // Karte bauen
+                        const card = document.createElement("div");
+                        card.className = "card";
+                        if(ent.redFlag) card.classList.add("red");
+
+                        // Aktionen (X / edit)
+                        const acts = document.createElement("div");
+                        acts.className = "card-actions";
+                        const btnDel = document.createElement("div");
+                        btnDel.className="card-act-btn danger";
+                        btnDel.textContent="X";
+                        btnDel.title="Löschen";
+                        btnDel.addEventListener("click",(ev)=>{
+                            ev.stopPropagation();
+                            reallyDelete(ent.id);
+                        });
+                        const btnEdit = document.createElement("div");
+                        btnEdit.className="card-act-btn";
+                        btnEdit.textContent="✎";
+                        btnEdit.title="Bearbeiten";
+                        btnEdit.addEventListener("click",(ev)=>{
+                            ev.stopPropagation();
+                            openEntryDialogForEdit(ent);
+                        });
+
+                        acts.appendChild(btnEdit);
+                        acts.appendChild(btnDel);
+                        card.appendChild(acts);
+
+                        // Titel
+                        const topRow = document.createElement("div");
+                        topRow.className = "card-row-top";
+                        topRow.textContent = ent.title || "(kein Titel)";
+                        card.appendChild(topRow);
+
+                        // middle row -> Mitarbeiter / Fahrzeuge
+                        const midRow = document.createElement("div");
+                        midRow.className = "card-row-middle";
+
+                        // Mitarbeiter
+                        (ent.workers||[]).forEach(w=>{
+                            const p = document.createElement("div");
+                            p.className="pill worker";
+                            p.textContent=w;
+                            midRow.appendChild(p);
+                        });
+                        // Fahrzeuge
+                        (ent.vehicles||[]).forEach(v=>{
+                            const p = document.createElement("div");
+                            p.className="pill car";
+                            p.textContent=v;
+                            midRow.appendChild(p);
+                        });
+
+                        // Flag rot?
+                        if(ent.redFlag){
+                            const pr = document.createElement("div");
+                            pr.className="pill red";
+                            pr.textContent="Urlaub/Krank/Schule";
+                            midRow.appendChild(pr);
+                        }
+
+                        card.appendChild(midRow);
+
+                        // bottom row -> Notiz
+                        const btmRow = document.createElement("div");
+                        btmRow.className = "card-row-bottom";
+                        if(ent.note){
+                            const noteEl = document.createElement("div");
+                            noteEl.textContent = ent.note;
+                            btmRow.appendChild(noteEl);
+                        }
+                        card.appendChild(btmRow);
+
+                        // Klick auf ganze Karte = bearbeiten
+                        card.addEventListener("click",()=>{
+                            openEntryDialogForEdit(ent);
+                        });
+
+                        bodyArea.appendChild(card);
+                    });
+                }
+
+                // kleiner Abstand zwischen den Tagen
+                const sep = document.createElement("div");
+                sep.style.height="12px";
+                bodyArea.appendChild(sep);
+            });
+
+            col.appendChild(bodyArea);
+            boardEl.appendChild(col);
+        });
+    }
+
+    /********************************
+     * Dialog Steuerung Eintrag
+     ********************************/
+    function clearEntryDialog(){
+        currentEditId = null;
+        dlgTitle.textContent = "Neuer Eintrag";
+        fTitle.value    = "";
+        fWorkers.value  = "";
+        fVehicles.value = "";
+        fDate.value     = todayISO;
+        fNote.value     = "";
+        renderTagPreview();
+    }
+
+    function fillEntryDialog(ent){
+        currentEditId = ent.id;
+        dlgTitle.textContent = "Eintrag bearbeiten";
+        fTitle.value    = ent.title || "";
+        fWorkers.value  = (ent.workers||[]).join(", ");
+        fVehicles.value = (ent.vehicles||[]).join(", ");
+        fDate.value     = ent.date || todayISO;
+        fNote.value     = ent.note || "";
+        renderTagPreview();
+    }
+
+    function openEntryDialogForNew(defaultDate){
+        clearEntryDialog();
+        if(defaultDate){
+            fDate.value = defaultDate;
+        }
+        entryDlg.showModal();
+    }
+    function openEntryDialogForEdit(ent){
+        fillEntryDialog(ent);
+        entryDlg.showModal();
+    }
+
+    btnEntryClose.addEventListener("click",()=>entryDlg.close());
+    btnEntryCancel.addEventListener("click",()=>entryDlg.close());
+
+    btnEntrySave.addEventListener("click", async ()=>{
+        const workersArr  = splitToArray(fWorkers.value);
+        const vehiclesArr = splitToArray(fVehicles.value);
+
+        const obj = {
+            title:fTitle.value.trim(),
+            workers:workersArr,
+            vehicles:vehiclesArr,
+            date:fDate.value || todayISO,
+            note:fNote.value.trim(),
+            redFlag: chkUrlaub.checked ? true : false
+        };
+        try{
+            await saveEntry(obj);
+            entryDlg.close();
+            await reloadBoard(); // neu laden
+        }catch(err){
+            console.error("Speichern fehlgeschlagen:", err);
+            alert("Fehler beim Speichern. Siehe Konsole.");
+        }
+    });
+
+    function splitToArray(str){
+        return str
+          .split(",")
+          .map(s=>s.trim())
+          .filter(s=>s.length>0);
+    }
+
+    function renderTagPreview(){
+        // Nur optische Vorschau unter den Inputs.
+        tagWorkers.innerHTML="";
+        splitToArray(fWorkers.value).forEach(w=>{
+            const el=document.createElement("div");
+            el.className="pill worker";
+            el.textContent=w;
+            tagWorkers.appendChild(el);
+        });
+
+        tagVehicles.innerHTML="";
+        splitToArray(fVehicles.value).forEach(v=>{
+            const el=document.createElement("div");
+            el.className="pill car";
+            el.textContent=v;
+            tagVehicles.appendChild(el);
+        });
+    }
+
+    fWorkers.addEventListener("input", renderTagPreview);
+    fVehicles.addEventListener("input", renderTagPreview);
+
+    /********************************
+     * Dialog Stammdaten
+     ********************************/
+    btnMaster.addEventListener("click", async ()=>{
+        await loadStammdaten();
+        masterDlg.showModal();
+    });
+    btnMasterClose.addEventListener("click",()=> masterDlg.close());
+    btnMasterCancel.addEventListener("click",()=> masterDlg.close());
+
+    /********************************
+     * Löschen
+     ********************************/
+    async function reallyDelete(id){
+        const ok = confirm("Diesen Eintrag wirklich löschen?");
+        if(!ok) return;
+        try {
+            await deleteEntry(id);
+            await reloadBoard();
+        } catch(err){
+            console.error("Löschen fehlgeschlagen:",err);
+            alert("Fehler beim Löschen (Konsole).");
+        }
+    }
+
+    /********************************
+     * Board neu laden
+     ********************************/
+    async function reloadBoard(){
+        const startIso = startDateInp.value || todayISO;
+        const numDays  = getViewRangeDays();
+
+        // 1. Buckets (Tage)
+        const buckets = buildDayBuckets(startIso,numDays);
+
+        // 2. Einträge laden
+        const entries = await loadEntries(startIso,numDays);
+
+        // 3. Zuordnen
+        for(const b of buckets){
+            b.entries = entries.filter(e => e.date===b.iso);
+        }
+
+        // 4. Rendern
+        renderBoard(buckets);
+    }
+
+    btnReload.addEventListener("click", reloadBoard);
+    fabPlus.addEventListener("click", ()=>openEntryDialogForNew(todayISO));
+    btnAdd  .addEventListener("click", ()=>openEntryDialogForNew(todayISO));
+
+    viewSel.addEventListener("change", reloadBoard);
+    startDateInp.addEventListener("change", reloadBoard);
+    chkUrlaub.addEventListener("change", ()=>{/* Flag wirkt nur beim Speichern, kein Reload nötig */});
+
+    // Auto-Reload Handling
+    chkAutoReload.addEventListener("change", ()=>{
+        if(chkAutoReload.checked){
+            // alle 20s reload
+            autoReloadTimer = setInterval(reloadBoard, 20000);
+        }else{
+            clearInterval(autoReloadTimer);
+            autoReloadTimer=null;
+        }
+    });
+
+    // Initial einmal laden
+    reloadBoard();
+  </script>
 </body>
 </html>
