@@ -1,881 +1,518 @@
 <!DOCTYPE html>
 <html lang="de">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Plantafel Digital</title>
-
-  <style>
-    :root {
-      --bg-main: #121212;
-      --bg-card: #1f1f1f;
-      --bg-toolbar: #1f1f1f;
-      --border: #333;
-      --txt-main: #fff;
-      --txt-dim: #aaa;
-      --accent: #2962ff;
-      --danger: #d32f2f;
-      --radius-card: 8px;
-      --radius-btn: 6px;
-      --gap: 12px;
-      --pad-card: 12px;
-      --pad-toolbar: 12px;
-      --font: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", sans-serif;
-    }
-
-    * {
-      box-sizing: border-box;
-      -webkit-font-smoothing: antialiased;
-      font-family: var(--font);
-    }
-
-    body {
-      margin: 0;
-      background-color: var(--bg-main);
-      color: var(--txt-main);
-      display: flex;
-      flex-direction: column;
-      min-height: 100vh;
-    }
-
-    header.toolbar {
-      background: var(--bg-toolbar);
-      color: var(--txt-main);
-      border-bottom: 1px solid var(--border);
-      padding: var(--pad-toolbar);
-      display: flex;
-      flex-wrap: wrap;
-      align-items: flex-start;
-      gap: var(--gap);
-    }
-
-    /* Zeile 1 oben links: Statuspunkt + Text "verbunden" */
-    .status-dot {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      background: rgba(0,0,0,0.2);
-      border: 1px solid var(--border);
-      border-radius: var(--radius-btn);
-      padding: 8px 10px;
-      font-size: 14px;
-      line-height: 1.2;
-      font-weight: 500;
-    }
-    .status-dot .dot {
-      width: 10px;
-      height: 10px;
-      background: #2ecc71;
-      border-radius: 50%;
-      box-shadow: 0 0 8px #2ecc71;
-    }
-
-    /* Steuer-Boxen */
-    .ctrl-group {
-      display: flex;
-      flex-direction: column;
-      gap: 4px;
-      background: rgba(0,0,0,0.2);
-      border: 1px solid var(--border);
-      border-radius: var(--radius-btn);
-      padding: 8px 10px;
-      min-width: max-content;
-    }
-
-    .ctrl-label {
-      font-size: 13px;
-      color: var(--txt-dim);
-      font-weight: 500;
-      line-height: 1.2;
-    }
-
-    .ctrl-row {
-      display: flex;
-      flex-wrap: wrap;
-      align-items: center;
-      gap: 8px;
-      line-height: 1.2;
-    }
-
-    label.small-label {
-      font-size: 14px;
-      font-weight: 500;
-      color: var(--txt-main);
-    }
-
-    select,
-    input[type="date"] {
-      background: #00000033;
-      color: var(--txt-main);
-      border: 1px solid var(--border);
-      border-radius: var(--radius-btn);
-      padding: 6px 8px;
-      font-size: 14px;
-    }
-
-    button.toolbar-btn {
-      background: var(--accent);
-      border: 0;
-      border-radius: var(--radius-btn);
-      color: #fff;
-      font-size: 14px;
-      font-weight: 600;
-      line-height: 1.2;
-      padding: 8px 10px;
-      cursor: pointer;
-      white-space: nowrap;
-    }
-
-    button.toolbar-btn.secondary {
-      background: rgba(0,0,0,0.2);
-      border: 1px solid var(--border);
-      color: var(--txt-main);
-      font-weight: 500;
-    }
-
-    /* Grid der Wochen-Tage */
-    main {
-      flex: 1;
-      padding: var(--gap);
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(min(280px, 100%), 1fr));
-      gap: var(--gap);
-    }
-
-    .day-col {
-      background: var(--bg-card);
-      border: 1px solid var(--border);
-      border-radius: var(--radius-card);
-      padding: var(--pad-card);
-      display: flex;
-      flex-direction: column;
-      position: relative;
-    }
-
-    .day-head {
-      display: flex;
-      flex-direction: column;
-      font-size: 13px;
-      font-weight: 600;
-      color: var(--txt-main);
-      line-height: 1.3;
-      margin-bottom: 8px;
-    }
-    .day-head .line1 {
-      display: flex;
-      justify-content: space-between;
-      align-items: baseline;
-      flex-wrap: wrap;
-      gap: 6px;
-      color: var(--accent);
-      font-size: 13px;
-    }
-    .day-head .line2 {
-      font-size: 13px;
-      font-weight: 500;
-      color: var(--txt-main);
-    }
-
-    .add-mini {
-      background: #00000055;
-      color: #fff;
-      border: 1px solid var(--border);
-      border-radius: var(--radius-btn);
-      font-size: 12px;
-      line-height: 1;
-      padding: 4px 6px;
-      cursor: pointer;
-    }
-
-    .cards {
-      display: flex;
-      flex-direction: column;
-      gap: 8px;
-      min-height: 60px;
-      border: 1px dashed #444;
-      border-radius: var(--radius-card);
-      padding: 8px;
-      font-size: 13px;
-      color: var(--txt-dim);
-      text-align: center;
-    }
-
-    .job-card {
-      background: #1a1a1a;
-      border: 1px solid var(--accent);
-      border-radius: var(--radius-card);
-      padding: 10px;
-      text-align: left;
-      color: var(--txt-main);
-      font-size: 14px;
-      position: relative;
-    }
-
-    .job-title {
-      font-weight: 600;
-      margin-bottom: 4px;
-    }
-
-    .job-people {
-      font-size: 13px;
-      color: var(--txt-dim);
-    }
-
-    .danger {
-      border-color: var(--danger) !important;
-      color: var(--danger);
-      font-weight: 600;
-    }
-
-    footer.statusbar {
-      border-top: 1px solid var(--border);
-      color: var(--txt-dim);
-      font-size: 12px;
-      padding: 6px var(--pad-toolbar);
-      line-height: 1.4;
-      background: transparent;
-    }
-
-    /* Floating Action Button (+) */
-    .fab {
-      position: fixed;
-      right: 16px;
-      bottom: 16px;
-      width: 52px;
-      height: 52px;
-      border-radius: 50%;
-      background: var(--accent);
-      color: #fff;
-      font-size: 30px;
-      font-weight: 500;
-      border: none;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      box-shadow: 0 12px 24px rgba(0,0,0,0.6);
-      cursor: pointer;
-      line-height: 1;
-    }
-    .fab:active {
-      transform: scale(0.96);
-    }
-
-    /* Dialog Allgemein */
-    dialog {
-      background: #1a1a1a;
-      border: 1px solid var(--border);
-      border-radius: var(--radius-card);
-      color: var(--txt-main);
-      max-width: min(400px, 90vw);
-      width: 100%;
-      padding: 16px;
-    }
-    dialog::backdrop {
-      background: rgba(0,0,0,0.7);
-    }
-
-    .dlg-head {
-      font-size: 16px;
-      font-weight: 600;
-      margin-bottom: 12px;
-      color: var(--txt-main);
-    }
-
-    .dlg-body {
-      display: grid;
-      grid-template-columns: 1fr;
-      gap: 12px;
-      margin-bottom: 16px;
-    }
-
-    .dlg-body label {
-      font-size: 13px;
-      font-weight: 500;
-      color: var(--txt-dim);
-      display: block;
-      margin-bottom: 4px;
-    }
-
-    .dlg-body input,
-    .dlg-body textarea,
-    .dlg-body select {
-      width: 100%;
-      background: #00000033;
-      color: var(--txt-main);
-      border: 1px solid var(--border);
-      border-radius: var(--radius-btn);
-      font-size: 14px;
-      line-height: 1.4;
-      padding: 8px;
-    }
-
-    .dlg-foot {
-      display: flex;
-      justify-content: flex-end;
-      gap: 8px;
-    }
-
-    .ghost {
-      background: rgba(0,0,0,0.2);
-      border: 1px solid var(--border);
-      color: var(--txt-main);
-      font-size: 14px;
-      line-height: 1.2;
-      border-radius: var(--radius-btn);
-      padding: 8px 10px;
-      cursor: pointer;
-    }
-
-    .primary {
-      background: var(--accent);
-      border: 0;
-      color: #fff;
-      font-size: 14px;
-      font-weight: 600;
-      border-radius: var(--radius-btn);
-      padding: 8px 10px;
-      cursor: pointer;
-    }
-
-    /* kleine Checkbox-Gruppe */
-    .check-row {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 10px;
-      font-size: 14px;
-      align-items: center;
-    }
-    .check-row label {
-      display: flex;
-      align-items: center;
-      gap: 6px;
-      color: var(--txt-main);
-      font-weight: 500;
-    }
-
-    input[type="checkbox"] {
-      width: 16px;
-      height: 16px;
-      accent-color: var(--accent);
-      cursor: pointer;
-    }
-
-    @media (min-width: 768px) {
-      header.toolbar {
-        flex-wrap: nowrap;
-        align-items: flex-start;
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Plantafel Digital (Supabase)</title>
+    <style>
+      :root {
+        --bg: #111820;
+        --panel: #1b222c;
+        --card: #202a36;
+        --accent: #2f6dff;
+        --accent-soft: rgba(47, 109, 255, 0.12);
+        --danger: #d74b4b;
+        --text: #ffffff;
+        --muted: #9aa6b5;
+        --radius: 10px;
       }
-      .toolbar-col-wrap {
+      * {
+        box-sizing: border-box;
+      }
+      body {
+        margin: 0;
+        background: var(--bg);
+        color: var(--text);
+        font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+        height: 100vh;
         display: flex;
-        flex-wrap: wrap;
-        gap: var(--gap);
+        flex-direction: column;
       }
-    }
-
-    @media (max-width: 767px) {
-      .ctrl-group {
-        width: 100%;
+      header {
+        background: var(--panel);
+        padding: 10px 14px;
+        display: flex;
+        gap: 10px;
+        align-items: center;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.03);
       }
-    }
-  </style>
-</head>
-
-<body>
-  <header class="toolbar">
-    <div class="toolbar-col-wrap">
-      <div class="status-dot">
-        <div class="dot" id="cloudDot"></div>
-        <span id="cloudStatusTxt">verbunden</span>
+      .dot {
+        width: 10px;
+        height: 10px;
+        border-radius: 999px;
+        margin-right: 6px;
+      }
+      .green { background: #2ecc71; }
+      .red { background: #e74c3c; }
+      .inline {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+      }
+      select,
+      input[type="date"],
+      button,
+      textarea,
+      input[type="text"] {
+        background: rgba(255, 255, 255, 0.02);
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        color: inherit;
+        border-radius: 6px;
+        padding: 6px 10px;
+        font-size: 14px;
+      }
+      button.primary {
+        background: var(--accent);
+        border-color: transparent;
+        color: #fff;
+        cursor: pointer;
+      }
+      button.danger {
+        background: rgba(215, 75, 75, 0.15);
+        border-color: rgba(215, 75, 75, 0.4);
+        color: #fff;
+      }
+      main {
+        flex: 1;
+        overflow: auto;
+        padding: 10px 14px 70px;
+        display: flex;
+        gap: 10px;
+      }
+      .board {
+        display: flex;
+        gap: 10px;
+        min-width: max-content;
+        width: max-content;
+      }
+      .day-col {
+        width: 230px;
+        background: rgba(255, 255, 255, 0.01);
+        border: 1px solid rgba(255, 255, 255, 0.03);
+        border-radius: 8px;
+        display: flex;
+        flex-direction: column;
+      }
+      .day-head {
+        padding: 10px;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.03);
+      }
+      .day-head small {
+        color: var(--muted);
+      }
+      .cards {
+        flex: 1;
+        padding: 10px;
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+      }
+      .card {
+        background: var(--card);
+        border: 1px solid rgba(255, 255, 255, 0.03);
+        border-radius: 8px;
+        padding: 8px 8px 6px;
+        cursor: grab;
+      }
+      .card h4 {
+        margin: 0 0 4px;
+        font-size: 14px;
+      }
+      .card small {
+        display: block;
+        color: var(--muted);
+        font-size: 12px;
+      }
+      .card .row {
+        display: flex;
+        justify-content: space-between;
+        gap: 6px;
+        margin-top: 4px;
+      }
+      .status-pill {
+        background: rgba(47, 109, 255, 0.1);
+        border: 1px solid rgba(47, 109, 255, 0.3);
+        border-radius: 999px;
+        padding: 2px 8px;
+        font-size: 11px;
+      }
+      .fab {
+        position: fixed;
+        right: 16px;
+        bottom: 16px;
+        width: 48px;
+        height: 48px;
+        border-radius: 999px;
+        background: var(--accent);
+        border: none;
+        color: #fff;
+        font-size: 28px;
+        line-height: 48px;
+        text-align: center;
+        cursor: pointer;
+        box-shadow: 0 10px 25px rgba(47, 109, 255, 0.25);
+      }
+      dialog {
+        border: none;
+        border-radius: 14px;
+        background: #10151b;
+        color: #fff;
+        width: min(500px, 100vw - 20px);
+      }
+      .dlg-body {
+        padding: 14px 16px 4px;
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+      }
+      .dlg-footer {
+        padding: 12px 16px 14px;
+        display: flex;
+        justify-content: flex-end;
+        gap: 8px;
+      }
+      label {
+        font-size: 13px;
+        color: #d6dbe1;
+      }
+      footer {
+        position: fixed;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(0,0,0,0.35);
+        padding: 4px 12px;
+        font-size: 12px;
+        color: var(--muted);
+      }
+      @media (max-width: 900px) {
+        header {
+          flex-wrap: wrap;
+        }
+        .day-col {
+          width: 75vw;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <header>
+      <div class="inline">
+        <div id="onlineDot" class="dot red"></div>
+        <strong id="onlineText">getrennt</strong>
       </div>
 
-      <div class="ctrl-group">
-        <div class="ctrl-label">Ansicht / Start</div>
-        <div class="ctrl-row">
-          <label class="small-label">
-            <span>Ansicht:</span>
-            <select id="viewSel">
-              <option value="4w">4 Wochen (Mo–Fr)</option>
-            </select>
-          </label>
+      <div class="inline">
+        <span>Ansicht:</span>
+        <select id="rangeSel">
+          <option value="7">1 Woche</option>
+          <option value="14">2 Wochen</option>
+          <option value="28" selected>4 Wochen (Mo–Fr)</option>
+        </select>
+      </div>
+      <div class="inline">
+        <span>Start:</span>
+        <input type="date" id="startDate" />
+      </div>
+      <button id="btnReload">Neu laden</button>
+    </header>
 
-          <label class="small-label">
-            <span>Start:</span>
-            <input id="startDate" type="date" />
-          </label>
+    <main>
+      <div id="board" class="board"></div>
+    </main>
 
-          <button class="toolbar-btn secondary" id="btnReload">Neu laden</button>
+    <button class="fab" id="btnAdd">+</button>
+
+    <!-- Dialog Eintrag -->
+    <dialog id="entryDlg">
+      <form method="dialog">
+        <div class="dlg-body">
+          <h3 id="dlgTitle">Eintrag</h3>
+          <label>
+            Datum
+            <input type="date" id="fDate" required />
+          </label>
+          <label>
+            Titel / Auftrag
+            <input type="text" id="fTitle" placeholder="z.B. Baustelle X" required />
+          </label>
+          <label>
+            Mitarbeiter
+            <input type="text" id="fMitarbeiter" placeholder="Name, Name ..." />
+          </label>
+          <label>
+            Fahrzeug
+            <input type="text" id="fFahrzeug" placeholder="Bus / Sprinter / ..." />
+          </label>
+          <label>
+            Status
+            <input type="text" id="fStatus" placeholder="normal / Urlaub / Krank" />
+          </label>
+          <label>
+            Notiz
+            <textarea id="fNote" rows="2" placeholder="optional"></textarea>
+          </label>
         </div>
-      </div>
-
-      <div class="ctrl-group">
-        <div class="ctrl-label">Filter</div>
-        <div class="ctrl-row">
-          <label class="small-label">
-            <input id="showSpecial" type="checkbox" />
-            Urlaub/Krank/Schule
-          </label>
-
-          <label class="small-label">
-            <input id="autoReload" type="checkbox" />
-            Auto-Reload
-          </label>
-
-          <button class="toolbar-btn secondary" id="btnMaster">Stammdaten</button>
-          <button class="toolbar-btn" id="btnAdd">+ Eintrag</button>
+        <div class="dlg-footer">
+          <button value="cancel">Abbrechen</button>
+          <button class="primary" id="btnSaveEntry" value="default">Speichern</button>
+          <button class="danger" id="btnDelEntry" type="button" style="margin-left: auto; display: none;">Löschen</button>
         </div>
-      </div>
-    </div>
-  </header>
+      </form>
+    </dialog>
 
-  <main id="grid">
-    <!-- Spalten werden dynamisch gefüllt -->
-  </main>
+    <footer>
+      Supabase Version – Tabelle: <code>plantafel</code>. Drag &amp; Drop = Datum ändern.
+    </footer>
 
-  <footer class="statusbar">
-    Status rot = Urlaub/Krank/Schule
-  </footer>
+    <!-- Supabase -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script>
+      // === deine Supabase Daten ===
+      const SUPABASE_URL = "https://mtybmrkyhavxpvwysglo.supabase.co";
+      const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im10eWJtcmt5aGF2eHB2d3lzZ2xvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjIxNjQ1OTIsImV4cCI6MjA3Nzc0MDU5Mn0.UToAmJAvACYvnO9hCIeyfm-VYKr5jincXdnEDDtbhvo";
+      const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-  <!-- Floating (+) Button -->
-  <button class="fab" id="fabPlus">+</button>
+      // HTML refs
+      const boardEl = document.getElementById("board");
+      const startDateEl = document.getElementById("startDate");
+      const rangeSel = document.getElementById("rangeSel");
+      const btnReload = document.getElementById("btnReload");
+      const btnAdd = document.getElementById("btnAdd");
+      const entryDlg = document.getElementById("entryDlg");
+      const fDate = document.getElementById("fDate");
+      const fTitle = document.getElementById("fTitle");
+      const fMitarbeiter = document.getElementById("fMitarbeiter");
+      const fFahrzeug = document.getElementById("fFahrzeug");
+      const fStatus = document.getElementById("fStatus");
+      const fNote = document.getElementById("fNote");
+      const btnSaveEntry = document.getElementById("btnSaveEntry");
+      const btnDelEntry = document.getElementById("btnDelEntry");
+      const dlgTitle = document.getElementById("dlgTitle");
+      const onlineDot = document.getElementById("onlineDot");
+      const onlineText = document.getElementById("onlineText");
 
-  <!-- Dialog: Neuer Eintrag / Bearbeiten -->
-  <dialog id="entryDlg">
-    <div class="dlg-head" id="entryDlgTitle">Neuer Eintrag</div>
-    <div class="dlg-body">
-      <div>
-        <label for="mTitle">Projekt / Auftrag</label>
-        <input id="mTitle" />
-      </div>
+      let currentEntries = [];
+      let editingId = null;
 
-      <div>
-        <label for="mDate">Datum</label>
-        <input id="mDate" type="date" />
-      </div>
+      // init date
+      const todayIso = new Date().toISOString().slice(0, 10);
+      startDateEl.value = todayIso;
 
-      <div>
-        <label for="mPeople">Mitarbeiter</label>
-        <input id="mPeople" placeholder="z.B. Herbert, Patrick" />
-      </div>
-
-      <div>
-        <label for="mNote">Notiz</label>
-        <textarea id="mNote" rows="2" placeholder="optional"></textarea>
-      </div>
-
-      <div class="check-row">
-        <label>
-          <input id="mSpecial" type="checkbox" />
-          Urlaub / Krank / Schule
-        </label>
-      </div>
-    </div>
-
-    <div class="dlg-foot">
-      <button class="ghost" id="btnEntryCancel">Abbrechen</button>
-      <button class="primary" id="btnEntrySave">Speichern</button>
-    </div>
-  </dialog>
-
-  <!-- Stammdaten-Dialog (Mitarbeiter/Fahrzeuge) -->
-  <dialog id="masterDlg">
-    <div class="dlg-head">Stammdaten</div>
-    <div class="dlg-body">
-      <div>
-        <label for="mitarbeiterList">Mitarbeiter (Komma getrennt)</label>
-        <textarea id="mitarbeiterList" rows="2" placeholder="z.B. Herbert, Patrick, ..."></textarea>
-      </div>
-      <div>
-        <label for="fahrzeugList">Fahrzeuge (Komma getrennt)</label>
-        <textarea id="fahrzeugList" rows="2" placeholder="z.B. Mercedes Bus, Sprinter ..."></textarea>
-      </div>
-    </div>
-    <div class="dlg-foot">
-      <button class="ghost" id="btnMasterCancel">Schließen</button>
-      <button class="primary" id="btnMasterSave">Speichern</button>
-    </div>
-  </dialog>
-
-  <!-- Firebase + App -->
-  <script type="module">
-    // Import Firebase SDKs direkt von gstatic (v11 ohne AppCheck)
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-app.js";
-    import {
-      getFirestore,
-      collection,
-      addDoc,
-      getDocs,
-      query,
-      where,
-      orderBy,
-      serverTimestamp
-    } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-firestore.js";
-
-    // >>> Deine Firebase-Konfiguration (aus Firebase Console)
-    const firebaseConfig = {
-      apiKey: "AIzaSyDPvWF-Xn023Bx-ebCvg6a42Drxm9f4SxDI",
-      authDomain: "plantafelfreyllich100.firebaseapp.com",
-      projectId: "plantafelfreyllich100",
-      storageBucket: "plantafelfreyllich100.firebasestorage.app",
-      messagingSenderId: "962959139135",
-      appId: "1:962959139135:web:e4462794477815c0ef914da",
-      measurementId: "G-W5VGSSLTRC"
-    };
-
-    // Init
-    const app = initializeApp(firebaseConfig);
-    const db = getFirestore(app);
-
-    // DOM Helpers
-    const $ = (sel) => document.querySelector(sel);
-
-    const gridEl = $("#grid");
-    const viewSel = $("#viewSel");
-    const startDateEl = $("#startDate");
-    const showSpecialEl = $("#showSpecial");
-    const autoReloadEl = $("#autoReload");
-    const cloudDot = $("#cloudDot");
-    const cloudStatusTxt = $("#cloudStatusTxt");
-
-    const btnReload = $("#btnReload");
-    const btnAdd = $("#btnAdd");
-    const btnMaster = $("#btnMaster");
-    const fabPlus = $("#fabPlus");
-
-    // Dialog DOM
-    const entryDlg = $("#entryDlg");
-    const entryDlgTitle = $("#entryDlgTitle");
-    const mTitle = $("#mTitle");
-    const mDate = $("#mDate");
-    const mPeople = $("#mPeople");
-    const mNote = $("#mNote");
-    const mSpecial = $("#mSpecial");
-    const btnEntryCancel = $("#btnEntryCancel");
-    const btnEntrySave = $("#btnEntrySave");
-
-    const masterDlg = $("#masterDlg");
-    const btnMasterCancel = $("#btnMasterCancel");
-    const btnMasterSave = $("#btnMasterSave");
-    const mitarbeiterList = $("#mitarbeiterList");
-    const fahrzeugList = $("#fahrzeugList");
-
-    // Zustand
-    let currentEntries = []; // wird aus Firestore geladen
-    let currentViewStart = null; // Date-Objekt
-    let autoReloadTimer = null;
-
-    // Hilfen für Datum
-    function toISODate(d) {
-      // YYYY-MM-DD
-      const y = d.getFullYear();
-      const m = String(d.getMonth()+1).padStart(2, "0");
-      const da = String(d.getDate()).padStart(2, "0");
-      return `${y}-${m}-${da}`;
-    }
-
-    function fromISODate(str) {
-      // "2025-10-30" -> Date
-      const [y,m,d] = str.split("-");
-      return new Date(Number(y), Number(m)-1, Number(d));
-    }
-
-    // 4 Wochen Ansicht bauen
-    function buildDateRange4Weeks(startDate) {
-      // startDate: Date
-      // wir zeigen standardmäßig Mo-Fr für 4 Wochen = 20 Tage
-      // wir nehmen startDate einfach als erster Tag (egal welcher Wochentag),
-      // und rendern die nächsten 20 Arbeitstage (Mo-Fr).
-      const days = [];
-      const cur = new Date(startDate.getTime());
-      while (days.length < 20) {
-        const dow = cur.getDay(); // 0=So,1=Mo,...6=Sa
-        if (dow >= 1 && dow <= 5) {
-          days.push(new Date(cur.getTime()));
+      async function checkConn() {
+        try {
+          const { data, error } = await supabase.from("plantafel").select("id").limit(1);
+          if (error) throw error;
+          onlineDot.className = "dot green";
+          onlineText.textContent = "verbunden";
+        } catch (err) {
+          console.warn(err);
+          onlineDot.className = "dot red";
+          onlineText.textContent = "getrennt";
         }
-        cur.setDate(cur.getDate()+1);
       }
-      return days;
-    }
 
-    // UI: Grid aufbauen aus currentEntries
-    function renderGrid() {
-      if (!currentViewStart) return;
+      async function loadEntries() {
+        const start = new Date(startDateEl.value);
+        const days = parseInt(rangeSel.value, 10);
 
-      const dayList = buildDateRange4Weeks(currentViewStart);
-      gridEl.innerHTML = "";
+        const end = new Date(start);
+        end.setDate(start.getDate() + days);
 
-      dayList.forEach(d => {
-        const iso = toISODate(d);
-        const dayBox = document.createElement("div");
-        dayBox.className = "day-col";
+        // YYYY-MM-DD
+        const startStr = start.toISOString().slice(0, 10);
+        const endStr = end.toISOString().slice(0, 10);
 
-        const head = document.createElement("div");
-        head.className = "day-head";
+        const { data, error } = await supabase
+          .from("plantafel")
+          .select("*")
+          .gte("tag", startStr)
+          .lte("tag", endStr)
+          .order("tag", { ascending: true })
+          .order("sort", { ascending: true });
 
-        const line1 = document.createElement("div");
-        line1.className = "line1";
-        const weekStr = "KW " + getISOWeek(d) + " " + weekdayShort(d);
-        const addBtn = document.createElement("button");
-        addBtn.className = "add-mini";
-        addBtn.textContent = "+";
-        addBtn.addEventListener("click", () => {
-          openEntryDialog({
-            date: iso
+        if (error) {
+          console.error(error);
+          return;
+        }
+
+        currentEntries = data;
+        renderBoard();
+      }
+
+      function renderBoard() {
+        boardEl.innerHTML = "";
+        const start = new Date(startDateEl.value);
+        const days = parseInt(rangeSel.value, 10);
+
+        for (let i = 0; i < days; i++) {
+          const d = new Date(start);
+          d.setDate(start.getDate() + i);
+
+          // wenn 4 Wochen (Mo–Fr) gewählt ist, Wochenenden überspringen
+          if (rangeSel.value === "28") {
+            const day = d.getDay();
+            if (day === 0 || day === 6) {
+              continue;
+            }
+          }
+
+          const iso = d.toISOString().slice(0, 10);
+          const col = document.createElement("div");
+          col.className = "day-col";
+          col.dataset.date = iso;
+
+          const head = document.createElement("div");
+          head.className = "day-head";
+          head.innerHTML =
+            "<strong>" +
+            d.toLocaleDateString("de-DE", { weekday: "short" }) +
+            "</strong> " +
+            "<div>" +
+            d.toLocaleDateString("de-DE") +
+            "</div>";
+          col.appendChild(head);
+
+          const cards = document.createElement("div");
+          cards.className = "cards";
+          cards.ondragover = (ev) => ev.preventDefault();
+          cards.ondrop = (ev) => handleDrop(ev, iso);
+          col.appendChild(cards);
+
+          const es = currentEntries.filter((e) => e.tag === iso);
+          es.forEach((e) => {
+            const card = makeCard(e);
+            cards.appendChild(card);
           });
-        });
 
-        const wspan = document.createElement("span");
-        wspan.textContent = weekStr;
-        line1.appendChild(wspan);
-        line1.appendChild(addBtn);
+          boardEl.appendChild(col);
+        }
+      }
 
-        const line2 = document.createElement("div");
-        line2.className = "line2";
-        line2.textContent = iso;
+      function makeCard(e) {
+        const card = document.createElement("div");
+        card.className = "card";
+        card.draggable = true;
+        card.dataset.id = e.id;
+        card.ondragstart = (ev) => {
+          ev.dataTransfer.setData("text/plain", e.id);
+        };
+        card.onclick = () => openEdit(e);
 
-        head.appendChild(line1);
-        head.appendChild(line2);
+        card.innerHTML =
+          "<h4>" +
+          (e.titel || "(ohne Titel)") +
+          "</h4>" +
+          "<small>" +
+          (e.mitarbeiter || "") +
+          (e.fahrzeug ? " · " + e.fahrzeug : "") +
+          "</small>" +
+          (e.status
+            ? '<div class="row"><span class="status-pill">' + e.status + "</span></div>"
+            : "");
 
-        const cardsWrap = document.createElement("div");
-        cardsWrap.className = "cards";
-        cardsWrap.dataset.date = iso;
-        cardsWrap.textContent = "Klicken zum Eintragen · Drag & Drop möglich";
+        return card;
+      }
 
-        // Einträge einsetzen
-        const todays = currentEntries.filter(e => e.date === iso);
-        if (todays.length > 0) {
-          cardsWrap.innerHTML = "";
-          todays.forEach(job => {
-            if (!showSpecialEl.checked && job.special === true) {
-              // falls Special (Urlaub/Krank/Schule) ausgeblendet werden soll
-              return;
-            }
-            const card = document.createElement("div");
-            card.className = "job-card";
-            if (job.special === true) {
-              card.classList.add("danger");
-            }
+      async function handleDrop(ev, newDate) {
+        ev.preventDefault();
+        const id = ev.dataTransfer.getData("text/plain");
+        if (!id) return;
+        // update in supabase
+        await supabase.from("plantafel").update({ tag: newDate }).eq("id", id);
+        // lokal auch ändern
+        const entry = currentEntries.find((x) => x.id === id);
+        if (entry) {
+          entry.tag = newDate;
+        }
+        renderBoard();
+      }
 
-            const t = document.createElement("div");
-            t.className = "job-title";
-            t.textContent = job.title || "(Ohne Titel)";
-            card.appendChild(t);
+      function openNew(dateIso) {
+        editingId = null;
+        dlgTitle.textContent = "Neuer Eintrag";
+        fDate.value = dateIso || startDateEl.value;
+        fTitle.value = "";
+        fMitarbeiter.value = "";
+        fFahrzeug.value = "";
+        fStatus.value = "";
+        fNote.value = "";
+        btnDelEntry.style.display = "none";
+        entryDlg.showModal();
+      }
 
-            const ppl = document.createElement("div");
-            ppl.className = "job-people";
-            ppl.textContent = job.people || "";
-            card.appendChild(ppl);
+      function openEdit(e) {
+        editingId = e.id;
+        dlgTitle.textContent = "Eintrag bearbeiten";
+        fDate.value = e.tag;
+        fTitle.value = e.titel || "";
+        fMitarbeiter.value = e.mitarbeiter || "";
+        fFahrzeug.value = e.fahrzeug || "";
+        fStatus.value = e.status || "";
+        fNote.value = e.notiz || "";
+        btnDelEntry.style.display = "inline-flex";
+        entryDlg.showModal();
+      }
 
-            const note = document.createElement("div");
-            note.style.color = "var(--txt-dim)";
-            note.style.fontSize = "13px";
-            if (job.note) {
-              note.textContent = job.note;
-              card.appendChild(note);
-            }
+      async function saveEntry(ev) {
+        ev?.preventDefault?.();
+        const payload = {
+          tag: fDate.value,
+          titel: fTitle.value,
+          mitarbeiter: fMitarbeiter.value,
+          fahrzeug: fFahrzeug.value,
+          status: fStatus.value,
+          notiz: fNote.value,
+        };
 
-            cardsWrap.appendChild(card);
-          });
+        if (!payload.tag || !payload.titel) {
+          alert("Datum und Titel sind Pflicht.");
+          return;
         }
 
-        dayBox.appendChild(head);
-        dayBox.appendChild(cardsWrap);
-        gridEl.appendChild(dayBox);
-      });
-    }
-
-    // ISO-Kalenderwoche
-    function getISOWeek(date) {
-      const tmp = new Date(date.getTime());
-      tmp.setHours(0,0,0,0);
-      // Donnerstag der Woche berechnen
-      tmp.setDate(tmp.getDate() + 3 - ((tmp.getDay()+6)%7));
-      const week1 = new Date(tmp.getFullYear(),0,4);
-      return 1 + Math.round(
-        ((tmp.getTime() - week1.getTime())/86400000
-          - 3 + ((week1.getDay()+6)%7)
-        )/7
-      );
-    }
-    function weekdayShort(date) {
-      // Di, Mi, Do...
-      return ["So","Mo","Di","Mi","Do","Fr","Sa"][date.getDay()];
-    }
-
-    // Firestore laden
-    async function loadEntries() {
-      if (!currentViewStart) return;
-      const dayList = buildDateRange4Weeks(currentViewStart);
-      const startISO = toISODate(dayList[0]);
-      const endISO = toISODate(dayList[dayList.length-1]);
-
-      // Wir holen alles aus "plantafel" mit datum zwischen start und ende
-      // (Hinweis: Strings YYYY-MM-DD sind lexikalisch sortierbar)
-      const qRef = query(
-        collection(db, "plantafel"),
-        where("date", ">=", startISO),
-        where("date", "<=", endISO),
-        orderBy("date")
-      );
-
-      const snap = await getDocs(qRef);
-      const arr = [];
-      snap.forEach(docSnap => {
-        const d = docSnap.data();
-        arr.push({
-          id: docSnap.id,
-          title: d.title || "",
-          date: d.date || "",
-          people: d.people || "",
-          note: d.note || "",
-          special: !!d.special,
-          ts: d.ts || null
-        });
-      });
-
-      currentEntries = arr;
-      renderGrid();
-      setCloudStatus(true);
-    }
-
-    // Firestore speichern (neuer Eintrag)
-    async function saveEntryToFirestore(data) {
-      await addDoc(collection(db, "plantafel"), {
-        title: data.title || "",
-        date: data.date || "",
-        people: data.people || "",
-        note: data.note || "",
-        special: !!data.special,
-        ts: serverTimestamp()
-      });
-    }
-
-    // UI Statuspunkt
-    function setCloudStatus(ok) {
-      if (ok) {
-        cloudDot.style.background = "#2ecc71";
-        cloudDot.style.boxShadow = "0 0 8px #2ecc71";
-        cloudStatusTxt.textContent = "verbunden";
-      } else {
-        cloudDot.style.background = "#d32f2f";
-        cloudDot.style.boxShadow = "0 0 8px #d32f2f";
-        cloudStatusTxt.textContent = "offline?";
-      }
-    }
-
-    // Dialog Handling
-    function openEntryDialog(prefill) {
-      entryDlgTitle.textContent = "Neuer Eintrag";
-      mTitle.value = prefill?.title || "";
-      mDate.value = prefill?.date || toISODate(new Date());
-      mPeople.value = prefill?.people || "";
-      mNote.value = prefill?.note || "";
-      mSpecial.checked = !!prefill?.special;
-      entryDlg.showModal();
-    }
-
-    function closeEntryDialog() {
-      entryDlg.close();
-    }
-
-    btnEntryCancel.addEventListener("click", () => {
-      closeEntryDialog();
-    });
-
-    btnEntrySave.addEventListener("click", async () => {
-      const data = {
-        title: mTitle.value.trim(),
-        date: mDate.value,
-        people: mPeople.value.trim(),
-        note: mNote.value.trim(),
-        special: mSpecial.checked
-      };
-      try {
-        await saveEntryToFirestore(data);
-        closeEntryDialog();
-        await loadEntries();
-      } catch (err) {
-        console.error("Fehler beim Speichern:", err);
-        alert("Konnte nicht speichern.");
-        setCloudStatus(false);
-      }
-    });
-
-    // Stammdaten-Dialog
-    btnMaster.addEventListener("click", () => {
-      // TODO: aus Firestore "settings" lesen und Felder füllen
-      masterDlg.showModal();
-    });
-
-    btnMasterCancel.addEventListener("click", () => {
-      masterDlg.close();
-    });
-
-    btnMasterSave.addEventListener("click", async () => {
-      // TODO: Daten zurück in Firestore in "settings"
-      masterDlg.close();
-      alert("Stammdaten gespeichert (Demo – Logik noch ausbaufähig).");
-    });
-
-    // Toolbar Buttons
-    btnAdd.addEventListener("click", () => {
-      openEntryDialog();
-    });
-    fabPlus.addEventListener("click", () => {
-      openEntryDialog();
-    });
-
-    btnReload.addEventListener("click", async () => {
-      await loadEntries();
-    });
-
-    showSpecialEl.addEventListener("change", () => {
-      renderGrid();
-    });
-
-    autoReloadEl.addEventListener("change", () => {
-      if (autoReloadEl.checked) {
-        startAutoReload();
-      } else {
-        stopAutoReload();
-      }
-    });
-
-    function startAutoReload() {
-      stopAutoReload();
-      autoReloadTimer = setInterval(loadEntries, 15000); // alle 15s
-    }
-    function stopAutoReload() {
-      if (autoReloadTimer) {
-        clearInterval(autoReloadTimer);
-        autoReloadTimer = null;
-      }
-    }
-
-    // Init Startdatum = heute
-    function initStartDate() {
-      const today = new Date();
-      currentViewStart = today;
-      startDateEl.value = toISODate(today);
-    }
-    startDateEl.addEventListener("change", async () => {
-      if (!startDateEl.value) return;
-      currentViewStart = fromISODate(startDateEl.value);
-      await loadEntries();
-    });
-
-    // BOOT
-    (async () => {
-      try {
-        initStartDate();
-        await loadEntries();
-        if (autoReloadEl.checked) {
-          startAutoReload();
+        if (editingId) {
+          await supabase.from("plantafel").update(payload).eq("id", editingId);
+        } else {
+          await supabase.from("plantafel").insert(payload);
         }
-      } catch (err) {
-        console.error("Initial-Fehler:", err);
-        setCloudStatus(false);
+        entryDlg.close();
+        loadEntries();
       }
-    })();
-  </script>
-</body>
+
+      async function deleteEntry() {
+        if (!editingId) return;
+        if (!confirm("Eintrag wirklich löschen?")) return;
+        await supabase.from("plantafel").delete().eq("id", editingId);
+        entryDlg.close();
+        loadEntries();
+      }
+
+      // events
+      btnReload.onclick = () => loadEntries();
+      btnAdd.onclick = () => openNew();
+      btnSaveEntry.onclick = saveEntry;
+      btnDelEntry.onclick = deleteEntry;
+      startDateEl.onchange = () => loadEntries();
+      rangeSel.onchange = () => loadEntries();
+
+      // realtime
+      supabase
+        .channel("public:plantafel")
+        .on(
+          "postgres_changes",
+          { event: "*", schema: "public", table: "plantafel" },
+          (payload) => {
+            // einfach neu laden
+            loadEntries();
+          }
+        )
+        .subscribe();
+
+      // init
+      (async function () {
+        await checkConn();
+        await loadEntries();
+      })();
+    </script>
+  </body>
 </html>
