@@ -2,594 +2,561 @@
 <html lang="de">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Plantafel Digital (Supabase)</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1.0" />
+  <title>Plantafel Digital</title>
   <style>
     :root {
-      --bg: #121820;
-      --panel: #1b222b;
-      --panel2: #202833;
-      --card: #273242;
-      --accent: #2f6dff;
-      --danger: #d64545;
-      --text: #fff;
-      --text-dim: #aab5c7;
+      --bg: #171b20;
+      --panel: #1f242b;
+      --card: #252b33;
+      --accent: #2d6bff;
+      --danger: #d9534f;
+      --txt: #fff;
+      --muted: #aab2bd;
       --radius: 10px;
     }
     * { box-sizing: border-box; }
     body {
       margin: 0;
-      font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
       background: var(--bg);
-      color: var(--text);
+      color: var(--txt);
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
       height: 100vh;
       display: flex;
       flex-direction: column;
     }
     header {
       display: flex;
+      gap: .75rem;
       align-items: center;
-      gap: 12px;
-      padding: 10px 14px 6px;
+      padding: .75rem 1rem;
+      background: rgba(0,0,0,.35);
+      border-bottom: 1px solid rgba(255,255,255,.03);
+    }
+    header .pill {
+      background: #1c7c35;
+      padding: .25rem .75rem;
+      border-radius: 999px;
+      font-weight: 500;
+      display: flex;
+      align-items: center;
+      gap: .4rem;
+    }
+    header select,
+    header input[type="date"] {
       background: var(--panel);
-      border-bottom: 1px solid #0004;
-      flex-wrap: wrap;
-      z-index: 2;
-    }
-    .dot {
-      width: 10px;
-      height: 10px;
-      border-radius: 50%;
-      background: #39d353;
-      display: inline-block;
-      margin-right: 6px;
-    }
-    select, input[type="date"] {
-      background: #0000;
-      border: 1px solid #ffffff22;
-      color: inherit;
-      padding: 4px 8px;
+      border: 1px solid rgba(255,255,255,.05);
+      color: var(--txt);
       border-radius: 6px;
+      padding: .4rem .55rem;
     }
-    button {
+    header button {
       background: var(--accent);
-      color: #fff;
       border: none;
+      color: #fff;
       border-radius: 6px;
-      padding: 6px 12px;
+      padding: .45rem .7rem;
       cursor: pointer;
       font-weight: 500;
     }
-    button.ghost {
-      background: #ffffff0f;
-    }
-    button.danger {
-      background: var(--danger);
-    }
     main {
       flex: 1;
+      overflow: auto;
       display: flex;
-      flex-direction: column;
-      overflow: hidden;
     }
     #board {
+      display: flex;
+      gap: .75rem;
+      padding: .75rem;
+      min-height: 100%;
+      width: max-content;
+    }
+    .day-col {
+      background: rgba(255,255,255,.015);
+      border: 1px solid rgba(255,255,255,.03);
+      border-radius: 8px;
+      width: 180px;
+      min-height: calc(100vh - 110px);
+      display: flex;
+      flex-direction: column;
+    }
+    .day-head {
+      padding: .5rem .5rem .35rem;
+      border-bottom: 1px solid rgba(255,255,255,.03);
+    }
+    .day-head .dow {
+      font-size: .7rem;
+      color: var(--muted);
+    }
+    .day-head .date {
+      font-weight: 600;
+      font-size: .8rem;
+    }
+    .entries {
       flex: 1;
-      overflow: auto;
-      padding: 10px 10px 60px;
-      display: flex;
-      gap: 10px;
-      align-items: flex-start;
-    }
-    .col {
-      background: var(--panel2);
-      border-radius: var(--radius);
-      min-width: 180px;
-      flex: 0 0 180px;
+      padding: .35rem .35rem .9rem;
       display: flex;
       flex-direction: column;
-      max-height: calc(100vh - 140px);
-    }
-    .col-header {
-      padding: 8px 10px 6px;
-      border-bottom: 1px solid #ffffff11;
-      font-size: 13px;
-    }
-    .col-header small { color: var(--text-dim); }
-    .col-body {
-      padding: 8px;
-      gap: 6px;
-      display: flex;
-      flex-direction: column;
-      overflow-y: auto;
+      gap: .4rem;
     }
     .entry {
       background: var(--card);
-      border: 1px solid #ffffff11;
-      border-radius: 8px;
-      padding: 6px 7px 4px;
-      font-size: 13px;
+      border: 1px solid rgba(255,255,255,.03);
+      border-radius: 6px;
+      padding: .35rem .4rem .35rem;
+      font-size: .72rem;
       cursor: grab;
     }
-    .entry:active { cursor: grabbing; }
-    .entry-title { font-weight: 600; margin-bottom: 2px; }
-    .entry-meta { font-size: 11px; color: var(--text-dim); }
+    .entry.red {
+      border-left: 4px solid var(--danger);
+    }
+    .entry-title {
+      font-weight: 600;
+      margin-bottom: .25rem;
+    }
+    .entry-meta {
+      font-size: .65rem;
+      color: var(--muted);
+      display: flex;
+      flex-wrap: wrap;
+      gap: .35rem;
+    }
     .fab {
       position: fixed;
-      right: 16px;
-      bottom: 16px;
+      right: 1.3rem;
+      bottom: 1.3rem;
+      background: var(--accent);
       width: 46px;
       height: 46px;
       border-radius: 50%;
-      background: var(--accent);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 26px;
+      display: grid;
+      place-items: center;
+      font-size: 1.4rem;
       cursor: pointer;
-      box-shadow: 0 6px 25px #0005;
-      z-index: 50;
     }
     dialog {
-      border: none;
+      background: #1c2127;
+      border: 1px solid rgba(255,255,255,.08);
       border-radius: 10px;
-      background: #19202a;
+      width: min(420px, 95vw);
       color: #fff;
-      width: min(460px, 96vw);
-      padding: 14px 16px 12px;
     }
-    .dlg-row { margin-bottom: 10px; display: flex; flex-direction: column; gap: 3px; }
-    .dlg-row label { font-size: 13px; color: #d4d8de; }
-    .dlg-row input, .dlg-row select, .dlg-row textarea {
-      background: #0000;
-      border: 1px solid #ffffff22;
+    dialog form {
+      display: flex;
+      flex-direction: column;
+      gap: .6rem;
+      padding: 1rem 1rem .5rem;
+    }
+    dialog label {
+      font-size: .7rem;
+      color: var(--muted);
+    }
+    dialog input,
+    dialog select,
+    dialog textarea {
+      background: rgba(0,0,0,.25);
+      border: 1px solid rgba(255,255,255,.03);
       border-radius: 6px;
-      padding: 5px 7px;
-      color: inherit;
+      padding: .35rem .5rem;
+      color: #fff;
+      font-size: .8rem;
     }
-    textarea { min-height: 70px; }
-    .dlg-foot { display: flex; justify-content: flex-end; gap: 8px; margin-top: 10px; }
-    .badge {
-      display: inline-block;
-      background: #ffffff0f;
-      padding: 2px 8px;
-      border-radius: 999px;
-      font-size: 11px;
+    dialog .actions {
+      display: flex;
+      justify-content: flex-end;
+      gap: .5rem;
+      padding: .5rem 1rem 1rem;
     }
-    .hidden { display: none; }
-    @media (max-width: 780px) {
-      header { flex-direction: column; align-items: flex-start; }
-      #board { flex-wrap: nowrap; }
+    dialog button {
+      border: none;
+      border-radius: 6px;
+      padding: .45rem .75rem;
+      cursor: pointer;
+    }
+    dialog .ghost {
+      background: rgba(255,255,255,.02);
+      color: #fff;
+    }
+    dialog .primary {
+      background: var(--accent);
+      color: #fff;
+    }
+    /* Stammdaten-Dialog */
+    #dlg-stammdaten .section {
+      background: rgba(0,0,0,.22);
+      border-radius: 6px;
+      padding: .6rem .6rem .6rem;
+      margin-bottom: .6rem;
+    }
+    #dlg-stammdaten h3 {
+      margin: 0 0 .4rem;
+      font-size: .8rem;
+    }
+    #dlg-stammdaten ul {
+      margin: .4rem 0 0;
+      padding: 0;
+      list-style: none;
+      font-size: .7rem;
+      max-height: 90px;
+      overflow: auto;
+    }
+    #dlg-stammdaten li {
+      padding: .2rem 0;
+      border-bottom: 1px solid rgba(255,255,255,.03);
     }
   </style>
 </head>
 <body>
   <header>
-    <div><span class="dot" id="connDot"></span><strong>verbunden</strong></div>
-    <div>
-      <label for="viewSel">Ansicht:</label>
+    <div class="pill"><span style="width:8px;height:8px;border-radius:50%;background:#3fcf4d;display:inline-block"></span> verbunden</div>
+    <label>Ansicht:
       <select id="viewSel">
-        <option value="14d">14 Tage</option>
+        <option value="14">14 Tage</option>
         <option value="4w" selected>4 Wochen (Mo–Fr)</option>
         <option value="12m">12 Monate</option>
       </select>
-    </div>
-    <div>
-      <label for="startDate">Start:</label>
+    </label>
+    <label>Start:
       <input type="date" id="startDate" />
-      <button id="btnReload" class="ghost">Neu laden</button>
-    </div>
-    <div>
-      <label><input type="checkbox" id="chkUrlaub" /> Urlaub/Krank/Schule</label>
-      <label><input type="checkbox" id="chkAuto" checked /> Auto-Reload</label>
-    </div>
-    <div>
-      <button id="btnMaster" class="ghost">Stammdaten</button>
-    </div>
+    </label>
+    <button id="btnReload">Neu laden</button>
+    <button id="btnStammdaten">Stammdaten</button>
+    <label style="display:flex;align-items:center;gap:.35rem;margin-left:auto;font-size:.7rem;">
+      <input type="checkbox" id="chkUrlaub" /> Urlaub/Krank/Schule
+    </label>
   </header>
+
   <main>
     <div id="board"></div>
   </main>
-  <div class="fab" id="btnAdd">+</div>
 
-  <!-- Neuer / Bearbeiten -->
-  <dialog id="entryDlg">
-    <h3 id="dlgTitle">Eintrag</h3>
-    <div class="dlg-row">
-      <label for="eDate">Datum</label>
-      <input type="date" id="eDate" />
-    </div>
-    <div class="dlg-row">
-      <label for="eTitle">Titel / Baustelle</label>
-      <input id="eTitle" />
-    </div>
-    <div class="dlg-row">
-      <label for="eMa">Mitarbeiter</label>
-      <select id="eMa">
-        <option value="">– keiner –</option>
-      </select>
-    </div>
-    <div class="dlg-row">
-      <label for="eCar">Fahrzeug</label>
-      <select id="eCar">
-        <option value="">– keines –</option>
-      </select>
-    </div>
-    <div class="dlg-row">
-      <label for="eStatus">Status</label>
-      <select id="eStatus">
-        <option value="">–</option>
-        <option value="urlaub">Urlaub</option>
-        <option value="krank">Krank</option>
-        <option value="schule">Schule</option>
-      </select>
-    </div>
-    <div class="dlg-row">
-      <label for="eNote">Notiz</label>
-      <textarea id="eNote" placeholder="optional"></textarea>
-    </div>
-    <div class="dlg-foot">
-      <button id="btnEntryCancel" class="ghost">Abbrechen</button>
-      <button id="btnEntryDelete" class="danger hidden">Löschen</button>
-      <button id="btnEntrySave">Speichern</button>
-    </div>
+  <div class="fab" id="fabPlus">+</div>
+
+  <!-- Dialog Eintrag -->
+  <dialog id="dlg-entry">
+    <form id="entryForm">
+      <input type="hidden" id="entry-id" />
+      <label>Titel
+        <input id="entry-titel" required />
+      </label>
+      <label>Mitarbeiter
+        <select id="entry-mitarbeiter">
+          <option value="">– keiner –</option>
+        </select>
+      </label>
+      <label>Fahrzeug
+        <select id="entry-fahrzeug">
+          <option value="">– keines –</option>
+        </select>
+      </label>
+      <label>Baustelle
+        <select id="entry-baustelle">
+          <option value="">– keine –</option>
+        </select>
+      </label>
+      <label>Status
+        <select id="entry-status">
+          <option value="">– normal –</option>
+          <option value="urlaub">Urlaub</option>
+          <option value="krank">Krank</option>
+          <option value="schule">Schule</option>
+        </select>
+      </label>
+      <label>Tag
+        <input type="date" id="entry-tag" required />
+      </label>
+      <div class="actions">
+        <button type="button" class="ghost" id="btnEntryCancel">Abbrechen</button>
+        <button type="submit" class="primary">Speichern</button>
+      </div>
+    </form>
   </dialog>
 
-  <!-- Stammdaten -->
-  <dialog id="masterDlg">
-    <h3>Stammdaten</h3>
-    <p class="badge">Mitarbeiter</p>
-    <div class="dlg-row">
-      <input id="mNewMa" placeholder="Mitarbeitername" />
-      <button id="btnAddMa">+ Hinzufügen</button>
-    </div>
-    <ul id="mMaList"></ul>
-    <p class="badge" style="margin-top:10px;">Fahrzeuge</p>
-    <div class="dlg-row">
-      <input id="mNewCar" placeholder="Fahrzeug" />
-      <button id="btnAddCar">+ Hinzufügen</button>
-    </div>
-    <ul id="mCarList"></ul>
-    <p class="badge" style="margin-top:10px;">Baustellen</p>
-    <div class="dlg-row">
-      <input id="mNewSite" placeholder="Baustelle" />
-      <button id="btnAddSite">+ Hinzufügen</button>
-    </div>
-    <ul id="mSiteList"></ul>
-    <div class="dlg-foot">
-      <button id="btnMasterClose" class="ghost">Schließen</button>
-    </div>
+  <!-- Dialog Stammdaten -->
+  <dialog id="dlg-stammdaten">
+    <form id="stammForm" onsubmit="return false;">
+      <h2>Stammdaten</h2>
+
+      <div class="section">
+        <h3>Mitarbeiter</h3>
+        <div style="display:flex;gap:.4rem;margin-bottom:.4rem;">
+          <input id="st-mitarbeiter" placeholder="Mitarbeitername" />
+          <button type="button" class="primary" id="btnAddMitarbeiter">+ hinzufügen</button>
+        </div>
+        <ul id="list-mitarbeiter"><li>– keine –</li></ul>
+      </div>
+
+      <div class="section">
+        <h3>Fahrzeuge</h3>
+        <div style="display:flex;gap:.4rem;margin-bottom:.4rem;">
+          <input id="st-fahrzeug" placeholder="Fahrzeug" />
+          <button type="button" class="primary" id="btnAddFahrzeug">+ hinzufügen</button>
+        </div>
+        <ul id="list-fahrzeuge"><li>– keine –</li></ul>
+      </div>
+
+      <div class="section">
+        <h3>Baustellen</h3>
+        <div style="display:flex;gap:.4rem;margin-bottom:.4rem;">
+          <input id="st-baustelle" placeholder="Baustelle" />
+          <button type="button" class="primary" id="btnAddBaustelle">+ hinzufügen</button>
+        </div>
+        <ul id="list-baustellen"><li>– keine –</li></ul>
+      </div>
+
+      <div class="actions">
+        <button type="button" class="primary" id="btnStammClose">Schließen</button>
+      </div>
+    </form>
   </dialog>
 
-  <script type="module">
-    // ---------------------------------------------------------
-    // 1. Supabase verbinden
-    // ---------------------------------------------------------
-    import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+  <!-- Supabase -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script>
+    // === Supabase Setup ===
     const SUPABASE_URL = "https://mtybmrkyhavxpvwysglo.supabase.co";
     const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im10eWJtcmt5aGF2eHB2d3lzZ2xvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjIxNjQ1OTIsImV4cCI6MjA3Nzc0MDU5Mn0.UToAmJAvACYvnO9hCIeyfm-VYKr5jincXdnEDDtbhvo";
-    const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
+    const supa = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-    // DOM
+    // === Elemente ===
     const board = document.getElementById("board");
     const viewSel = document.getElementById("viewSel");
     const startDate = document.getElementById("startDate");
     const btnReload = document.getElementById("btnReload");
-    const btnAdd = document.getElementById("btnAdd");
-    const chkAuto = document.getElementById("chkAuto");
+    const btnStammdaten = document.getElementById("btnStammdaten");
+    const fabPlus = document.getElementById("fabPlus");
+    const dlgEntry = document.getElementById("dlg-entry");
+    const entryForm = document.getElementById("entryForm");
+    const dlgStamm = document.getElementById("dlg-stammdaten");
     const chkUrlaub = document.getElementById("chkUrlaub");
-    const btnMaster = document.getElementById("btnMaster");
-    const connDot = document.getElementById("connDot");
 
-    // Dialog DOM
-    const entryDlg = document.getElementById("entryDlg");
-    const eDate = document.getElementById("eDate");
-    const eTitle = document.getElementById("eTitle");
-    const eMa = document.getElementById("eMa");
-    const eCar = document.getElementById("eCar");
-    const eStatus = document.getElementById("eStatus");
-    const eNote = document.getElementById("eNote");
-    const btnEntryCancel = document.getElementById("btnEntryCancel");
-    const btnEntrySave = document.getElementById("btnEntrySave");
-    const btnEntryDelete = document.getElementById("btnEntryDelete");
-    const dlgTitle = document.getElementById("dlgTitle");
+    // Stammdaten-Listen
+    const listMitarbeiter = document.getElementById("list-mitarbeiter");
+    const listFahrzeuge   = document.getElementById("list-fahrzeuge");
+    const listBaustellen  = document.getElementById("list-baustellen");
 
-    // Stammdaten DOM
-    const masterDlg = document.getElementById("masterDlg");
-    const mMaList = document.getElementById("mMaList");
-    const mCarList = document.getElementById("mCarList");
-    const mSiteList = document.getElementById("mSiteList");
-    const mNewMa = document.getElementById("mNewMa");
-    const mNewCar = document.getElementById("mNewCar");
-    const mNewSite = document.getElementById("mNewSite");
-    const btnAddMa = document.getElementById("btnAddMa");
-    const btnAddCar = document.getElementById("btnAddCar");
-    const btnAddSite = document.getElementById("btnAddSite");
-    const btnMasterClose = document.getElementById("btnMasterClose");
+    const selEntryMitarbeiter = document.getElementById("entry-mitarbeiter");
+    const selEntryFahrzeug = document.getElementById("entry-fahrzeug");
+    const selEntryBaustelle = document.getElementById("entry-baustelle");
 
-    let allEntries = [];
-    let allMa = [];
-    let allCars = [];
-    let allSites = [];
-    let editId = null;
-    let autoTimer = null;
+    // === Init ===
+    startDate.valueAsDate = new Date();
+    loadBoard();
+    loadStammdaten();
 
-    // Startdatum heute setzen
-    startDate.value = new Date().toISOString().split("T")[0];
+    // === Events ===
+    btnReload.onclick = loadBoard;
+    viewSel.onchange = loadBoard;
+    startDate.onchange = loadBoard;
+    chkUrlaub.onchange = loadBoard;
 
-    // ---------------------------------------------------------
-    // Daten laden
-    // ---------------------------------------------------------
-    async function loadEntries() {
-      try {
-        const { data, error } = await supabase.from("plantafel").select("*").order("tag", { ascending: true });
-        if (error) throw error;
-        allEntries = data || [];
-        renderBoard();
-        connDot.style.background = "#39d353";
-      } catch (err) {
-        console.error("Einträge laden:", err.message);
-        connDot.style.background = "#ff6b6b";
-      }
-    }
-    async function loadMasters() {
-      // Mitarbeiter
-      try {
-        const { data } = await supabase.from("mitarbeiter").select("*").order("name", { ascending: true });
-        allMa = data || [];
-      } catch (err) { allMa = []; }
-      // Fahrzeuge
-      try {
-        const { data } = await supabase.from("fahrzeuge").select("*").order("name", { ascending: true });
-        allCars = data || [];
-      } catch (err) { allCars = []; }
-      // Baustellen
-      try {
-        const { data } = await supabase.from("baustellen").select("*").order("name", { ascending: true });
-        allSites = data || [];
-      } catch (err) { allSites = []; }
+    btnStammdaten.onclick = () => {
+      loadStammdaten().then(() => dlgStamm.showModal());
+    };
+    document.getElementById("btnStammClose").onclick = () => dlgStamm.close();
 
-      // Auswahllisten füllen
-      eMa.innerHTML = `<option value="">– keiner –</option>` + allMa.map(m => `<option value="${m.name}">${m.name}</option>`).join("");
-      eCar.innerHTML = `<option value="">– keines –</option>` + allCars.map(m => `<option value="${m.name}">${m.name}</option>`).join("");
+    document.getElementById("btnAddMitarbeiter").onclick = async () => {
+      const name = document.getElementById("st-mitarbeiter").value.trim();
+      if (!name) return;
+      await supa.from("mitarbeiter").insert({ name });
+      document.getElementById("st-mitarbeiter").value = "";
+      loadStammdaten();
+    };
+    document.getElementById("btnAddFahrzeug").onclick = async () => {
+      const name = document.getElementById("st-fahrzeug").value.trim();
+      if (!name) return;
+      await supa.from("fahrzeuge").insert({ name });
+      document.getElementById("st-fahrzeug").value = "";
+      loadStammdaten();
+    };
+    document.getElementById("btnAddBaustelle").onclick = async () => {
+      const name = document.getElementById("st-baustelle").value.trim();
+      if (!name) return;
+      await supa.from("baustellen").insert({ name });
+      document.getElementById("st-baustelle").value = "";
+      loadStammdaten();
+    };
 
-      // Stammdaten-Listen
-      mMaList.innerHTML = allMa.map(m => `<li>${m.name}</li>`).join("") || "<li>Keine Mitarbeiter</li>";
-      mCarList.innerHTML = allCars.map(m => `<li>${m.name}</li>`).join("") || "<li>Keine Fahrzeuge</li>";
-      mSiteList.innerHTML = allSites.map(m => `<li>${m.name}</li>`).join("") || "<li>Keine Baustellen</li>";
-    }
+    fabPlus.onclick = () => {
+      openEntryDialog({ tag: startDate.value });
+    };
+    document.getElementById("btnEntryCancel").onclick = () => dlgEntry.close();
 
-    // ---------------------------------------------------------
-    // Board rendern
-    // ---------------------------------------------------------
-    function renderBoard() {
-      const view = viewSel.value;
-      const start = new Date(startDate.value);
-      if (isNaN(start.getTime())) return;
-      board.innerHTML = "";
-
-      if (view === "12m") {
-        // 12 Monate grob
-        for (let i = 0; i < 12; i++) {
-          const d = new Date(start);
-          d.setMonth(d.getMonth() + i);
-          const monthCol = document.createElement("div");
-          monthCol.className = "col";
-          const monthName = d.toLocaleDateString("de-DE", { month: "long", year: "numeric" });
-          monthCol.innerHTML = `<div class="col-header"><strong>${monthName}</strong></div><div class="col-body" data-col-type="month" data-month="${d.getFullYear()}-${d.getMonth()+1}"></div>`;
-          board.appendChild(monthCol);
-        }
-        // Einträge rein
-        const bodies = board.querySelectorAll(".col-body");
-        allEntries.forEach(e => {
-          const ed = new Date(e.tag);
-          const key = `${ed.getFullYear()}-${ed.getMonth()+1}`;
-          bodies.forEach(body => {
-            if (body.dataset.month === key) {
-              body.appendChild(makeEntryNode(e));
-            }
-          });
-        });
-      } else {
-        // Tage
-        const days = (view === "14d") ? 14 : 20; // 4 Wochen Mo-Fr ~ 20 Tage
-        for (let i = 0; i < days; i++) {
-          const d = new Date(start);
-          d.setDate(d.getDate() + i);
-          // bei 4w Mo–Fr: Wochenenden weglassen
-          if (view === "4w") {
-            const wd = d.getDay();
-            if (wd === 0 || wd === 6) { // So oder Sa
-              continue;
-            }
-          }
-          const iso = d.toISOString().split("T")[0];
-          const col = document.createElement("div");
-          col.className = "col";
-          col.innerHTML = `
-            <div class="col-header">
-              <strong>${d.toLocaleDateString("de-DE", { weekday: "short" })}</strong>
-              <small>${d.toLocaleDateString("de-DE")}</small>
-            </div>
-            <div class="col-body" data-date="${iso}"></div>
-          `;
-          board.appendChild(col);
-        }
-        // Einträge einsortieren
-        const bodies = board.querySelectorAll(".col-body");
-        allEntries.forEach(e => {
-          if (!e.tag) return;
-          const ed = e.tag.slice(0, 10);
-          bodies.forEach(body => {
-            if (body.dataset.date === ed) {
-              // Filter Urlaub
-              if (!chkUrlaub.checked && (e.status === "urlaub" || e.status === "krank" || e.status === "schule")) {
-                return;
-              }
-              body.appendChild(makeEntryNode(e));
-            }
-          });
-        });
-      }
-    }
-
-    function makeEntryNode(e) {
-      const div = document.createElement("div");
-      div.className = "entry";
-      div.draggable = true;
-      div.dataset.id = e.id;
-      div.innerHTML = `
-        <div class="entry-title">${e.titel || "(ohne Titel)"}</div>
-        <div class="entry-meta">
-          ${e.mitarbeiter ? "👷 " + e.mitarbeiter : ""}
-          ${e.fahrzeug ? " 🚚 " + e.fahrzeug : ""}
-          ${e.status ? " | " + e.status : ""}
-        </div>
-      `;
-      div.addEventListener("click", ev => {
-        ev.stopPropagation();
-        openEdit(e);
-      });
-      // Drag
-      div.addEventListener("dragstart", ev => {
-        ev.dataTransfer.setData("text/plain", e.id);
-      });
-      return div;
-    }
-
-    // Drop-Zonen aktivieren
-    board.addEventListener("dragover", ev => {
-      if (ev.target.classList.contains("col-body")) {
-        ev.preventDefault();
-      }
-    });
-    board.addEventListener("drop", async ev => {
-      if (!ev.target.classList.contains("col-body")) return;
+    entryForm.onsubmit = async (ev) => {
       ev.preventDefault();
-      const id = ev.dataTransfer.getData("text/plain");
-      const targetDate = ev.target.dataset.date;
-      if (!id || !targetDate) return;
-      // Update in DB
-      await supabase.from("plantafel").update({ tag: targetDate }).eq("id", id);
-      loadEntries();
-    });
+      const id = document.getElementById("entry-id").value;
+      const titel = document.getElementById("entry-titel").value.trim();
+      const tag = document.getElementById("entry-tag").value;
+      const mitarbeiter = document.getElementById("entry-mitarbeiter").value;
+      const fahrzeug = document.getElementById("entry-fahrzeug").value;
+      const baustelle = document.getElementById("entry-baustelle").value;
+      const status = document.getElementById("entry-status").value;
 
-    // ---------------------------------------------------------
-    // Dialog-Funktionen
-    // ---------------------------------------------------------
-    function openNew() {
-      editId = null;
-      eDate.value = startDate.value;
-      eTitle.value = "";
-      eMa.value = "";
-      eCar.value = "";
-      eStatus.value = "";
-      eNote.value = "";
-      btnEntryDelete.classList.add("hidden");
-      dlgTitle.textContent = "Neuer Eintrag";
-      entryDlg.showModal();
-    }
-    function openEdit(e) {
-      editId = e.id;
-      eDate.value = e.tag ? e.tag.slice(0,10) : startDate.value;
-      eTitle.value = e.titel || "";
-      eMa.value = e.mitarbeiter || "";
-      eCar.value = e.fahrzeug || "";
-      eStatus.value = e.status || "";
-      eNote.value = e.notiz || "";
-      btnEntryDelete.classList.remove("hidden");
-      dlgTitle.textContent = "Eintrag bearbeiten";
-      entryDlg.showModal();
-    }
-
-    btnEntryCancel.onclick = () => entryDlg.close();
-    btnEntrySave.onclick = async () => {
-      const payload = {
-        tag: eDate.value,
-        titel: eTitle.value,
-        mitarbeiter: eMa.value,
-        fahrzeug: eCar.value,
-        status: eStatus.value,
-        notiz: eNote.value,
-      };
-      if (editId) {
-        await supabase.from("plantafel").update(payload).eq("id", editId);
+      const payload = { titel, tag, mitarbeiter, fahrzeug, baustelle, status };
+      if (!id) {
+        await supa.from("plantafel").insert(payload);
       } else {
-        await supabase.from("plantafel").insert([payload]);
+        await supa.from("plantafel").update(payload).eq("id", id);
       }
-      entryDlg.close();
-      loadEntries();
-    };
-    btnEntryDelete.onclick = async () => {
-      if (!editId) return;
-      await supabase.from("plantafel").delete().eq("id", editId);
-      entryDlg.close();
-      loadEntries();
+      dlgEntry.close();
+      loadBoard();
     };
 
-    // Stammdaten
-    btnMaster.onclick = () => {
-      masterDlg.showModal();
-    };
-    btnMasterClose.onclick = () => masterDlg.close();
-    btnAddMa.onclick = async () => {
-      if (!mNewMa.value.trim()) return;
-      await supabase.from("mitarbeiter").insert([{ name: mNewMa.value.trim() }]);
-      mNewMa.value = "";
-      loadMasters();
-    };
-    btnAddCar.onclick = async () => {
-      if (!mNewCar.value.trim()) return;
-      await supabase.from("fahrzeuge").insert([{ name: mNewCar.value.trim() }]);
-      mNewCar.value = "";
-      loadMasters();
-    };
-    btnAddSite.onclick = async () => {
-      if (!mNewSite.value.trim()) return;
-      await supabase.from("baustellen").insert([{ name: mNewSite.value.trim() }]);
-      mNewSite.value = "";
-      loadMasters();
-    };
+    // === Funktionen ===
+    async function loadStammdaten() {
+      const [mit, fah, bau] = await Promise.all([
+        supa.from("mitarbeiter").select().order("name", { ascending: true }),
+        supa.from("fahrzeuge").select().order("name", { ascending: true }),
+        supa.from("baustellen").select().order("name", { ascending: true }),
+      ]);
 
-    // ---------------------------------------------------------
-    // Events
-    // ---------------------------------------------------------
-    btnAdd.onclick = openNew;
-    btnReload.onclick = () => { loadEntries(); loadMasters(); };
-    viewSel.onchange = renderBoard;
-    startDate.onchange = renderBoard;
-    chkUrlaub.onchange = renderBoard;
-    chkAuto.onchange = () => {
-      if (chkAuto.checked) startAuto();
-      else stopAuto();
-    };
+      renderList(listMitarbeiter, mit.data, "name");
+      renderList(listFahrzeuge, fah.data, "name");
+      renderList(listBaustellen, bau.data, "name");
 
-    function startAuto() {
-      stopAuto();
-      autoTimer = setInterval(loadEntries, 10000);
-    }
-    function stopAuto() {
-      if (autoTimer) clearInterval(autoTimer);
-      autoTimer = null;
+      fillSelect(selEntryMitarbeiter, mit.data, "name");
+      fillSelect(selEntryFahrzeug, fah.data, "name");
+      fillSelect(selEntryBaustelle, bau.data, "name");
     }
 
-    // ---------------------------------------------------------
-    // Init
-    // ---------------------------------------------------------
-    (async function init() {
-      await loadMasters();
-      await loadEntries();
-      startAuto();
-      // optional: realtime, falls supabase aktiviert
-      try {
-        supabase.channel('plantafel-ch')
-          .on('postgres_changes', { event: '*', schema: 'public', table: 'plantafel' }, payload => {
-            loadEntries();
-          })
-          .subscribe();
-      } catch (err) {
-        console.log("Realtime nicht aktiv:", err.message);
+    function renderList(ul, rows, field) {
+      ul.innerHTML = "";
+      if (!rows || !rows.length) {
+        ul.innerHTML = "<li>– keine –</li>";
+        return;
       }
-    })();
+      rows.forEach(r => {
+        const li = document.createElement("li");
+        li.textContent = r[field] || "(ohne Name)";
+        ul.appendChild(li);
+      });
+    }
+    function fillSelect(sel, rows, field) {
+      sel.innerHTML = '<option value="">– keiner –</option>';
+      if (!rows) return;
+      rows.forEach(r => {
+        const opt = document.createElement("option");
+        opt.value = r[field];
+        opt.textContent = r[field];
+        sel.appendChild(opt);
+      });
+    }
+
+    function addDays(date, days) {
+      const d = new Date(date);
+      d.setDate(d.getDate() + days);
+      return d;
+    }
+    function formatDateISO(d) {
+      return d.toISOString().slice(0,10);
+    }
+    function getWeekdayName(d) {
+      return ["So","Mo","Di","Mi","Do","Fr","Sa"][d.getDay()];
+    }
+    function formatDE(d) {
+      return d.toLocaleDateString("de-DE", { day:"2-digit", month:"2-digit", year:"numeric" });
+    }
+
+    async function loadBoard() {
+      board.innerHTML = "Lade…";
+      const start = new Date(startDate.value);
+      let dates = [];
+
+      if (viewSel.value === "14") {
+        for (let i=0;i<14;i++) dates.push(addDays(start, i));
+      } else if (viewSel.value === "4w") {
+        // 4 Wochen Mo–Fr -> 4*5 = 20 Tage
+        let d = new Date(start);
+        for (let i=0;i<28;i++) {
+          const cur = addDays(d, i);
+          if (cur.getDay() === 0 || cur.getDay() === 6) continue;
+          dates.push(cur);
+        }
+      } else {
+        // 12 Monate: jeweils 1. des Monats
+        let monthStart = new Date(start.getFullYear(), start.getMonth(), 1);
+        for (let m = 0; m < 12; m++) {
+          dates.push(new Date(monthStart.getFullYear(), monthStart.getMonth() + m, 1));
+        }
+      }
+
+      // Einträge holen
+      const minDate = formatDateISO(dates[0]);
+      const maxDate = formatDateISO(dates[dates.length-1]);
+      const { data: entries } = await supa
+        .from("plantafel")
+        .select()
+        .gte("tag", minDate)
+        .lte("tag", maxDate)
+        .order("tag", { ascending: true })
+        .order("sort", { ascending: true });
+
+      board.innerHTML = "";
+      dates.forEach(d => {
+        const col = document.createElement("div");
+        col.className = "day-col";
+        col.dataset.date = formatDateISO(d);
+
+        const head = document.createElement("div");
+        head.className = "day-head";
+        head.innerHTML = `<div class="dow">${getWeekdayName(d)} ${formatDE(d)}</div>`;
+        col.appendChild(head);
+
+        const list = document.createElement("div");
+        list.className = "entries";
+        list.ondragover = (ev)=>ev.preventDefault();
+        list.ondrop = (ev)=>onDrop(ev, formatDateISO(d));
+        col.appendChild(list);
+
+        const todays = (entries || []).filter(e => e.tag === formatDateISO(d));
+        todays.forEach(e => {
+          const div = document.createElement("div");
+          div.className = "entry" + (isRed(e.status) ? " red" : "");
+          div.draggable = true;
+          div.ondragstart = (ev)=>onDrag(ev, e);
+          div.onclick = ()=>openEntryDialog(e);
+          div.innerHTML = `
+            <div class="entry-title">${e.titel || "(ohne Titel)"}</div>
+            <div class="entry-meta">
+              ${e.mitarbeiter ? "👷 " + e.mitarbeiter : ""}
+              ${e.fahrzeug ? "🚐 " + e.fahrzeug : ""}
+              ${e.baustelle ? "📍 " + e.baustelle : ""}
+              ${e.status ? "⚠ " + e.status : ""}
+            </div>
+          `;
+          list.appendChild(div);
+        });
+
+        board.appendChild(col);
+      });
+    }
+
+    function isRed(status) {
+      return status === "urlaub" || status === "krank" || status === "schule";
+    }
+
+    let dragData = null;
+    function onDrag(ev, entry) {
+      dragData = entry;
+    }
+    async function onDrop(ev, newDate) {
+      ev.preventDefault();
+      if (!dragData) return;
+      await supa.from("plantafel").update({ tag: newDate }).eq("id", dragData.id);
+      dragData = null;
+      loadBoard();
+    }
+
+    function openEntryDialog(entry) {
+      document.getElementById("entry-id").value = entry.id || "";
+      document.getElementById("entry-titel").value = entry.titel || "";
+      document.getElementById("entry-mitarbeiter").value = entry.mitarbeiter || "";
+      document.getElementById("entry-fahrzeug").value = entry.fahrzeug || "";
+      document.getElementById("entry-baustelle").value = entry.baustelle || "";
+      document.getElementById("entry-status").value = entry.status || "";
+      document.getElementById("entry-tag").value = entry.tag || startDate.value;
+      dlgEntry.showModal();
+    }
   </script>
 </body>
 </html>
