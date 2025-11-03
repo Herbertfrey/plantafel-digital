@@ -2,947 +2,822 @@
 <html lang="de">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Plantafel Digital (Supabase)</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1.0" />
+  <title>Plantafel Digital</title>
   <style>
     :root {
-      --bg-main: #0f172a;
-      --bg-panel: #111827;
-      --bg-card: #1f2937;
-      --txt-main: #e5e7eb;
-      --txt-dim: #94a3b8;
-      --accent: #3b82f6;
-      --danger: #ef4444;
+      --bg-main: #15181d;
+      --bg-panel: #1f232a;
+      --bg-col: #1a1d23;
+      --line: #30343b;
+      --accent: #2b7bff;
+      --danger: #d53b3b;
+      --txt: #fff;
+      --txt-dim: #c5cbd6;
       --radius-lg: 14px;
-      --radius-sm: 8px;
     }
-
-    * {
-      box-sizing: border-box;
-    }
-
+    * { box-sizing: border-box; }
     body {
       margin: 0;
       background: var(--bg-main);
-      color: var(--txt-main);
+      color: var(--txt);
       font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
       height: 100vh;
       display: flex;
       flex-direction: column;
+      gap: .5rem;
     }
-
-    header.toolbar {
+    header {
       display: flex;
-      gap: 12px;
       align-items: center;
-      padding: 12px 16px;
-      background: rgba(15,23,42,0.9);
-      border-bottom: 1px solid rgba(148,163,184,0.12);
+      gap: .6rem;
+      padding: .6rem .9rem;
+      background: rgba(0,0,0,.25);
       backdrop-filter: blur(6px);
-      z-index: 10;
+      border-bottom: 1px solid rgba(255,255,255,.04);
     }
-
-    header .dot {
-      width: 10px;
-      height: 10px;
-      border-radius: 9999px;
-      background: #22c55e;
-      margin-right: 6px;
+    header .pill {
+      background: #0f9d58;
+      width: .55rem;
+      height: .55rem;
+      border-radius: 999px;
+      margin-right: .35rem;
     }
-
-    header h1 {
-      font-size: 16px;
-      margin: 0 16px 0 0;
-      font-weight: 600;
+    select, input, button {
+      border: none;
+      outline: none;
+      font: inherit;
     }
-
-    select, input[type="date"] {
-      background: #0f172a;
-      border: 1px solid rgba(148,163,184,0.25);
-      color: var(--txt-main);
+    select, input {
+      background: #0f1115;
+      color: #fff;
+      border: 1px solid rgba(255,255,255,.05);
       border-radius: 8px;
-      padding: 4px 8px;
-      height: 32px;
+      padding: .3rem .5rem;
     }
-
     button {
       background: var(--accent);
-      border: none;
-      color: white;
-      border-radius: 9999px;
-      padding: 6px 14px;
-      font-weight: 500;
+      color: #fff;
+      border-radius: 9px;
+      padding: .35rem .7rem;
       cursor: pointer;
+      transition: .15s;
     }
-
     button.secondary {
-      background: rgba(148,163,184,0.12);
-      border: 1px solid rgba(148,163,184,0.2);
+      background: rgba(0,0,0,.0);
+      border: 1px solid rgba(255,255,255,.07);
     }
+    button:hover { opacity: .9; }
 
     main {
       flex: 1;
-      overflow: auto;
-      padding: 12px;
       display: flex;
       flex-direction: column;
-      gap: 12px;
-    }
-
-    /* Boards */
-    .board {
-      display: flex;
-      gap: 10px;
-      align-items: flex-start;
-    }
-
-    /* Feinplanung 14 Tage / 4 Wochen: Spalten nebeneinander */
-    .day-column {
-      background: rgba(15,23,42,0.3);
-      border: 1px solid rgba(148,163,184,0.05);
-      border-radius: 12px;
-      width: 190px;
-      min-height: 140px;
-      display: flex;
-      flex-direction: column;
+      gap: .5rem;
       overflow: hidden;
+      padding: 0 .6rem .6rem;
     }
 
-    .day-header {
-      padding: 6px 10px;
-      border-bottom: 1px solid rgba(148,163,184,0.05);
-      background: rgba(15,23,42,0.6);
+    /* FEINPLANUNG (14 Tage / 4 Wochen) */
+    .board-fein {
+      display: flex;
+      flex-direction: column;
+      gap: .5rem;
+      overflow: auto;
+    }
+    .week-row {
+      display: grid;
+      grid-template-columns: repeat(5, minmax(180px, 1fr));
+      gap: .5rem;
+      min-height: 170px;
+    }
+    .day-col {
+      background: var(--bg-col);
+      border: 1px solid rgba(255,255,255,.02);
+      border-radius: 12px;
+      display: flex;
+      flex-direction: column;
+      min-height: 140px;
+    }
+    .day-head {
+      padding: .35rem .45rem .25rem;
+      border-bottom: 1px solid rgba(255,255,255,.03);
+      font-size: .7rem;
       display: flex;
       justify-content: space-between;
       align-items: center;
-      font-size: 13px;
-    }
-
-    .day-header small {
       color: var(--txt-dim);
-      font-size: 11px;
     }
-
     .day-body {
       flex: 1;
-      padding: 6px;
+      padding: .35rem .4rem .4rem;
       display: flex;
       flex-direction: column;
-      gap: 6px;
+      gap: .35rem;
     }
 
-    .day-body.empty {
-      cursor: pointer;
-    }
-
-    /* Eintrags-Karte */
-    .entry-card {
-      background: var(--bg-card);
-      border: 1px solid rgba(148,163,184,0.15);
+    .card {
+      background: rgba(0,0,0,.13);
+      border: 1px solid rgba(255,255,255,.04);
       border-radius: 10px;
-      padding: 4px 6px 6px 6px;
-      font-size: 12px;
+      padding: .25rem .35rem;
+      font-size: .65rem;
       display: flex;
       flex-direction: column;
-      gap: 2px;
-      position: relative;
+      gap: .2rem;
       cursor: grab;
     }
-
-    .entry-card.red-left {
-      border-left: 4px solid var(--danger);
-      padding-left: 4px;
-    }
-
-    .entry-title {
-      font-weight: 600;
-      font-size: 12px;
-    }
-
-    .entry-meta {
-      display: flex;
-      gap: 4px;
-      flex-wrap: wrap;
-    }
-
+    .card small { color: rgba(0,0,0,.4); } /* wird eh überschrieben */
     .badge {
-      display: inline-block;
-      padding: 1px 6px;
-      border-radius: 9999px;
-      font-size: 10px;
-      background: rgba(148,163,184,0.12);
-      border: 1px solid rgba(148,163,184,0.25);
-      color: #fff;
-      white-space: nowrap;
-    }
-
-    .entry-actions {
-      position: absolute;
-      top: 2px;
-      right: 4px;
-      display: flex;
-      gap: 4px;
-    }
-
-    .entry-actions button {
-      background: rgba(15,23,42,0.5);
-      border-radius: 6px;
-      padding: 0 6px;
-      font-size: 11px;
-    }
-
-    /* Monats-/Grobplanung: 12 Monate als Tabelle */
-    .month-grid {
-      display: grid;
-      grid-template-columns: repeat(12, minmax(140px, 1fr));
-      gap: 10px;
-    }
-
-    .month-cell {
-      background: rgba(15,23,42,0.3);
-      border: 1px solid rgba(148,163,184,0.05);
-      border-radius: 12px;
-      min-height: 120px;
-      display: flex;
-      flex-direction: column;
-    }
-
-    .month-header {
-      padding: 6px 10px;
-      border-bottom: 1px solid rgba(148,163,184,0.05);
-      background: rgba(15,23,42,0.6);
-      font-size: 13px;
-    }
-
-    .month-body {
-      flex: 1;
-      padding: 6px;
-      display: flex;
-      flex-direction: column;
-      gap: 6px;
-    }
-
-    /* Dialoge */
-    dialog {
-      border: none;
-      background: rgba(15,23,42,0.95);
-      border-radius: 16px;
-      padding: 16px;
-      color: var(--txt-main);
-      width: 320px;
-    }
-
-    dialog::backdrop {
-      background: rgba(0,0,0,0.45);
-    }
-
-    .dlg-title {
-      font-size: 16px;
-      font-weight: 600;
-      margin-bottom: 12px;
-    }
-
-    .form-row {
-      display: flex;
-      flex-direction: column;
-      gap: 4px;
-      margin-bottom: 10px;
-    }
-
-    .form-row label {
-      font-size: 12px;
-      color: var(--txt-dim);
-    }
-
-    .form-row input, .form-row select, .form-row textarea {
-      background: #0f172a;
-      border: 1px solid rgba(148,163,184,0.25);
-      padding: 6px 8px;
-      border-radius: 8px;
-      color: var(--txt-main);
-      font-size: 13px;
-    }
-
-    textarea {
-      resize: vertical;
-      min-height: 60px;
-    }
-
-    .dlg-foot {
-      display: flex;
-      justify-content: flex-end;
-      gap: 10px;
-      margin-top: 12px;
-    }
-
-    /* Stammdaten-Dialog */
-    .master-section {
-      background: rgba(15,23,42,0.35);
-      border: 1px solid rgba(148,163,184,0.12);
-      border-radius: 10px;
-      margin-bottom: 12px;
-      overflow: hidden;
-    }
-
-    .master-header {
-      background: rgba(15,23,42,0.6);
-      padding: 6px 8px;
-      font-size: 13px;
-      font-weight: 500;
-    }
-
-    .master-body {
-      padding: 6px 8px 8px 8px;
-      display: flex;
-      flex-direction: column;
-      gap: 6px;
-    }
-
-    .master-item {
-      background: rgba(148,163,184,0.12);
-      border-radius: 9999px;
-      padding: 3px 10px;
       display: inline-flex;
+      gap: .3rem;
       align-items: center;
-      gap: 6px;
-      font-size: 12px;
+      font-size: .58rem;
+      background: rgba(0,0,0,.25);
+      padding: .1rem .35rem;
+      border-radius: 999px;
+    }
+    .card-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: .5rem;
+    }
+    .card-title { font-weight: 600; }
+    .card-close {
+      background: transparent;
+      border: none;
       color: #fff;
-    }
-
-    .badge-emp {
-      background: rgba(59,130,246,0.16);
-      border: 1px solid rgba(59,130,246,0.5);
-    }
-
-    .badge-car {
-      background: rgba(249,115,22,0.16);
-      border: 1px solid rgba(249,115,22,0.5);
-    }
-
-    .badge-site {
-      background: rgba(34,197,94,0.16);
-      border: 1px solid rgba(34,197,94,0.5);
-    }
-
-    .small-btn {
-      background: rgba(15,23,42,0.4);
-      border: 1px solid rgba(148,163,184,0.25);
-      border-radius: 6px;
-      padding: 2px 6px;
-      font-size: 11px;
+      font-size: .6rem;
       cursor: pointer;
     }
 
-    /* Drag target */
-    .drop-highlight {
-      outline: 2px dashed rgba(59,130,246,0.5);
-      outline-offset: -4px;
+    /* GROBPLANUNG 12 MONATE */
+    .board-grob {
+      flex: 1;
+      display: grid;
+      grid-template-columns: repeat(4, minmax(220px,1fr));
+      gap: .7rem;
+      overflow: auto;
+    }
+    .month-col {
+      background: var(--bg-col);
+      border: 1px solid rgba(255,255,255,.02);
+      border-radius: 12px;
+      display: flex;
+      flex-direction: column;
+      min-height: 180px;
+    }
+    .month-head {
+      padding: .35rem .5rem;
+      border-bottom: 1px solid rgba(255,255,255,.03);
+      font-size: .72rem;
+      color: var(--txt-dim);
+      display: flex;
+      justify-content: space-between;
+    }
+    .month-body {
+      flex: 1;
+      padding: .35rem .4rem .4rem;
+      display: flex;
+      flex-direction: column;
+      gap: .35rem;
     }
 
-    @media (max-width: 1000px) {
-      .month-grid {
-        grid-template-columns: repeat(3, minmax(140px, 1fr));
-      }
-      .board {
-        overflow-x: auto;
-      }
+    /* DIALOGE */
+    dialog {
+      border: none;
+      background: rgba(9,9,9,.6);
+      backdrop-filter: blur(10px);
+      border-radius: 16px;
+      padding: 1rem 1rem .8rem;
+      color: #fff;
+      width: min(420px, 90vw);
     }
+    dialog::backdrop { background: rgba(0,0,0,.3); }
+    .dlg-title { font-weight: 600; margin-bottom: .5rem; }
+    .field { display: flex; flex-direction: column; gap: .25rem; margin-bottom: .45rem;}
+    .field label { font-size: .65rem; color: var(--txt-dim); }
+    .field input, .field select, .field textarea {
+      background: #0f1115;
+      border: 1px solid rgba(255,255,255,.05);
+      border-radius: 7px;
+      padding: .25rem .45rem;
+      color: #fff;
+      font-size: .72rem;
+    }
+    .dlg-actions {
+      display: flex;
+      justify-content: flex-end;
+      gap: .4rem;
+      margin-top: .4rem;
+    }
+
+    /* kleine Helfer */
+    .hidden { display: none !important; }
   </style>
 </head>
 <body>
-<header class="toolbar">
-  <div style="display:flex;align-items:center;">
-    <span class="dot"></span>
-    <h1>Plantafel</h1>
-  </div>
-  <label style="display:flex;flex-direction:column;font-size:11px;gap:2px;">
-    Ansicht:
+  <header>
+    <div class="pill"></div>
+    <span>verbunden</span>
+    <label style="margin-left:.6rem;">Ansicht:</label>
     <select id="viewSel">
-      <option value="14d">14 Tage</option>
-      <option value="4w" selected>4 Wochen (Mo–Fr)</option>
+      <option value="4w">4 Wochen (Mo–Fr)</option>
+      <option value="14d">14 Tage (Mo–Fr)</option>
       <option value="12m">12 Monate (grob)</option>
     </select>
-  </label>
-  <label style="display:flex;flex-direction:column;font-size:11px;gap:2px;">
-    Start:
-    <input type="date" id="startDate" />
-  </label>
-  <button id="btnReload" class="secondary">Neu laden</button>
-  <label style="display:flex;align-items:center;gap:6px;margin-left:20px;">
-    <input type="checkbox" id="chkUrlaub" /> Urlaub/Krank/Schule
-  </label>
-  <label style="display:flex;align-items:center;gap:6px;">
-    <input type="checkbox" id="chkAutoReload" checked /> Auto-Reload
-  </label>
-  <button id="btnMaster" class="secondary">Stammdaten</button>
-  <button id="btnAdd">+ Eintrag</button>
-</header>
+    <label style="margin-left:.6rem;">Start:</label>
+    <input type="date" id="startDate">
+    <button id="btnReload" class="secondary">Neu laden</button>
+    <label style="margin-left:auto; display:flex; gap:.3rem; align-items:center;">
+      <input type="checkbox" id="chkUrlaub" /> Urlaub/Krank/Schule
+    </label>
+    <label style="display:flex; gap:.3rem; align-items:center;">
+      <input type="checkbox" id="chkAutoReload" checked /> Auto-Reload
+    </label>
+    <button id="btnMaster" class="secondary">Stammdaten</button>
+    <button id="btnAdd">+ Eintrag</button>
+  </header>
 
-<main>
-  <div id="board" class="board">
-    <!-- wird per JS gefüllt -->
-  </div>
-  <footer class="statusbar" style="font-size:12px;color:var(--txt-dim);padding:4px 2px;">
-    Status rot = Urlaub/Krank/Schule
-  </footer>
-</main>
+  <main>
+    <div id="board" class="board-fein"></div>
+  </main>
 
-<!-- Dialog Neuer/Bearbeiten -->
-<dialog id="entryDlg">
-  <div class="dlg-title" id="entryDlgTitle">Neuer Eintrag</div>
-  <form id="entryForm">
-    <input type="hidden" id="eId" />
-    <div class="form-row">
-      <label for="eDate">Datum</label>
-      <input type="date" id="eDate" required />
-    </div>
-    <div class="form-row">
-      <label for="eTitle">Titel / Auftrag</label>
-      <input id="eTitle" required />
-    </div>
-    <div class="form-row">
-      <label for="eMitarbeiter">Mitarbeiter</label>
-      <select id="eMitarbeiter">
-        <option value="">– keiner –</option>
-      </select>
-    </div>
-    <div class="form-row">
-      <label for="eFahrzeug">Fahrzeug</label>
-      <select id="eFahrzeug">
-        <option value="">– keines –</option>
-      </select>
-    </div>
-    <div class="form-row">
-      <label for="eBaustelle">Baustelle</label>
-      <select id="eBaustelle">
-        <option value="">– keine –</option>
-      </select>
-    </div>
-    <div class="form-row">
-      <label for="eStatus">Status</label>
-      <select id="eStatus">
-        <option value="">– normal –</option>
-        <option value="urlaub">Urlaub</option>
-        <option value="krank">Krank</option>
-        <option value="schule">Schule</option>
-      </select>
-    </div>
-    <div class="form-row">
-      <label for="eNote">Notiz</label>
-      <textarea id="eNote" placeholder="optional"></textarea>
-    </div>
-    <div class="form-row">
-      <label><input type="checkbox" id="eDetailed" /> bereits fein geplant</label>
-    </div>
-    <div class="dlg-foot">
-      <button type="button" class="secondary" id="btnEntryCancel">Abbrechen</button>
-      <button type="submit">Speichern</button>
-    </div>
-  </form>
-</dialog>
-
-<!-- Dialog Stammdaten -->
-<dialog id="masterDlg">
-  <div class="dlg-title">Stammdaten</div>
-  <div class="master-section">
-    <div class="master-header">Mitarbeiter</div>
-    <div class="master-body" id="empList">
-      <div style="display:flex;gap:6px;">
-        <input id="newEmp" placeholder="Mitarbeitername" style="flex:1;" />
-        <button id="btnAddEmp" class="small-btn">+ Hinzufügen</button>
+  <!-- Dialog Eintrag -->
+  <dialog id="entryDlg">
+    <div class="dlg-title" id="dlgTitle">Neuer Eintrag</div>
+    <form method="dialog" id="entryForm">
+      <div class="field" id="fldTitel">
+        <label for="eTitel">Auftrag / Titel</label>
+        <input id="eTitel" required />
       </div>
-      <!-- Einträge -->
-    </div>
-  </div>
-  <div class="master-section">
-    <div class="master-header">Fahrzeuge</div>
-    <div class="master-body" id="carList">
-      <div style="display:flex;gap:6px;">
-        <input id="newCar" placeholder="Fahrzeug" style="flex:1;" />
-        <button id="btnAddCar" class="small-btn">+ Hinzufügen</button>
+      <div class="field">
+        <label for="eMitarbeiter">Mitarbeiter</label>
+        <select id="eMitarbeiter">
+          <option value="">– keiner –</option>
+        </select>
       </div>
-    </div>
-  </div>
-  <div class="master-section">
-    <div class="master-header">Baustellen</div>
-    <div class="master-body" id="siteList">
-      <div style="display:flex;gap:6px;">
-        <input id="newSite" placeholder="Baustelle" style="flex:1;" />
-        <button id="btnAddSite" class="small-btn">+ Hinzufügen</button>
+      <div class="field" id="fldFahrzeug">
+        <label for="eFahrzeug">Fahrzeug</label>
+        <select id="eFahrzeug">
+          <option value="">– keines –</option>
+        </select>
       </div>
+      <div class="field" id="fldBaustelle">
+        <label for="eBaustelle">Baustelle</label>
+        <select id="eBaustelle">
+          <option value="">– keine –</option>
+        </select>
+      </div>
+      <div class="field">
+        <label for="eStatus">Status</label>
+        <select id="eStatus">
+          <option value="">normal</option>
+          <option value="urlaub">Urlaub</option>
+          <option value="krank">Krank</option>
+          <option value="schule">Schule</option>
+        </select>
+      </div>
+      <div class="field">
+        <label for="eNotiz">Notiz</label>
+        <textarea id="eNotiz" rows="2"></textarea>
+      </div>
+      <input type="hidden" id="eDate">
+      <input type="hidden" id="eId">
+      <div class="dlg-actions">
+        <button type="button" id="btnEntryCancel" class="secondary">Abbrechen</button>
+        <button type="submit" id="btnEntrySave">Speichern</button>
+      </div>
+    </form>
+  </dialog>
+
+  <!-- Dialog Stammdaten -->
+  <dialog id="masterDlg">
+    <div class="dlg-title">Stammdaten</div>
+    <div class="field">
+      <label>Mitarbeitername</label>
+      <div style="display:flex; gap:.3rem;">
+        <input id="mName" placeholder="z. B. Thomas" />
+        <button type="button" id="btnMAdd">+ Hinzufügen</button>
+      </div>
+      <ul id="mList"></ul>
     </div>
-  </div>
-  <div class="dlg-foot">
-    <button id="btnMasterClose" class="secondary">Schließen</button>
-  </div>
-</dialog>
+    <div class="field">
+      <label>Fahrzeug</label>
+      <div style="display:flex; gap:.3rem;">
+        <input id="fName" placeholder="z. B. Doka" />
+        <button type="button" id="btnFAdd">+ Hinzufügen</button>
+      </div>
+      <ul id="fList"></ul>
+    </div>
+    <div class="field">
+      <label>Baustelle</label>
+      <div style="display:flex; gap:.3rem;">
+        <input id="bName" placeholder="z. B. Musterstraße 4" />
+        <button type="button" id="btnBAdd">+ Hinzufügen</button>
+      </div>
+      <ul id="bList"></ul>
+    </div>
+    <div class="dlg-actions">
+      <button type="button" id="btnMasterClose">Schließen</button>
+    </div>
+  </dialog>
 
-<!-- Supabase -->
-<script type="module">
-  import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm";
+  <script type="module">
+    import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
-  // === deine Supabase-Daten ===
-  const SUPABASE_URL = "https://mtybmrkyhavxpvwysglo.supabase.co";
-  const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im10eWJtcmt5aGF2eHB2d3lzZ2xvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjIxNjQ1OTIsImV4cCI6MjA3Nzc0MDU5Mn0.UToAmJAvACYvnO9hCIeyfm-VYKr5jincXdnEDDtbhvo";
-  const supa = createClient(SUPABASE_URL, SUPABASE_KEY);
+    const SUPABASE_URL = "https://mtybmrkyhavxpvwysglo.supabase.co";
+    const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im10eWJtcmt5aGF2eHB2d3lzZ2xvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjIxNjQ1OTIsImV4cCI6MjA3Nzc0MDU5Mn0.UToAmJAvACYvnO9hCIeyfm-VYKr5jincXdnEDDtbhvo";
 
-  // === Elemente ===
-  const board = document.getElementById("board");
-  const viewSel = document.getElementById("viewSel");
-  const startDateInp = document.getElementById("startDate");
-  const chkUrlaub = document.getElementById("chkUrlaub");
-  const chkAutoReload = document.getElementById("chkAutoReload");
-  const btnReload = document.getElementById("btnReload");
-  const btnAdd = document.getElementById("btnAdd");
-  const btnMaster = document.getElementById("btnMaster");
+    const supa = createClient(SUPABASE_URL, SUPABASE_KEY);
 
-  const entryDlg = document.getElementById("entryDlg");
-  const entryForm = document.getElementById("entryForm");
-  const btnEntryCancel = document.getElementById("btnEntryCancel");
-  const entryDlgTitle = document.getElementById("entryDlgTitle");
-  const eId = document.getElementById("eId");
-  const eDate = document.getElementById("eDate");
-  const eTitle = document.getElementById("eTitle");
-  const eMitarbeiter = document.getElementById("eMitarbeiter");
-  const eFahrzeug = document.getElementById("eFahrzeug");
-  const eBaustelle = document.getElementById("eBaustelle");
-  const eStatus = document.getElementById("eStatus");
-  const eNote = document.getElementById("eNote");
-  const eDetailed = document.getElementById("eDetailed");
+    // DOM
+    const board = document.getElementById("board");
+    const viewSel = document.getElementById("viewSel");
+    const startDateInput = document.getElementById("startDate");
+    const btnReload = document.getElementById("btnReload");
+    const chkUrlaub = document.getElementById("chkUrlaub");
+    const chkAutoReload = document.getElementById("chkAutoReload");
+    const btnAdd = document.getElementById("btnAdd");
+    const btnMaster = document.getElementById("btnMaster");
+    const entryDlg = document.getElementById("entryDlg");
+    const masterDlg = document.getElementById("masterDlg");
+    const eTitel = document.getElementById("eTitel");
+    const eMitarbeiter = document.getElementById("eMitarbeiter");
+    const eFahrzeug = document.getElementById("eFahrzeug");
+    const eBaustelle = document.getElementById("eBaustelle");
+    const eStatus = document.getElementById("eStatus");
+    const eNotiz = document.getElementById("eNotiz");
+    const eDate = document.getElementById("eDate");
+    const eId = document.getElementById("eId");
+    const btnEntryCancel = document.getElementById("btnEntryCancel");
+    const btnEntrySave = document.getElementById("btnEntrySave");
+    const mName = document.getElementById("mName");
+    const fName = document.getElementById("fName");
+    const bName = document.getElementById("bName");
+    const mList = document.getElementById("mList");
+    const fList = document.getElementById("fList");
+    const bList = document.getElementById("bList");
+    const btnMAdd = document.getElementById("btnMAdd");
+    const btnFAdd = document.getElementById("btnFAdd");
+    const btnBAdd = document.getElementById("btnBAdd");
+    const btnMasterClose = document.getElementById("btnMasterClose");
+    const fldTitel = document.getElementById("fldTitel");
+    const fldFahrzeug = document.getElementById("fldFahrzeug");
+    const fldBaustelle = document.getElementById("fldBaustelle");
 
-  const masterDlg = document.getElementById("masterDlg");
-  const btnMasterClose = document.getElementById("btnMasterClose");
-  const empList = document.getElementById("empList");
-  const carList = document.getElementById("carList");
-  const siteList = document.getElementById("siteList");
-  const newEmp = document.getElementById("newEmp");
-  const newCar = document.getElementById("newCar");
-  const newSite = document.getElementById("newSite");
-  const btnAddEmp = document.getElementById("btnAddEmp");
-  const btnAddCar = document.getElementById("btnAddCar");
-  const btnAddSite = document.getElementById("btnAddSite");
+    // STATE
+    let entries = [];
+    let mitarbeiter = [];
+    let fahrzeuge = [];
+    let baustellen = [];
+    let autoReloadTimer = null;
 
-  // === Zustand ===
-  let entries = [];
-  let mitarbeiter = [];
-  let fahrzeuge = [];
-  let baustellen = [];
-  let autoReloadTimer = null;
-
-  // === Helper für Farben ===
-  const EMP_COLORS = [
-    "#38bdf8", "#a855f7", "#f97316", "#22c55e", "#f43f5e",
-    "#0ea5e9", "#eab308", "#ec4899", "#6366f1", "#14b8a6"
-  ];
-  function colorForName(name) {
-    if (!name) return null;
-    let hash = 0;
-    for (let i=0; i<name.length; i++) {
-      hash = name.charCodeAt(i) + ((hash << 5) - hash);
+    // Hilfen
+    function todayISO() {
+      const d = new Date();
+      return d.toISOString().slice(0,10);
     }
-    const idx = Math.abs(hash) % EMP_COLORS.length;
-    return EMP_COLORS[idx];
-  }
-
-  function formatDateISO(d) {
-    return d.toISOString().slice(0,10);
-  }
-
-  function addDays(dateStr, days) {
-    const d = new Date(dateStr);
-    d.setDate(d.getDate() + days);
-    return formatDateISO(d);
-  }
-
-  // === Laden der Stammdaten ===
-  async function loadMasters() {
-    const [empRes, carRes, siteRes] = await Promise.all([
-      supa.from("mitarbeiter").select("*").order("name", { ascending: true }),
-      supa.from("fahrzeuge").select("*").order("name", { ascending: true }),
-      supa.from("baustellen").select("*").order("name", { ascending: true })
-    ]);
-    mitarbeiter = empRes.data || [];
-    fahrzeuge = carRes.data || [];
-    baustellen = siteRes.data || [];
-    renderMasterLists();
-    fillSelects();
-  }
-
-  function renderMasterLists() {
-    // Mitarbeiter
-    const empNodes = mitarbeiter.map(m => {
-      const clr = colorForName(m.name);
-      return `<span class="master-item badge-emp" data-id="${m.id}" style="border-color:${clr};background:${clr}22;">👷 ${m.name}</span>`;
-    }).join(" ");
-    empList.querySelectorAll(".rendered").forEach(n => n.remove());
-    const div = document.createElement("div");
-    div.className = "rendered";
-    div.style.display = "flex";
-    div.style.flexWrap = "wrap";
-    div.style.gap = "6px";
-    div.innerHTML = empNodes || `<span style="color:var(--txt-dim);font-size:11px;">• Keine Mitarbeiter</span>`;
-    empList.appendChild(div);
-
-    // Fahrzeuge
-    const carNodes = fahrzeuge.map(f => {
-      return `<span class="master-item badge-car" data-id="${f.id}">🚐 ${f.name}</span>`;
-    }).join(" ");
-    carList.querySelectorAll(".rendered").forEach(n => n.remove());
-    const cdiv = document.createElement("div");
-    cdiv.className = "rendered";
-    cdiv.style.display = "flex";
-    cdiv.style.flexWrap = "wrap";
-    cdiv.style.gap = "6px";
-    cdiv.innerHTML = carNodes || `<span style="color:var(--txt-dim);font-size:11px;">• Keine Fahrzeuge</span>`;
-    carList.appendChild(cdiv);
-
-    // Baustellen
-    const siteNodes = baustellen.map(b => {
-      return `<span class="master-item badge-site" data-id="${b.id}">📍 ${b.name}</span>`;
-    }).join(" ");
-    siteList.querySelectorAll(".rendered").forEach(n => n.remove());
-    const sdiv = document.createElement("div");
-    sdiv.className = "rendered";
-    sdiv.style.display = "flex";
-    sdiv.style.flexWrap = "wrap";
-    sdiv.style.gap = "6px";
-    sdiv.innerHTML = siteNodes || `<span style="color:var(--txt-dim);font-size:11px;">• Keine Baustellen</span>`;
-    siteList.appendChild(sdiv);
-  }
-
-  function fillSelects() {
-    // Mitarbeiter
-    eMitarbeiter.innerHTML = `<option value="">– keiner –</option>` + mitarbeiter.map(m => `<option value="${m.name}">${m.name}</option>`).join("");
-    // Fahrzeuge
-    eFahrzeug.innerHTML = `<option value="">– keines –</option>` + fahrzeuge.map(f => `<option value="${f.name}">${f.name}</option>`).join("");
-    // Baustellen
-    eBaustelle.innerHTML = `<option value="">– keine –</option>` + baustellen.map(b => `<option value="${b.name}">${b.name}</option>`).join("");
-  }
-
-  // === Einträge laden je nach Ansicht ===
-  async function loadEntries() {
-    const view = viewSel.value;
-    const start = startDateInp.value || formatDateISO(new Date());
-    let end = start;
-
-    if (view === "14d") {
-      end = addDays(start, 13);
-    } else if (view === "4w") {
-      end = addDays(start, 27);
-    } else if (view === "12m") {
-      // für 12 Monate holen wir 1 Jahr
-      const d = new Date(start);
-      d.setFullYear(d.getFullYear() + 1);
-      end = formatDateISO(d);
+    function startOfWeek(date) {
+      const d = new Date(date);
+      // Montag = 1
+      const day = d.getDay();
+      const diff = (day === 0 ? -6 : 1 - day);
+      d.setDate(d.getDate() + diff);
+      return d;
+    }
+    function iso(d) { return d.toISOString().slice(0,10); }
+    function addDaysSkipWeekend(d, count) {
+      const nd = new Date(d);
+      let added = 0;
+      while (added < count) {
+        nd.setDate(nd.getDate() + 1);
+        if (nd.getDay() !== 0 && nd.getDay() !== 6) {
+          added++;
+        }
+      }
+      return nd;
+    }
+    function hashColor(str) {
+      // deterministic color from string
+      let h = 0;
+      for (let i=0;i<str.length;i++) h = str.charCodeAt(i) + ((h<<5)-h);
+      const hue = Math.abs(h) % 360;
+      return `hsl(${hue}, 65%, 50%)`;
+    }
+    function cardColorFor(entry) {
+      if (entry.status === "urlaub" || entry.status === "krank" || entry.status === "schule") {
+        return "var(--danger)";
+      }
+      if (entry.mitarbeiter) return hashColor(entry.mitarbeiter);
+      if (entry.fahrzeug) return "#2b7bff";
+      if (entry.baustelle) return "#ff9f43";
+      return "rgba(255,255,255,.05)";
     }
 
-    let q = supa.from("plantafel").select("*").gte("tag", start).lte("tag", end).order("tag", { ascending: true }).order("sort", { ascending: true });
-
-    const { data, error } = await q;
-    if (error) {
-      console.error(error);
-      return;
+    // LOAD DATA
+    async function loadAll() {
+      const [eRes, mRes, fRes, bRes] = await Promise.all([
+        supa.from("plantafel").select("*").order("tag",{ascending:true}),
+        supa.from("mitarbeiter").select("*"),
+        supa.from("fahrzeuge").select("*"),
+        supa.from("baustellen").select("*")
+      ]);
+      entries = eRes.data || [];
+      mitarbeiter = mRes.data || [];
+      fahrzeuge = fRes.data || [];
+      baustellen = bRes.data || [];
+      fillMasterLists();
+      render();
     }
 
-    // Filter für 12 Monate: nur nicht-fein
-    if (view === "12m") {
-      entries = (data || []).filter(e => !e.is_detailed);
-    } else {
-      entries = data || [];
+    function fillMasterLists() {
+      // Dialog listen
+      mList.innerHTML = mitarbeiter.length ? mitarbeiter.map(m=>`<li>${m.name}</li>`).join("") : "<li>Keine Mitarbeiter</li>";
+      fList.innerHTML = fahrzeuge.length ? fahrzeuge.map(m=>`<li>${m.name}</li>`).join("") : "<li>Keine Fahrzeuge</li>";
+      bList.innerHTML = baustellen.length ? baustellen.map(m=>`<li>${m.name}</li>`).join("") : "<li>Keine Baustellen</li>";
+      // Form selects
+      eMitarbeiter.innerHTML = '<option value="">– keiner –</option>' + mitarbeiter.map(m=>`<option value="${m.name}">${m.name}</option>`).join("");
+      eFahrzeug.innerHTML = '<option value="">– keines –</option>' + fahrzeuge.map(m=>`<option value="${m.name}">${m.name}</option>`).join("");
+      eBaustelle.innerHTML = '<option value="">– keine –</option>' + baustellen.map(m=>`<option value="${m.name}">${m.name}</option>`).join("");
     }
 
-    renderBoard();
-  }
-
-  function renderBoard() {
-    const view = viewSel.value;
-    board.innerHTML = "";
-
-    if (view === "12m") {
-      renderMonths();
-    } else {
-      renderDays(view);
+    function render() {
+      const view = viewSel.value;
+      board.innerHTML = "";
+      if (view === "12m") {
+        board.className = "board-grob";
+        renderGrob();
+      } else {
+        board.className = "board-fein";
+        renderFein(view);
+      }
     }
-  }
 
-  function renderDays(view) {
-    const start = startDateInp.value || formatDateISO(new Date());
-    const days = view === "14d" ? 14 : 28;
-    for (let i=0; i<days; i++) {
-      const day = addDays(start, i);
-      const dObj = new Date(day);
-      const dayName = dObj.toLocaleDateString("de-DE", { weekday: "short" });
-      const disp = dObj.toLocaleDateString("de-DE");
+    function renderFein(view) {
+      // 4 Wochen (Mo-Fr) = 4 week-rows x 5 cols
+      const startISO = startDateInput.value || todayISO();
+      let d = startOfWeek(startISO);
 
+      if (view === "4w") {
+        for (let w=0; w<4; w++) {
+          const row = document.createElement("div");
+          row.className = "week-row";
+          for (let day=0; day<5; day++) {
+            const dayDate = new Date(d);
+            dayDate.setDate(d.getDate() + (w*7) + day);
+            const col = buildDayCol(dayDate);
+            row.appendChild(col);
+          }
+          board.appendChild(row);
+        }
+      } else {
+        // 14 Tage (Mo-Fr) -> 2 Zeilen à 7 Arbeitstage
+        const days = [];
+        let cur = startOfWeek(startISO);
+        // wir gehen einfach 14 Arbeitstage durch
+        let need = 14;
+        while (need>0) {
+          if (cur.getDay() !== 0 && cur.getDay() !== 6) {
+            days.push(new Date(cur));
+            need--;
+          }
+          cur.setDate(cur.getDate()+1);
+        }
+        // 2 rows
+        for (let r=0;r<2;r++) {
+          const row = document.createElement("div");
+          row.className = "week-row";
+          for (let c=0;c<7;c++) {
+            const idx = r*7 + c;
+            const dayDate = days[idx];
+            const col = dayDate ? buildDayCol(dayDate) : document.createElement("div");
+            if (dayDate) row.appendChild(col);
+          }
+          board.appendChild(row);
+        }
+      }
+    }
+
+    function buildDayCol(dateObj) {
       const col = document.createElement("div");
-      col.className = "day-column";
-      col.dataset.date = day;
+      col.className = "day-col";
+      col.dataset.date = iso(dateObj);
 
-      const h = document.createElement("div");
-      h.className = "day-header";
-      h.innerHTML = `<span>${dayName}</span><small>${disp}</small>`;
-      col.appendChild(h);
-
-      const b = document.createElement("div");
-      b.className = "day-body";
-      b.addEventListener("click", (ev) => {
-        if (ev.target === b) {
-          openEntryDialog({ tag: day });
-        }
+      const head = document.createElement("div");
+      head.className = "day-head";
+      head.innerHTML = `<span>${weekday(dateObj)} ${iso(dateObj)}</span><button class="secondary" data-add="${iso(dateObj)}" style="font-size:.55rem;padding:.1rem .35rem;">+</button>`;
+      const body = document.createElement("div");
+      body.className = "day-body";
+      // entries for this day (is_detailed=true)
+      const todays = entries.filter(e=>e.is_detailed && e.tag === iso(dateObj));
+      const filterUrlaub = chkUrlaub.checked;
+      todays.forEach(e=>{
+        if (!filterUrlaub && (e.status==="urlaub"||e.status==="krank"||e.status==="schule")) return;
+        body.appendChild(buildCard(e));
       });
 
-      // Einträge für diesen Tag
-      const todays = entries.filter(e => e.tag === day);
-      todays.forEach(e => {
-        b.appendChild(makeEntryCard(e));
-      });
+      col.appendChild(head);
+      col.appendChild(body);
 
-      col.addEventListener("dragover", (ev) => {
+      // drop handlers
+      col.addEventListener("dragover", ev => ev.preventDefault());
+      col.addEventListener("drop", ev => {
         ev.preventDefault();
-        col.classList.add("drop-highlight");
-      });
-      col.addEventListener("dragleave", () => col.classList.remove("drop-highlight"));
-      col.addEventListener("drop", async (ev) => {
-        ev.preventDefault();
-        col.classList.remove("drop-highlight");
         const id = ev.dataTransfer.getData("text/plain");
-        if (id) {
-          await moveEntryToDate(id, day, true); // wenn in Feinplanung fallen lassen -> is_detailed = true
-          await loadEntries();
-        }
+        if (!id) return;
+        const targetDate = col.dataset.date;
+        moveEntryToDate(id, targetDate, true);
       });
 
-      col.appendChild(b);
-      board.appendChild(col);
-    }
-  }
-
-  function renderMonths() {
-    const container = document.createElement("div");
-    container.className = "month-grid";
-
-    const start = startDateInp.value || formatDateISO(new Date());
-    const startD = new Date(start);
-    const year = startD.getFullYear();
-
-    for (let m=0; m<12; m++) {
-      const monthD = new Date(year, startD.getMonth()+m, 1);
-      const monthIso = monthD.toISOString().slice(0,7); // YYYY-MM
-
-      const cell = document.createElement("div");
-      cell.className = "month-cell";
-      cell.dataset.month = monthIso;
-
-      const mh = document.createElement("div");
-      mh.className = "month-header";
-      mh.textContent = monthD.toLocaleDateString("de-DE", { month: "long", year: "numeric" });
-      cell.appendChild(mh);
-
-      const mb = document.createElement("div");
-      mb.className = "month-body";
-
-      // Einträge, bei denen tag in diesem Monat ist
-      const monthEntries = entries.filter(e => e.tag && e.tag.startsWith(monthIso));
-      monthEntries.forEach(e => {
-        const card = makeEntryCard(e);
-        mb.appendChild(card);
-      });
-
-      cell.addEventListener("dragover", (ev) => {
-        ev.preventDefault();
-        cell.classList.add("drop-highlight");
-      });
-      cell.addEventListener("dragleave", () => cell.classList.remove("drop-highlight"));
-      cell.addEventListener("drop", async (ev) => {
-        ev.preventDefault();
-        cell.classList.remove("drop-highlight");
-        const id = ev.dataTransfer.getData("text/plain");
-        if (id) {
-          // wenn jemand von Fein → Grob ziehen wollte, setzen wir is_detailed = false
-          await markDetailed(id, false);
-          await loadEntries();
-        }
-      });
-
-      cell.appendChild(mb);
-      container.appendChild(cell);
+      return col;
     }
 
-    board.appendChild(container);
-  }
-
-  function makeEntryCard(e) {
-    const div = document.createElement("div");
-    div.className = "entry-card";
-    div.draggable = true;
-    div.dataset.id = e.id;
-    if (["urlaub","krank","schule"].includes(e.status)) {
-      div.classList.add("red-left");
+    function weekday(d) {
+      const names = ["So","Mo","Di","Mi","Do","Fr","Sa"];
+      return names[d.getDay()];
     }
 
-    div.addEventListener("dragstart", (ev) => {
-      ev.dataTransfer.setData("text/plain", e.id);
+    function renderGrob() {
+      // 12 Monate ab Start
+      const startISO = startDateInput.value || todayISO();
+      const start = new Date(startISO);
+      const startMonth = start.getMonth();
+      const startYear = start.getFullYear();
+
+      for (let i=0;i<12;i++) {
+        const mCol = document.createElement("div");
+        mCol.className = "month-col";
+        const monthDate = new Date(startYear, startMonth + i, 1);
+        const monthISO = monthDate.toISOString().slice(0,7); // YYYY-MM
+        const head = document.createElement("div");
+        head.className = "month-head";
+        head.innerHTML = `<span>${monthName(monthDate)}</span><button class="secondary" data-add-month="${monthISO}" style="font-size:.55rem;padding:.1rem .35rem;">+</button>`;
+        const body = document.createElement("div");
+        body.className = "month-body";
+
+        // entries with this month and is_detailed = false
+        const monEntries = entries.filter(e => !e.is_detailed && e.tag && e.tag.startsWith(monthISO));
+        monEntries.forEach(e=>{
+          body.appendChild(buildCard(e));
+        });
+
+        mCol.appendChild(head);
+        mCol.appendChild(body);
+
+        // allow drop
+        mCol.addEventListener("dragover", ev=>ev.preventDefault());
+        mCol.addEventListener("drop", ev=>{
+          ev.preventDefault();
+          const id = ev.dataTransfer.getData("text/plain");
+          if (!id) return;
+          // move back to grob: just set is_detailed=false
+          updateEntry(id, { is_detailed: false });
+        });
+
+        board.appendChild(mCol);
+      }
+    }
+
+    function monthName(d) {
+      return d.toLocaleString("de-DE",{month:"long", year:"numeric"});
+    }
+
+    function buildCard(e) {
+      const div = document.createElement("div");
+      div.className = "card";
+      div.draggable = true;
+      div.dataset.id = e.id;
+      const col = cardColorFor(e);
+      div.style.background = col;
+      div.style.borderColor = "rgba(0,0,0,.1)";
+      div.style.color = "#fff";
+
+      const top = document.createElement("div");
+      top.className = "card-top";
+      const title = document.createElement("div");
+      title.className = "card-title";
+      title.textContent = e.titel || (e.status ? e.status.toUpperCase() : "(ohne Titel)");
+      const close = document.createElement("button");
+      close.className = "card-close";
+      close.textContent = "×";
+      close.addEventListener("click", (ev)=>{
+        ev.stopPropagation();
+        if (confirm("Eintrag löschen?")) deleteEntry(e.id);
+      });
+      top.appendChild(title);
+      top.appendChild(close);
+
+      const meta = document.createElement("div");
+      meta.style.display = "flex";
+      meta.style.flexWrap = "wrap";
+      meta.style.gap = ".2rem";
+      meta.style.fontSize = ".58rem";
+      if (e.mitarbeiter) {
+        const s = document.createElement("span");
+        s.className = "badge";
+        s.textContent = e.mitarbeiter;
+        s.style.background = "rgba(0,0,0,.25)";
+        meta.appendChild(s);
+      }
+      if (e.fahrzeug) {
+        const s = document.createElement("span");
+        s.className = "badge";
+        s.textContent = e.fahrzeug;
+        s.style.background = "rgba(0,0,0,.25)";
+        meta.appendChild(s);
+      }
+      if (e.baustelle) {
+        const s = document.createElement("span");
+        s.className = "badge";
+        s.textContent = e.baustelle;
+        s.style.background = "rgba(0,0,0,.25)";
+        meta.appendChild(s);
+      }
+      if (e.status) {
+        const s = document.createElement("span");
+        s.className = "badge";
+        s.textContent = e.status;
+        s.style.background = "rgba(0,0,0,.25)";
+        meta.appendChild(s);
+      }
+
+      div.appendChild(top);
+      if (meta.children.length) div.appendChild(meta);
+      if (e.notiz) {
+        const p = document.createElement("div");
+        p.textContent = e.notiz;
+        p.style.fontSize = ".55rem";
+        p.style.opacity = .9;
+        div.appendChild(p);
+      }
+
+      div.addEventListener("dragstart", ev=>{
+        ev.dataTransfer.setData("text/plain", e.id);
+      });
+
+      div.addEventListener("click", ()=>{
+        openEntryDialog(e);
+      });
+
+      return div;
+    }
+
+    // CRUD
+    async function createEntry(data) {
+      const { data:ins, error } = await supa.from("plantafel").insert(data).select().single();
+      if (!error && ins) {
+        entries.push(ins);
+        render();
+      }
+    }
+    async function updateEntry(id, patch) {
+      const { data:upd, error } = await supa.from("plantafel").update(patch).eq("id", id).select().single();
+      if (!error && upd) {
+        const idx = entries.findIndex(e=>e.id===id);
+        if (idx>-1) entries[idx] = upd;
+        render();
+      }
+    }
+    async function deleteEntry(id) {
+      await supa.from("plantafel").delete().eq("id", id);
+      entries = entries.filter(e=>e.id!==id);
+      render();
+    }
+    function moveEntryToDate(id, dateISO, asDetailed) {
+      updateEntry(id, { tag: dateISO, is_detailed: asDetailed });
+    }
+
+    // Dialog logik
+    function openEntryDialog(e) {
+      document.getElementById("dlgTitle").textContent = e ? "Eintrag bearbeiten" : "Neuer Eintrag";
+      eId.value = e ? e.id : "";
+      eTitel.value = e ? (e.titel || "") : "";
+      eMitarbeiter.value = e ? (e.mitarbeiter || "") : "";
+      eFahrzeug.value = e ? (e.fahrzeug || "") : "";
+      eBaustelle.value = e ? (e.baustelle || "") : "";
+      eStatus.value = e ? (e.status || "") : "";
+      eNotiz.value = e ? (e.notiz || "") : "";
+      eDate.value = e ? (e.tag || (startDateInput.value || todayISO())) : (startDateInput.value || todayISO());
+
+      applyStatusVisibility(e ? e.status : "");
+
+      entryDlg.showModal();
+    }
+
+    function applyStatusVisibility(status) {
+      const special = (status === "urlaub" || status === "krank" || status === "schule");
+      fldTitel.style.display = special ? "none" : "flex";
+      fldFahrzeug.style.display = special ? "none" : "flex";
+      fldBaustelle.style.display = special ? "none" : "flex";
+      if (special) eTitel.required = false; else eTitel.required = true;
+    }
+
+    btnEntryCancel.addEventListener("click", ()=> entryDlg.close());
+    eStatus.addEventListener("change", ()=> applyStatusVisibility(eStatus.value));
+
+    entryForm.addEventListener("submit", async (ev)=>{
+      ev.preventDefault();
+      const isEdit = !!eId.value;
+      const payload = {
+        tag: eDate.value,
+        titel: eTitel.value,
+        mitarbeiter: eMitarbeiter.value,
+        fahrzeug: eFahrzeug.value,
+        baustelle: eBaustelle.value,
+        status: eStatus.value,
+        notiz: eNotiz.value,
+      };
+      // wenn aus 12m aufgerufen → is_detailed=false
+      const currentView = viewSel.value;
+      payload.is_detailed = currentView !== "12m";
+
+      // bei Urlaub/Krank/Schule Titel leer lassen
+      if (payload.status === "urlaub" || payload.status === "krank" || payload.status === "schule") {
+        payload.titel = "";
+        payload.is_detailed = true; // das gehört in den Tag
+      }
+
+      if (isEdit) {
+        await updateEntry(eId.value, payload);
+      } else {
+        await createEntry(payload);
+      }
+      entryDlg.close();
     });
 
-    // Mitarbeiter-Farbe
-    let empBadge = "";
-    if (e.mitarbeiter) {
-      const clr = colorForName(e.mitarbeiter);
-      empBadge = `<span class="badge" style="background:${clr};border-color:${clr};color:#000;font-weight:600;">${e.mitarbeiter}</span>`;
-    }
-
-    // Fahrzeug-Farbe
-    let carBadge = "";
-    if (e.fahrzeug) {
-      carBadge = `<span class="badge" style="background:rgba(249,115,22,0.8);border-color:rgba(249,115,22,1);color:#000;">${e.fahrzeug}</span>`;
-    }
-
-    // Baustelle-Farbe
-    let siteBadge = "";
-    if (e.baustelle) {
-      siteBadge = `<span class="badge" style="background:rgba(34,197,94,0.8);border-color:rgba(34,197,94,1);color:#000;">${e.baustelle}</span>`;
-    }
-
-    const statusTxt = e.status ? `<span class="badge" style="background:rgba(239,68,68,0.85);border:none;color:#fff;">${e.status}</span>` : "";
-
-    div.innerHTML = `
-      <div class="entry-actions">
-        <button data-act="edit">✎</button>
-        <button data-act="del">×</button>
-      </div>
-      <div class="entry-title">${e.titel || "ohne Titel"}</div>
-      <div class="entry-meta">
-        ${empBadge}
-        ${carBadge}
-        ${siteBadge}
-        ${statusTxt}
-      </div>
-      ${e.notiz ? `<div style="font-size:10px;color:var(--txt-dim);">${e.notiz}</div>` : ""}
-    `;
-
-    div.querySelector('[data-act="edit"]').addEventListener("click", () => {
-      openEntryDialog(e);
+    // Stammdaten-Dialog
+    btnMaster.addEventListener("click", ()=> masterDlg.showModal());
+    btnMasterClose.addEventListener("click", ()=> masterDlg.close());
+    btnMAdd.addEventListener("click", async ()=>{
+      const name = mName.value.trim();
+      if (!name) return;
+      const { data } = await supa.from("mitarbeiter").insert({name}).select().single();
+      if (data) {
+        mitarbeiter.push(data);
+        fillMasterLists();
+        mName.value = "";
+      }
     });
-    div.querySelector('[data-act="del"]').addEventListener("click", async () => {
-      if (confirm("Eintrag löschen?")) {
-        await supa.from("plantafel").delete().eq("id", e.id);
-        await loadEntries();
+    btnFAdd.addEventListener("click", async ()=>{
+      const name = fName.value.trim();
+      if (!name) return;
+      const { data } = await supa.from("fahrzeuge").insert({name}).select().single();
+      if (data) {
+        fahrzeuge.push(data);
+        fillMasterLists();
+        fName.value = "";
+      }
+    });
+    btnBAdd.addEventListener("click", async ()=>{
+      const name = bName.value.trim();
+      if (!name) return;
+      const { data } = await supa.from("baustellen").insert({name}).select().single();
+      if (data) {
+        baustellen.push(data);
+        fillMasterLists();
+        bName.value = "";
       }
     });
 
-    return div;
-  }
+    // header buttons
+    btnReload.addEventListener("click", loadAll);
+    viewSel.addEventListener("change", render);
+    chkUrlaub.addEventListener("change", render);
+    btnAdd.addEventListener("click", ()=> openEntryDialog(null));
 
-  function openEntryDialog(e = {}) {
-    entryDlgTitle.textContent = e.id ? "Eintrag bearbeiten" : "Neuer Eintrag";
-    eId.value = e.id || "";
-    eDate.value = e.tag || formatDateISO(new Date());
-    eTitle.value = e.titel || "";
-    eMitarbeiter.value = e.mitarbeiter || "";
-    eFahrzeug.value = e.fahrzeug || "";
-    eBaustelle.value = e.baustelle || "";
-    eStatus.value = e.status || "";
-    eNote.value = e.notiz || "";
-    eDetailed.checked = !!e.is_detailed;
-    entryDlg.showModal();
-  }
+    // delegations for "+" in columns / months
+    document.addEventListener("click", ev=>{
+      const dateAdd = ev.target.getAttribute("data-add");
+      if (dateAdd) {
+        eDate.value = dateAdd;
+        viewSel.value !== "12m" ? (eTitel.value="") : null;
+        openEntryDialog(null);
+      }
+      const monthAdd = ev.target.getAttribute("data-add-month");
+      if (monthAdd) {
+        // pick 1st of month
+        eDate.value = monthAdd + "-01";
+        // this is grob
+        viewSel.value = "12m";
+        openEntryDialog(null);
+      }
+    });
 
-  entryForm.addEventListener("submit", async (ev) => {
-    ev.preventDefault();
-    const payload = {
-      tag: eDate.value,
-      titel: eTitle.value,
-      mitarbeiter: eMitarbeiter.value || null,
-      fahrzeug: eFahrzeug.value || null,
-      baustelle: eBaustelle.value || null,
-      status: eStatus.value || null,
-      notiz: eNote.value || null,
-      is_detailed: eDetailed.checked,
-      sort: 0
-    };
-    if (eId.value) {
-      await supa.from("plantafel").update(payload).eq("id", eId.value);
-    } else {
-      await supa.from("plantafel").insert(payload);
+    // auto reload
+    function setupAutoReload() {
+      if (autoReloadTimer) clearInterval(autoReloadTimer);
+      if (chkAutoReload.checked) {
+        autoReloadTimer = setInterval(loadAll, 20000);
+      }
     }
-    entryDlg.close();
-    await loadEntries();
-  });
+    chkAutoReload.addEventListener("change", setupAutoReload);
 
-  btnEntryCancel.addEventListener("click", () => entryDlg.close());
-
-  // Dialog Stammdaten
-  btnMaster.addEventListener("click", () => masterDlg.showModal());
-  btnMasterClose.addEventListener("click", () => masterDlg.close());
-
-  btnAddEmp.addEventListener("click", async () => {
-    const name = newEmp.value.trim();
-    if (!name) return;
-    await supa.from("mitarbeiter").insert({ name });
-    newEmp.value = "";
-    await loadMasters();
-  });
-
-  btnAddCar.addEventListener("click", async () => {
-    const name = newCar.value.trim();
-    if (!name) return;
-    await supa.from("fahrzeuge").insert({ name });
-    newCar.value = "";
-    await loadMasters();
-  });
-
-  btnAddSite.addEventListener("click", async () => {
-    const name = newSite.value.trim();
-    if (!name) return;
-    await supa.from("baustellen").insert({ name });
-    newSite.value = "";
-    await loadMasters();
-  });
-
-  btnAdd.addEventListener("click", () => openEntryDialog({}));
-
-  btnReload.addEventListener("click", () => loadEntries());
-
-  viewSel.addEventListener("change", () => loadEntries());
-  startDateInp.addEventListener("change", () => loadEntries());
-
-  // Auto-Reload
-  chkAutoReload.addEventListener("change", () => {
-    if (chkAutoReload.checked) {
-      startAutoReload();
-    } else {
-      stopAutoReload();
-    }
-  });
-
-  function startAutoReload() {
-    stopAutoReload();
-    autoReloadTimer = setInterval(loadEntries, 20000);
-  }
-  function stopAutoReload() {
-    if (autoReloadTimer) clearInterval(autoReloadTimer);
-    autoReloadTimer = null;
-  }
-
-  async function moveEntryToDate(id, newDate, markDetailed = false) {
-    const payload = { tag: newDate };
-    if (markDetailed) payload.is_detailed = true;
-    await supa.from("plantafel").update(payload).eq("id", id);
-  }
-
-  async function markDetailed(id, val) {
-    await supa.from("plantafel").update({ is_detailed: val }).eq("id", id);
-  }
-
-  // Startdatum heute setzen
-  startDateInp.value = formatDateISO(new Date());
-
-  // Start
-  (async () => {
-    await loadMasters();
-    await loadEntries();
-    if (chkAutoReload.checked) startAutoReload();
-  })();
-</script>
+    // init
+    startDateInput.value = todayISO();
+    loadAll();
+    setupAutoReload();
+  </script>
 </body>
 </html>
