@@ -11,242 +11,86 @@
       --bg-col: #1a1d23;
       --line: #30343b;
       --accent: #2b7bff;
-      --danger: #d53b3b;
-      --krank: #ff5f5f;
       --urlaub: #ffb347;
+      --krank: #ff5f5f;
       --schule: #9b59b6;
       --baustelle: #ff9f43;
       --fahrzeug: #2b7bff;
       --txt: #fff;
       --txt-dim: #c5cbd6;
-      --radius-lg: 14px;
     }
-    * { box-sizing: border-box; }
-    body {
-      margin: 0;
-      background: var(--bg-main);
-      color: var(--txt);
-      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-      height: 100vh;
-      display: flex;
-      flex-direction: column;
-      gap: .5rem;
+    *{box-sizing:border-box;}
+    body{
+      margin:0;
+      background:var(--bg-main);
+      color:var(--txt);
+      font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+      height:100vh;
+      display:flex;
+      flex-direction:column;
+      gap:.5rem;
     }
-    header {
-      display: flex;
-      align-items: center;
-      gap: .6rem;
-      padding: .6rem .9rem;
-      background: rgba(0,0,0,.25);
-      backdrop-filter: blur(6px);
-      border-bottom: 1px solid rgba(255,255,255,.04);
+    header{
+      display:flex;
+      gap:.6rem;
+      align-items:center;
+      padding:.6rem .8rem;
+      background:rgba(0,0,0,.22);
+      border-bottom:1px solid rgba(255,255,255,.03);
     }
-    header .pill {
-      background: #0f9d58;
-      width: .55rem;
-      height: .55rem;
-      border-radius: 999px;
-      margin-right: .35rem;
-    }
-    select, input, button {
-      border: none;
-      outline: none;
-      font: inherit;
-    }
-    select, input {
-      background: #0f1115;
-      color: #fff;
-      border: 1px solid rgba(255,255,255,.05);
-      border-radius: 8px;
-      padding: .3rem .5rem;
-    }
-    button {
-      background: var(--accent);
-      color: #fff;
-      border-radius: 9px;
-      padding: .35rem .7rem;
-      cursor: pointer;
-      transition: .15s;
-    }
-    button.secondary {
-      background: rgba(0,0,0,.0);
-      border: 1px solid rgba(255,255,255,.07);
-    }
-    button:hover { opacity: .9; }
-
-    main {
-      flex: 1;
-      display: flex;
-      flex-direction: column;
-      gap: .5rem;
-      overflow: hidden;
-      padding: 0 .6rem .6rem;
-    }
-
-    /* FEINPLANUNG */
-    .board-fein {
-      display: flex;
-      flex-direction: column;
-      gap: .5rem;
-      overflow: auto;
-    }
-    .week-row {
-      display: grid;
-      grid-template-columns: repeat(5, minmax(180px, 1fr));
-      gap: .5rem;
-      min-height: 170px;
-    }
-    .day-col {
-      background: var(--bg-col);
-      border: 1px solid rgba(255,255,255,.02);
-      border-radius: 12px;
-      display: flex;
-      flex-direction: column;
-    }
-    .day-head {
-      padding: .35rem .45rem .25rem;
-      border-bottom: 1px solid rgba(255,255,255,.03);
-      font-size: .7rem;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      color: var(--txt-dim);
-    }
-    .day-body {
-      flex: 1;
-      padding: .35rem .4rem .4rem;
-      display: flex;
-      flex-direction: column;
-      gap: .35rem;
-      min-height: 120px;
-    }
-
-    .card {
-      border-radius: 10px;
-      padding: .25rem .35rem;
-      font-size: .65rem;
-      display: flex;
-      flex-direction: column;
-      gap: .2rem;
-      cursor: grab;
-      color: #fff;
-    }
-    .badge {
-      display: inline-flex;
-      gap: .3rem;
-      align-items: center;
-      font-size: .58rem;
-      background: rgba(0,0,0,.25);
-      padding: .1rem .35rem;
-      border-radius: 999px;
-    }
-    .card-top {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      gap: .5rem;
-    }
-    .card-title { font-weight: 600; }
-    .card-close {
-      background: transparent;
-      border: none;
-      color: #fff;
-      font-size: .6rem;
-      cursor: pointer;
-    }
-
-    /* GROBPLANUNG */
-    .board-grob {
-      flex: 1;
-      display: grid;
-      grid-template-columns: repeat(4, minmax(220px,1fr));
-      gap: .7rem;
-      overflow: auto;
-    }
-    .month-col {
-      background: var(--bg-col);
-      border: 1px solid rgba(255,255,255,.02);
-      border-radius: 12px;
-      display: flex;
-      flex-direction: column;
-    }
-    .month-head {
-      padding: .35rem .5rem;
-      border-bottom: 1px solid rgba(255,255,255,.03);
-      font-size: .72rem;
-      color: var(--txt-dim);
-      display: flex;
-      justify-content: space-between;
-    }
-    .month-body {
-      flex: 1;
-      padding: .35rem .4rem .4rem;
-      display: flex;
-      flex-direction: column;
-      gap: .35rem;
-      min-height: 120px;
-    }
-
-    dialog {
-      border: none;
-      background: rgba(9,9,9,.6);
-      backdrop-filter: blur(10px);
-      border-radius: 16px;
-      padding: 1rem 1rem .8rem;
-      color: #fff;
-      width: min(420px, 90vw);
-    }
-    dialog::backdrop { background: rgba(0,0,0,.3); }
-    .dlg-title { font-weight: 600; margin-bottom: .5rem; }
-    .field { display: flex; flex-direction: column; gap: .25rem; margin-bottom: .45rem;}
-    .field label { font-size: .65rem; color: var(--txt-dim); }
-    .field input, .field select, .field textarea {
-      background: #0f1115;
-      border: 1px solid rgba(255,255,255,.05);
-      border-radius: 7px;
-      padding: .25rem .45rem;
-      color: #fff;
-      font-size: .72rem;
-    }
-    select[multiple]{
-      min-height: 84px;
-    }
-    .dlg-actions {
-      display: flex;
-      justify-content: flex-end;
-      gap: .4rem;
-      margin-top: .4rem;
-    }
-
-    ul { margin: .2rem 0 0; padding-left: 1rem; }
-    ul li { font-size: .65rem; color: #fff; }
-
-    .hidden { display: none !important; }
+    .pill{width:.55rem;height:.55rem;border-radius:99px;background:#0f9d58;}
+    select,input,button{font:inherit;border:none;outline:none;}
+    select,input{background:#0f1115;color:#fff;border:1px solid rgba(255,255,255,.03);border-radius:7px;padding:.3rem .5rem;}
+    button{background:var(--accent);color:#fff;border-radius:8px;padding:.35rem .7rem;cursor:pointer;}
+    button.secondary{background:rgba(0,0,0,0);border:1px solid rgba(255,255,255,.05);}
+    main{flex:1;display:flex;flex-direction:column;overflow:hidden;padding:0 .6rem .6rem;}
+    /* fein */
+    .board-fein{display:flex;flex-direction:column;gap:.5rem;overflow:auto;}
+    .week-row{display:grid;grid-template-columns:repeat(5,minmax(170px,1fr));gap:.5rem;}
+    .day-col{background:var(--bg-col);border:1px solid rgba(255,255,255,.02);border-radius:12px;display:flex;flex-direction:column;}
+    .day-head{padding:.35rem .45rem;border-bottom:1px solid rgba(255,255,255,.02);display:flex;justify-content:space-between;font-size:.7rem;color:var(--txt-dim);}
+    .day-body{flex:1;padding:.35rem .35rem .45rem;display:flex;flex-direction:column;gap:.35rem;min-height:120px;}
+    /* grob */
+    .board-grob{flex:1;display:grid;grid-template-columns:repeat(4,minmax(210px,1fr));gap:.6rem;overflow:auto;}
+    .month-col{background:var(--bg-col);border:1px solid rgba(255,255,255,.02);border-radius:12px;display:flex;flex-direction:column;}
+    .month-head{padding:.35rem .5rem;border-bottom:1px solid rgba(255,255,255,.02);display:flex;justify-content:space-between;font-size:.7rem;color:var(--txt-dim);}
+    .month-body{flex:1;padding:.35rem .35rem .45rem;display:flex;flex-direction:column;gap:.35rem;}
+    /* cards */
+    .card{border-radius:10px;padding:.25rem .35rem;font-size:.64rem;display:flex;flex-direction:column;gap:.25rem;color:#fff;cursor:grab;border:1px solid rgba(0,0,0,.12);}
+    .card-top{display:flex;justify-content:space-between;gap:.5rem;align-items:center;}
+    .card-title{font-weight:600;}
+    .card-close{background:transparent;border:none;color:#fff;font-size:.6rem;cursor:pointer;}
+    .badge{display:inline-flex;gap:.3rem;align-items:center;background:rgba(0,0,0,.25);padding:.1rem .35rem;border-radius:999px;font-size:.55rem;}
+    /* dialoge */
+    dialog{border:none;background:rgba(8,8,8,.55);backdrop-filter:blur(10px);border-radius:14px;color:#fff;padding:1rem;width:min(420px,94vw);}
+    .dlg-title{font-weight:600;margin-bottom:.5rem;}
+    .field{display:flex;flex-direction:column;gap:.25rem;margin-bottom:.45rem;}
+    .field input,.field select,.field textarea{background:#0f1115;border:1px solid rgba(255,255,255,.05);border-radius:7px;padding:.25rem .45rem;color:#fff;}
+    select[multiple]{min-height:82px;}
+    .dlg-actions{display:flex;justify-content:flex-end;gap:.4rem;margin-top:.4rem;}
+    .hidden{display:none !important;}
   </style>
 </head>
 <body>
   <header>
-    <div class="pill"></div>
-    <span>verbunden</span>
+    <div class="pill"></div><span>verbunden</span>
     <label style="margin-left:.6rem;">Ansicht:</label>
     <select id="viewSel">
       <option value="4w">4 Wochen (Mo–Fr)</option>
       <option value="14d">14 Tage (Mo–Fr)</option>
       <option value="12m">12 Monate (grob)</option>
     </select>
-    <label style="margin-left:.6rem;">Start:</label>
-    <input type="date" id="startDate">
+    <label>Start:</label><input type="date" id="startDate">
     <button id="btnReload" class="secondary">Neu laden</button>
-    <label style="margin-left:auto; display:flex; gap:.3rem; align-items:center;">
+    <label style="margin-left:auto;display:flex;gap:.3rem;align-items:center;">
       <input type="checkbox" id="chkUrlaub" /> Urlaub/Krank/Schule
     </label>
-    <label style="display:flex; gap:.3rem; align-items:center;">
+    <label style="display:flex;gap:.3rem;align-items:center;">
       <input type="checkbox" id="chkAutoReload" checked /> Auto-Reload
     </label>
     <button id="btnMaster" class="secondary">Stammdaten</button>
     <button id="btnAdd">+ Eintrag</button>
   </header>
-
   <main>
     <div id="board" class="board-fein"></div>
   </main>
@@ -254,10 +98,10 @@
   <!-- Eintrag -->
   <dialog id="entryDlg">
     <div class="dlg-title" id="dlgTitle">Neuer Eintrag</div>
-    <form method="dialog" id="entryForm">
+    <form id="entryForm">
       <div class="field" id="fldTitel">
         <label for="eTitel">Auftrag / Titel</label>
-        <input id="eTitel" />
+        <input id="eTitel">
       </div>
       <div class="field">
         <label for="eMitarbeiter">Mitarbeiter (mehrere möglich)</label>
@@ -269,7 +113,7 @@
       </div>
       <div class="field" id="fldBaustelle">
         <label for="eBaustelle">Baustelle</label>
-        <input id="eBaustelle" placeholder="Baustellenname / Ort" />
+        <input id="eBaustelle" placeholder="Baustelle / Ort">
       </div>
       <div class="field">
         <label for="eStatus">Status</label>
@@ -288,7 +132,7 @@
       <input type="hidden" id="eId">
       <div class="dlg-actions">
         <button type="button" id="btnEntryCancel" class="secondary">Abbrechen</button>
-        <button type="submit" id="btnEntrySave">Speichern</button>
+        <button type="submit">Speichern</button>
       </div>
     </form>
   </dialog>
@@ -297,17 +141,17 @@
   <dialog id="masterDlg">
     <div class="dlg-title">Stammdaten</div>
     <div class="field">
-      <label>Mitarbeitername</label>
-      <div style="display:flex; gap:.3rem;">
-        <input id="mName" placeholder="z. B. Thomas" />
+      <label>Mitarbeiter</label>
+      <div style="display:flex;gap:.3rem;">
+        <input id="mName" placeholder="z. B. Thomas">
         <button type="button" id="btnMAdd">+ Hinzufügen</button>
       </div>
       <ul id="mList"></ul>
     </div>
     <div class="field">
-      <label>Fahrzeug</label>
-      <div style="display:flex; gap:.3rem;">
-        <input id="fName" placeholder="z. B. Doka" />
+      <label>Fahrzeuge</label>
+      <div style="display:flex;gap:.3rem;">
+        <input id="fName" placeholder="z. B. Doka">
         <button type="button" id="btnFAdd">+ Hinzufügen</button>
       </div>
       <ul id="fList"></ul>
@@ -320,10 +164,10 @@
   <script type="module">
     import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
-    const SUPABASE_URL = "https://mtybmrkyhavxpvwysglo.supabase.co";
-    const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im10eWJtcmt5aGF2eHB2d3lzZ2xvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjIxNjQ1OTIsImV4cCI6MjA3Nzc0MDU5Mn0.UToAmJAvACYvnO9hCIeyfm-VYKr5jincXdnEDDtbhvo";
-
-    const supa = createClient(SUPABASE_URL, SUPABASE_KEY);
+    const supa = createClient(
+      "https://mtybmrkyhavxpvwysglo.supabase.co",
+      "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im10eWJtcmt5aGF2eHB2d3lzZ2xvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjIxNjQ1OTIsImV4cCI6MjA3Nzc0MDU5Mn0.UToAmJAvACYvnO9hCIeyfm-VYKr5jincXdnEDDtbhvo"
+    );
 
     const board = document.getElementById("board");
     const viewSel = document.getElementById("viewSel");
@@ -357,40 +201,33 @@
     let entries = [];
     let mitarbeiter = [];
     let fahrzeuge = [];
-    let autoReloadTimer = null;
+    let reloadTimer = null;
 
     function todayISO(){ return new Date().toISOString().slice(0,10); }
-    function startOfWeek(date){
-      const d = new Date(date);
+    function startOfWeek(dateStr){
+      const d = new Date(dateStr);
       const day = d.getDay();
-      const diff = (day === 0 ? -6 : 1 - day);
-      d.setDate(d.getDate() + diff);
+      const diff = (day===0?-6:1-day);
+      d.setDate(d.getDate()+diff);
       return d;
     }
     function iso(d){ return d.toISOString().slice(0,10); }
     function weekday(d){ return ["So","Mo","Di","Mi","Do","Fr","Sa"][d.getDay()]; }
-    function monthName(d){ return d.toLocaleString("de-DE",{month:"long", year:"numeric"}); }
+    function monthName(d){ return d.toLocaleString("de-DE",{month:"long",year:"numeric"}); }
 
     function hashColor(str){
       let h = 0;
-      for (let i=0;i<str.length;i++) h = str.charCodeAt(i) + ((h<<5)-h);
-      const hue = Math.abs(h) % 360;
-      return `hsl(${hue}, 65%, 50%)`;
+      for (let i=0;i<str.length;i++) h = str.charCodeAt(i)+((h<<5)-h);
+      const hue = Math.abs(h)%360;
+      return `hsl(${hue},65%,50%)`;
     }
-
-    function cardColor(entry){
-      if (entry.status === "urlaub") return "var(--urlaub)";
-      if (entry.status === "krank") return "var(--krank)";
-      if (entry.status === "schule") return "var(--schule)";
-      if (entry.mitarbeiter && entry.mitarbeiter.length){
-        return hashColor(entry.mitarbeiter[0]); // erste Person bestimmt Farbe
-      }
-      if (entry.fahrzeuge && entry.fahrzeuge.length){
-        return "var(--fahrzeug)";
-      }
-      if (entry.baustelle){
-        return "var(--baustelle)";
-      }
+    function cardColor(e){
+      if (e.status==="urlaub") return "var(--urlaub)";
+      if (e.status==="krank") return "var(--krank)";
+      if (e.status==="schule") return "var(--schule)";
+      if (e.mitarbeiter && e.mitarbeiter.length) return hashColor(e.mitarbeiter[0]);
+      if (e.fahrzeug && e.fahrzeug.length) return "var(--fahrzeug)";
+      if (e.baustelle) return "var(--baustelle)";
       return "rgba(255,255,255,.05)";
     }
 
@@ -400,33 +237,31 @@
         supa.from("mitarbeiter").select("*"),
         supa.from("fahrzeuge").select("*"),
       ]);
-      entries = (eRes.data || []).map(e=>{
-        return {
-          ...e,
-          mitarbeiter: e.mitarbeiter ? e.mitarbeiter.split(",").filter(x=>x) : [],
-          fahrzeuge: e.fahrzeuge ? e.fahrzeuge.split(",").filter(x=>x) : []
-        };
-      });
-      mitarbeiter = mRes.data || [];
-      fahrzeuge = fRes.data || [];
-      fillMasterLists();
+      entries = (eRes.data||[]).map(e=>({
+        ...e,
+        mitarbeiter: e.mitarbeiter ? e.mitarbeiter.split(",").filter(Boolean) : [],
+        fahrzeug: e.fahrzeug ? e.fahrzeug.split(",").filter(Boolean) : []
+      }));
+      mitarbeiter = mRes.data||[];
+      fahrzeuge = fRes.data||[];
+      fillMaster();
       render();
     }
 
-    function fillMasterLists(){
+    function fillMaster(){
       mList.innerHTML = mitarbeiter.length ? mitarbeiter.map(m=>`<li>${m.name}</li>`).join("") : "<li>Keine Mitarbeiter</li>";
-      fList.innerHTML = fahrzeuge.length ? fahrzeuge.map(m=>`<li>${m.name}</li>`).join("") : "<li>Keine Fahrzeuge</li>";
+      fList.innerHTML = fahrzeuge.length ? fahrzeuge.map(f=>`<li>${f.name}</li>`).join("") : "<li>Keine Fahrzeuge</li>";
       eMitarbeiter.innerHTML = mitarbeiter.map(m=>`<option value="${m.name}">${m.name}</option>`).join("");
-      eFahrzeug.innerHTML = fahrzeuge.map(m=>`<option value="${m.name}">${m.name}</option>`).join("");
+      eFahrzeug.innerHTML = fahrzeuge.map(f=>`<option value="${f.name}">${f.name}</option>`).join("");
     }
 
     function render(){
       const view = viewSel.value;
       board.innerHTML = "";
-      if (view === "12m"){
+      if (view==="12m"){
         board.className = "board-grob";
         renderGrob();
-      } else {
+      }else{
         board.className = "board-fein";
         renderFein(view);
       }
@@ -435,35 +270,30 @@
     function renderFein(view){
       const startISO = startDateInput.value || todayISO();
       const base = startOfWeek(startISO);
-      if (view === "4w"){
+      if (view==="4w"){
         for (let w=0; w<4; w++){
           const row = document.createElement("div");
           row.className = "week-row";
           for (let d=0; d<5; d++){
             const dt = new Date(base);
-            dt.setDate(base.getDate() + w*7 + d);
+            dt.setDate(base.getDate()+w*7+d);
             row.appendChild(buildDayCol(dt));
           }
           board.appendChild(row);
         }
       } else {
-        // 14 Tage = 2 Zeilen à 7 Werktage
-        const days = [];
+        // 14 Tage Mo-Fr
+        let days = [];
         let cur = startOfWeek(startISO);
-        let need = 14;
-        while (need>0){
-          if (cur.getDay() !== 0 && cur.getDay() !== 6){
-            days.push(new Date(cur));
-            need--;
-          }
+        while (days.length<14){
+          if (cur.getDay()!==0 && cur.getDay()!==6) days.push(new Date(cur));
           cur.setDate(cur.getDate()+1);
         }
         for (let r=0;r<2;r++){
           const row = document.createElement("div");
           row.className = "week-row";
           for (let c=0;c<7;c++){
-            const idx = r*7 + c;
-            const dt = days[idx];
+            const dt = days[r*7+c];
             if (dt) row.appendChild(buildDayCol(dt));
           }
           board.appendChild(row);
@@ -475,18 +305,17 @@
       const col = document.createElement("div");
       col.className = "day-col";
       const dateISO = iso(dateObj);
-      col.dataset.date = dateISO;
 
       const head = document.createElement("div");
       head.className = "day-head";
       head.innerHTML = `<span>${weekday(dateObj)} ${dateISO}</span><button class="secondary" data-add="${dateISO}" style="font-size:.55rem;padding:.1rem .35rem;">+</button>`;
+
       const body = document.createElement("div");
       body.className = "day-body";
 
-      const todayEntries = entries.filter(e=>e.is_detailed && e.tag === dateISO);
-      const filterUrlaub = chkUrlaub.checked;
-      todayEntries.forEach(e=>{
-        if (!filterUrlaub && (e.status==="urlaub"||e.status==="krank"||e.status==="schule")) return;
+      const showSpecial = chkUrlaub.checked;
+      entries.filter(e=>e.is_detailed && e.tag===dateISO).forEach(e=>{
+        if (!showSpecial && (e.status==="urlaub"||e.status==="krank"||e.status==="schule")) return;
         body.appendChild(buildCard(e));
       });
 
@@ -497,8 +326,7 @@
       col.addEventListener("drop", ev=>{
         ev.preventDefault();
         const id = ev.dataTransfer.getData("text/plain");
-        if (!id) return;
-        moveEntryToDate(id, dateISO, true);
+        if (id) updateEntry(id,{tag:dateISO,is_detailed:true});
       });
 
       return col;
@@ -506,25 +334,26 @@
 
     function renderGrob(){
       const startISO = startDateInput.value || todayISO();
-      const start = new Date(startISO);
-      const m0 = start.getMonth();
-      const y0 = start.getFullYear();
+      const base = new Date(startISO);
+      const startMonth = base.getMonth();
+      const startYear = base.getFullYear();
 
       for (let i=0;i<12;i++){
         const mc = document.createElement("div");
-        mc.className = "month-col";
-        const md = new Date(y0, m0 + i, 1);
-        const mISO = md.toISOString().slice(0,7);
+        mc.className="month-col";
+        const md = new Date(startYear,startMonth+i,1);
+        const ym = md.toISOString().slice(0,7);
 
         const head = document.createElement("div");
-        head.className = "month-head";
-        head.innerHTML = `<span>${monthName(md)}</span><button class="secondary" data-add-month="${mISO}" style="font-size:.55rem;padding:.1rem .35rem;">+</button>`;
+        head.className="month-head";
+        head.innerHTML = `<span>${monthName(md)}</span><button class="secondary" data-add-month="${ym}" style="font-size:.55rem;padding:.1rem .35rem;">+</button>`;
 
         const body = document.createElement("div");
-        body.className = "month-body";
+        body.className="month-body";
 
-        const mons = entries.filter(e=>!e.is_detailed && e.tag && e.tag.startsWith(mISO));
-        mons.forEach(e=> body.appendChild(buildCard(e)));
+        entries.filter(e=>!e.is_detailed && e.tag && e.tag.startsWith(ym)).forEach(e=>{
+          body.appendChild(buildCard(e));
+        });
 
         mc.appendChild(head);
         mc.appendChild(body);
@@ -533,9 +362,7 @@
         mc.addEventListener("drop", ev=>{
           ev.preventDefault();
           const id = ev.dataTransfer.getData("text/plain");
-          if (!id) return;
-          // zurück in grob
-          updateEntry(id,{ is_detailed:false });
+          if (id) updateEntry(id,{is_detailed:false});
         });
 
         board.appendChild(mc);
@@ -544,123 +371,113 @@
 
     function buildCard(e){
       const div = document.createElement("div");
-      div.className = "card";
+      div.className="card";
       div.draggable = true;
       div.dataset.id = e.id;
       div.style.background = cardColor(e);
-      div.style.border = "1px solid rgba(0,0,0,.15)";
 
       const top = document.createElement("div");
-      top.className = "card-top";
-      const title = document.createElement("div");
-      title.className = "card-title";
-      title.textContent = e.titel || e.baustelle || (e.status ? e.status.toUpperCase() : "(ohne Titel)");
-      const close = document.createElement("button");
-      close.className = "card-close";
-      close.textContent = "×";
-      close.addEventListener("click", ev=>{
+      top.className="card-top";
+      const tt = document.createElement("div");
+      tt.className="card-title";
+      tt.textContent = e.titel || e.baustelle || (e.status ? e.status.toUpperCase() : "(ohne Titel)");
+      const cls = document.createElement("button");
+      cls.className="card-close";
+      cls.textContent="×";
+      cls.addEventListener("click",ev=>{
         ev.stopPropagation();
         if (confirm("Eintrag löschen?")) deleteEntry(e.id);
       });
-      top.appendChild(title);
-      top.appendChild(close);
-
+      top.appendChild(tt); top.appendChild(cls);
       div.appendChild(top);
 
       const meta = document.createElement("div");
-      meta.style.display = "flex";
-      meta.style.flexWrap = "wrap";
-      meta.style.gap = ".2rem";
+      meta.style.display="flex";
+      meta.style.flexWrap="wrap";
+      meta.style.gap=".2rem";
 
-      (e.mitarbeiter || []).forEach(m=>{
-        const span = document.createElement("span");
-        span.className = "badge";
-        span.textContent = m;
-        meta.appendChild(span);
+      (e.mitarbeiter||[]).forEach(m=>{
+        const b = document.createElement("span");
+        b.className="badge";
+        b.textContent = m;
+        meta.appendChild(b);
       });
-      (e.fahrzeuge || []).forEach(f=>{
-        const span = document.createElement("span");
-        span.className = "badge";
-        span.textContent = f;
-        meta.appendChild(span);
+      (e.fahrzeug||[]).forEach(f=>{
+        const b = document.createElement("span");
+        b.className="badge";
+        b.textContent = f;
+        meta.appendChild(b);
       });
       if (e.baustelle){
-        const span = document.createElement("span");
-        span.className = "badge";
-        span.textContent = e.baustelle;
-        meta.appendChild(span);
+        const b = document.createElement("span");
+        b.className="badge";
+        b.textContent=e.baustelle;
+        meta.appendChild(b);
       }
       if (e.status){
-        const span = document.createElement("span");
-        span.className = "badge";
-        span.textContent = e.status;
-        meta.appendChild(span);
+        const b = document.createElement("span");
+        b.className="badge";
+        b.textContent=e.status;
+        meta.appendChild(b);
       }
       if (meta.children.length) div.appendChild(meta);
 
       if (e.notiz){
         const p = document.createElement("div");
+        p.style.fontSize=".55rem";
         p.textContent = e.notiz;
-        p.style.fontSize = ".55rem";
         div.appendChild(p);
       }
 
-      div.addEventListener("dragstart", ev=>{
-        ev.dataTransfer.effectAllowed = "move";
+      div.addEventListener("dragstart",ev=>{
         ev.dataTransfer.setData("text/plain", e.id);
       });
-      div.addEventListener("click", ()=> openEntryDialog(e));
+      div.addEventListener("click",()=>openEntryDialog(e));
 
       return div;
     }
 
     async function createEntry(data){
-      const { data:ins } = await supa.from("plantafel").insert(data).select().single();
-      if (ins){
-        entries.push({
-          ...ins,
-          mitarbeiter: ins.mitarbeiter ? ins.mitarbeiter.split(",").filter(x=>x) : [],
-          fahrzeuge: ins.fahrzeuge ? ins.fahrzeuge.split(",").filter(x=>x) : []
-        });
-        render();
-      }
+      const { data:ins, error } = await supa.from("plantafel").insert(data).select().single();
+      if (error) { console.error(error); return; }
+      entries.push({
+        ...ins,
+        mitarbeiter: ins.mitarbeiter ? ins.mitarbeiter.split(",").filter(Boolean):[],
+        fahrzeug: ins.fahrzeug ? ins.fahrzeug.split(",").filter(Boolean):[]
+      });
+      render();
     }
     async function updateEntry(id, patch){
-      const { data:upd } = await supa.from("plantafel").update(patch).eq("id",id).select().single();
-      if (upd){
-        const idx = entries.findIndex(e=>e.id===id);
-        entries[idx] = {
-          ...upd,
-          mitarbeiter: upd.mitarbeiter ? upd.mitarbeiter.split(",").filter(x=>x) : [],
-          fahrzeuge: upd.fahrzeuge ? upd.fahrzeuge.split(",").filter(x=>x) : []
-        };
-        render();
-      }
+      const { data:upd, error } = await supa.from("plantafel").update(patch).eq("id",id).select().single();
+      if (error) { console.error(error); return; }
+      const idx = entries.findIndex(e=>e.id===id);
+      entries[idx] = {
+        ...upd,
+        mitarbeiter: upd.mitarbeiter ? upd.mitarbeiter.split(",").filter(Boolean):[],
+        fahrzeug: upd.fahrzeug ? upd.fahrzeug.split(",").filter(Boolean):[]
+      };
+      render();
     }
     async function deleteEntry(id){
       await supa.from("plantafel").delete().eq("id",id);
       entries = entries.filter(e=>e.id!==id);
       render();
     }
-    function moveEntryToDate(id, dateISO, toDetailed){
-      updateEntry(id,{ tag: dateISO, is_detailed: toDetailed });
-    }
 
     function openEntryDialog(e){
       document.getElementById("dlgTitle").textContent = e ? "Eintrag bearbeiten" : "Neuer Eintrag";
       eId.value = e ? e.id : "";
-      eTitel.value = e ? (e.titel || "") : "";
-      eBaustelle.value = e ? (e.baustelle || "") : "";
-      eStatus.value = e ? (e.status || "") : "";
-      eNotiz.value = e ? (e.notiz || "") : "";
-      eDate.value = e ? (e.tag || todayISO()) : (startDateInput.value || todayISO());
+      eDate.value = e ? e.tag : (startDateInput.value || todayISO());
+      eTitel.value = e ? (e.titel||"") : "";
+      eBaustelle.value = e ? (e.baustelle||"") : "";
+      eStatus.value = e ? (e.status||"") : "";
+      eNotiz.value = e ? (e.notiz||"") : "";
 
-      // Multi select setzen
-      Array.from(eMitarbeiter.options).forEach(o => {
+      Array.from(eMitarbeiter.options).forEach(o=>{
         o.selected = e && e.mitarbeiter ? e.mitarbeiter.includes(o.value) : false;
       });
-      Array.from(eFahrzeug.options).forEach(o => {
-        o.selected = e && e.fahrzeuge ? e.fahrzeuge.includes(o.value) : false;
+      Array.from(eFahrzeug.options).forEach(o=>{
+        o.selected = e && e.fahrzeug ? e.fahrzeug.includes(o.value) : false;
       });
 
       applyVisibility();
@@ -668,110 +485,76 @@
     }
 
     function applyVisibility(){
-      const status = eStatus.value;
-      const hasBaustelle = eBaustelle.value.trim().length > 0;
-      const special = (status === "urlaub" || status === "krank" || status === "schule");
-      if (special){
-        fldTitel.classList.add("hidden");
-        eTitel.value = "";
-      } else if (hasBaustelle){
-        fldTitel.classList.add("hidden");
-      } else {
-        fldTitel.classList.remove("hidden");
-      }
+      const special = ["urlaub","krank","schule"].includes(eStatus.value);
+      const hasBaustelle = eBaustelle.value.trim().length>0;
+      if (special){ fldTitel.classList.add("hidden"); eTitel.value=""; }
+      else if (hasBaustelle){ fldTitel.classList.add("hidden"); }
+      else { fldTitel.classList.remove("hidden"); }
     }
+    eStatus.addEventListener("change",applyVisibility);
+    eBaustelle.addEventListener("input",applyVisibility);
 
-    eStatus.addEventListener("change", applyVisibility);
-    eBaustelle.addEventListener("input", applyVisibility);
-
-    entryForm.addEventListener("submit", async ev=>{
+    document.getElementById("entryForm").addEventListener("submit",async ev=>{
       ev.preventDefault();
-      const isEdit = !!eId.value;
-
       const mitas = Array.from(eMitarbeiter.selectedOptions).map(o=>o.value);
       const fahrz = Array.from(eFahrzeug.selectedOptions).map(o=>o.value);
-
       const payload = {
         tag: eDate.value,
         titel: eTitel.value,
         mitarbeiter: mitas.join(","),
-        fahrzeuge: fahrz.join(","),
+        fahrzeug: fahrz.join(","),
         baustelle: eBaustelle.value.trim(),
         status: eStatus.value,
         notiz: eNotiz.value
       };
-
-      // Urlaub/Krank/Schule immer detailliert und ohne Titel
-      if (payload.status === "urlaub" || payload.status === "krank" || payload.status === "schule"){
+      if (["urlaub","krank","schule"].includes(payload.status)){
         payload.titel = "";
         payload.is_detailed = true;
       } else {
-        // wenn wir in 12m sind -> grob
-        payload.is_detailed = (viewSel.value !== "12m");
+        payload.is_detailed = (viewSel.value!=="12m");
       }
-
-      if (isEdit) await updateEntry(eId.value, payload);
+      if (eId.value) await updateEntry(eId.value, payload);
       else await createEntry(payload);
-
       entryDlg.close();
     });
-
-    btnEntryCancel.addEventListener("click", ()=>entryDlg.close());
+    btnEntryCancel.addEventListener("click",()=>entryDlg.close());
 
     // Stammdaten
-    btnMaster.addEventListener("click", ()=> masterDlg.showModal());
-    btnMasterClose.addEventListener("click", ()=> masterDlg.close());
-    btnMAdd.addEventListener("click", async ()=>{
+    btnMaster.addEventListener("click",()=>masterDlg.showModal());
+    btnMasterClose.addEventListener("click",()=>masterDlg.close());
+    btnMAdd.addEventListener("click",async ()=>{
       const name = mName.value.trim();
       if (!name) return;
       const { data } = await supa.from("mitarbeiter").insert({name}).select().single();
-      if (data){
-        mitarbeiter.push(data);
-        fillMasterLists();
-        mName.value = "";
-      }
+      if (data){ mitarbeiter.push(data); fillMaster(); mName.value=""; }
     });
-    btnFAdd.addEventListener("click", async ()=>{
+    btnFAdd.addEventListener("click",async ()=>{
       const name = fName.value.trim();
       if (!name) return;
       const { data } = await supa.from("fahrzeuge").insert({name}).select().single();
-      if (data){
-        fahrzeuge.push(data);
-        fillMasterLists();
-        fName.value = "";
-      }
+      if (data){ fahrzeuge.push(data); fillMaster(); fName.value=""; }
     });
 
-    // Header
-    btnAdd.addEventListener("click", ()=> openEntryDialog(null));
-    btnReload.addEventListener("click", loadAll);
-    viewSel.addEventListener("change", render);
-    chkUrlaub.addEventListener("change", render);
-    document.addEventListener("click", ev=>{
+    // header events
+    btnAdd.addEventListener("click",()=>openEntryDialog(null));
+    btnReload.addEventListener("click",loadAll);
+    viewSel.addEventListener("change",render);
+    chkUrlaub.addEventListener("change",render);
+    document.addEventListener("click",ev=>{
       const d = ev.target.getAttribute("data-add");
-      if (d){
-        eDate.value = d;
-        openEntryDialog(null);
-      }
+      if (d){ eDate.value=d; openEntryDialog(null); }
       const m = ev.target.getAttribute("data-add-month");
-      if (m){
-        eDate.value = m + "-01";
-        // aus Monat heraus bleibt grob
-        viewSel.value = "12m";
-        openEntryDialog(null);
-      }
+      if (m){ eDate.value=m+"-01"; viewSel.value="12m"; openEntryDialog(null); }
     });
 
-    chkAutoReload.addEventListener("change", ()=>{
-      if (autoReloadTimer) clearInterval(autoReloadTimer);
-      if (chkAutoReload.checked){
-        autoReloadTimer = setInterval(loadAll, 20000);
-      }
+    chkAutoReload.addEventListener("change",()=>{
+      if (reloadTimer) clearInterval(reloadTimer);
+      if (chkAutoReload.checked) reloadTimer = setInterval(loadAll,20000);
     });
 
     startDateInput.value = todayISO();
     loadAll();
-    autoReloadTimer = setInterval(loadAll, 20000);
+    reloadTimer = setInterval(loadAll,20000);
   </script>
 </body>
 </html>
