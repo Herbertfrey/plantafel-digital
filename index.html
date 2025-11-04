@@ -1,633 +1,198 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="de">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1.0" />
-  <title>Plantafel Digital</title>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Dachdeckerei Frey – Digitale Plantafel</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
   <style>
     :root {
-      --bg: #181b1f;
-      --panel: #1f2328;
-      --card: #242a30;
-      --line: #30363d;
-      --txt: #fff;
-      --txt-dim: #c5ced6;
-      --danger: #ff5c5c;
-      --radius: 10px;
+      --bg: #f6f6f4;
+      --card: #ffffff;
+      --line: #dcdcdc;
+      --text: #222;
+      --accent: #b12a2a;
     }
     * { box-sizing: border-box; }
     body {
       margin: 0;
+      font-family: "Inter", sans-serif;
       background: var(--bg);
-      color: var(--txt);
-      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-      height: 100vh;
+      color: var(--text);
       display: flex;
       flex-direction: column;
+      height: 100vh;
     }
     header {
-      display: flex;
-      gap: .75rem;
-      align-items: center;
-      padding: .75rem 1rem;
-      background: rgba(0,0,0,.2);
-      border-bottom: 1px solid rgba(255,255,255,.03);
-    }
-    header .status-dot {
-      width: .7rem;
-      height: .7rem;
-      border-radius: 50%;
-      background: #2ecc71;
-      margin-right: .4rem;
-    }
-    select, input[type="date"], button {
-      background: #0f1317;
-      border: 1px solid #2a3138;
-      color: var(--txt);
-      border-radius: 6px;
-      padding: .3rem .5rem;
-      font-size: .85rem;
-    }
-    button.primary {
-      background: #0079ff;
-      border-color: #0079ff;
-      color: #fff;
-      font-weight: 500;
-    }
-    main {
-      flex: 1;
-      overflow: auto;
-      padding: 1rem;
-    }
-    /* Boards */
-    .board {
-      display: grid;
-      gap: .75rem;
-    }
-    /* 4 Wochen = 4 Zeilen, jede Zeile 5 Tage (Mo–Fr) */
-    .board.weeks {
-      grid-template-rows: repeat(4, minmax(140px, 1fr));
-      grid-template-columns: repeat(5, minmax(160px, 1fr));
-    }
-    /* 12 Monate = 3 x 4 */
-    .board.months {
-      grid-template-columns: repeat(4, minmax(180px, 1fr));
-      grid-template-rows: repeat(3, minmax(160px, 1fr));
-    }
-    .day, .month {
-      background: var(--panel);
-      border: 1px solid rgba(255,255,255,.02);
-      border-radius: var(--radius);
-      display: flex;
-      flex-direction: column;
-      min-height: 120px;
-      overflow: hidden;
-    }
-    .day-header, .month-header {
-      padding: .4rem .6rem;
-      font-size: .75rem;
-      border-bottom: 1px solid rgba(255,255,255,.03);
+      background: var(--card);
+      border-bottom: 1px solid var(--line);
+      padding: 10px 20px;
       display: flex;
       justify-content: space-between;
       align-items: center;
-      color: var(--txt-dim);
+      position: sticky;
+      top: 0;
+      z-index: 10;
     }
-    .entries {
+    h1 { margin: 0; font-size: 20px; font-weight: 600; }
+    main {
       flex: 1;
       overflow-y: auto;
-      padding: .4rem .4rem .4rem;
-      display: flex;
-      flex-direction: column;
-      gap: .4rem;
+      padding: 20px;
     }
-    .card {
-      border-radius: 6px;
-      padding: .35rem .4rem .35rem;
-      background: var(--card);
-      border: 1px solid rgba(255,255,255,.08);
-      cursor: pointer;
-      display: flex;
-      flex-direction: column;
-      gap: .25rem;
-      font-size: .7rem;
-    }
-    .card small {
-      color: rgba(255,255,255,.65);
-      font-size: .65rem;
-      display: inline-block;
-    }
-    .badge {
-      display: inline-block;
-      padding: .2rem .4rem;
-      border-radius: 999px;
-      background: rgba(0,0,0,.25);
-      font-size: .6rem;
-      margin-right: .25rem;
-    }
-    dialog {
-      background: #0f1317;
-      border: 1px solid #2a3138;
-      border-radius: 10px;
-      color: #fff;
-      padding: 1rem 1rem .8rem;
-      max-width: 460px;
-      width: 100%;
-    }
-    dialog::backdrop {
-      background: rgba(0,0,0,.3);
-    }
-    .dlg-row {
-      display: flex;
-      flex-direction: column;
-      gap: .35rem;
-      margin-bottom: .6rem;
-    }
-    label { font-size: .7rem; color: #ddd; }
-    input, select, textarea {
-      width: 100%;
-      background: #0a0d10;
-      border: 1px solid #1d2227;
-      color: #fff;
-      border-radius: 6px;
-      padding: .35rem .45rem;
-      font-size: .78rem;
-    }
-    textarea { min-height: 60px; }
-    .dlg-foot {
-      display: flex;
-      justify-content: flex-end;
-      gap: .5rem;
-    }
-    .ghost {
-      background: transparent;
-      border: 1px solid #fff2;
-    }
-    .fab {
-      position: fixed;
-      bottom: 1rem;
-      right: 1rem;
-      height: 46px;
-      width: 46px;
-      background: #0079ff;
-      border-radius: 50%;
-      display: grid;
-      place-items: center;
-      font-size: 1.5rem;
+    button {
+      background: var(--accent);
+      color: white;
       border: none;
-      color: #fff;
+      border-radius: 6px;
+      padding: 6px 12px;
+      cursor: pointer;
+      font-weight: 600;
+    }
+    button:hover { opacity: .9; }
+    .view-select {
+      display: flex;
+      gap: 10px;
+    }
+    .board {
+      display: grid;
+      gap: 8px;
+    }
+    .day {
+      background: var(--card);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      min-height: 80px;
+      padding: 6px;
       cursor: pointer;
     }
-    /* Farben für Status */
-    .status-urlaub { background: #ffb347 !important; }
-    .status-krank { background: #ff5c5c !important; }
-    .status-schule { background: #6c5ce7 !important; }
+    .entry {
+      border-radius: 6px;
+      padding: 4px 6px;
+      margin: 2px 0;
+      color: #fff;
+      font-size: 13px;
+      font-weight: 600;
+    }
+    .dialog {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,.45);
+      display: none;
+      align-items: center;
+      justify-content: center;
+    }
+    .dialog.active { display: flex; }
+    .dialog-content {
+      background: var(--card);
+      border-radius: 10px;
+      padding: 20px;
+      width: 320px;
+      box-shadow: 0 3px 10px rgba(0,0,0,.2);
+    }
+    label { display:block; margin-top:10px; font-weight:600; }
+    input, select {
+      width:100%; padding:6px; border:1px solid var(--line);
+      border-radius:6px; font-size:14px;
+    }
   </style>
 </head>
 <body>
   <header>
-    <span class="status-dot"></span> verbunden
-    <span>Ansicht:</span>
-    <select id="viewSel">
-      <option value="weeks">4 Wochen (Mo–Fr)</option>
-      <option value="months">12 Monate (grob)</option>
-    </select>
-    <span>Start:</span>
-    <input type="date" id="startDate">
-    <button id="btnReload">Neu laden</button>
-    <label><input type="checkbox" id="chkUrlaub" checked> Urlaub/Krank/Schule</label>
-    <label><input type="checkbox" id="chkAutoReload" checked> Auto-Reload</label>
-    <button id="btnMasters">Stammdaten</button>
-    <button id="btnNew" class="primary">+ Eintrag</button>
+    <h1>Plantafel Dachdeckerei Frey</h1>
+    <div class="view-select">
+      <button id="btn14">14 Tage</button>
+      <button id="btn4w">4 Wochen</button>
+      <button id="btn12m">12 Monate</button>
+    </div>
   </header>
+  <main id="board"></main>
 
-  <main>
-    <div id="board" class="board weeks"></div>
-  </main>
-
-  <!-- Eintrag-Dialog -->
-  <dialog id="entryDlg">
-    <form method="dialog" id="entryForm">
-      <h3>Eintrag bearbeiten</h3>
-      <div class="dlg-row">
-        <label for="entryDate">Datum</label>
-        <input type="date" id="entryDate" required>
+  <!-- Dialog für Eintrag -->
+  <div class="dialog" id="dialog">
+    <div class="dialog-content">
+      <h3 id="dlg-title">Neuer Eintrag</h3>
+      <label>Typ</label>
+      <select id="type">
+        <option value="baustelle">Baustelle</option>
+        <option value="fahrzeug">Fahrzeug</option>
+        <option value="mitarbeiter">Mitarbeiter</option>
+        <option value="status">Krank/Urlaub/Schule</option>
+      </select>
+      <label>Bezeichnung</label>
+      <input id="title" placeholder="z. B. Dach Müller">
+      <label>Von</label>
+      <input type="date" id="from">
+      <label>Bis</label>
+      <input type="date" id="to">
+      <div style="margin-top:14px;display:flex;justify-content:space-between;">
+        <button id="save">Speichern</button>
+        <button id="cancel" style="background:#666;">Abbrechen</button>
       </div>
-      <div class="dlg-row" id="rowTitle">
-        <label for="entryTitle">Auftrag / Titel</label>
-        <input type="text" id="entryTitle" placeholder="z.B. Baustelle Müller">
-      </div>
-      <div class="dlg-row">
-        <label for="entryBaustelle">Baustelle</label>
-        <select id="entryBaustelle">
-          <option value="">– keine –</option>
-        </select>
-      </div>
-      <div class="dlg-row">
-        <label for="entryMitarbeiter">Mitarbeiter</label>
-        <select id="entryMitarbeiter">
-          <option value="">– keiner –</option>
-        </select>
-      </div>
-      <div class="dlg-row">
-        <label for="entryFahrzeug">Fahrzeug</label>
-        <select id="entryFahrzeug">
-          <option value="">– keines –</option>
-        </select>
-      </div>
-      <div class="dlg-row">
-        <label for="entryStatus">Status</label>
-        <select id="entryStatus">
-          <option value="normal">normal</option>
-          <option value="urlaub">Urlaub</option>
-          <option value="krank">Krank</option>
-          <option value="schule">Schule</option>
-        </select>
-      </div>
-      <div class="dlg-row">
-        <label for="entryNote">Notiz</label>
-        <textarea id="entryNote" placeholder="optional"></textarea>
-      </div>
-      <div class="dlg-foot">
-        <button type="button" id="btnEntryDelete" class="ghost">Löschen</button>
-        <button type="button" id="btnEntryCancel" class="ghost">Abbrechen</button>
-        <button type="submit" class="primary">Speichern</button>
-      </div>
-    </form>
-  </dialog>
-
-  <!-- Stammdaten -->
-  <dialog id="masterDlg">
-    <h3>Stammdaten</h3>
-    <div class="dlg-row">
-      <label>Mitarbeiter</label>
-      <div style="display:flex;gap:.4rem;">
-        <input id="newMitarbeiter" placeholder="Mitarbeitername">
-        <button id="btnAddMitarbeiter">+ Hinzufügen</button>
-      </div>
-      <ul id="listMitarbeiter"></ul>
     </div>
-    <div class="dlg-row">
-      <label>Fahrzeuge</label>
-      <div style="display:flex;gap:.4rem;">
-        <input id="newFahrzeug" placeholder="Fahrzeug">
-        <button id="btnAddFahrzeug">+ Hinzufügen</button>
-      </div>
-      <ul id="listFahrzeuge"></ul>
-    </div>
-    <div class="dlg-row">
-      <label>Baustellen (für grob)</label>
-      <div style="display:flex;gap:.4rem;">
-        <input id="newBaustelle" placeholder="Baustelle">
-        <button id="btnAddBaustelle">+ Hinzufügen</button>
-      </div>
-      <ul id="listBaustellen"></ul>
-    </div>
-    <div class="dlg-foot">
-      <button id="btnMasterClose" class="primary">Schließen</button>
-    </div>
-  </dialog>
+  </div>
 
-  <button class="fab" id="fabPlus">+</button>
-
-  <!-- Supabase -->
   <script type="module">
     import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
-
     const supabaseUrl = "https://mtybmrkyhavxpvwysglo.supabase.co";
     const supabaseKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im10eWJtcmt5aGF2eHB2d3lzZ2xvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjIxNjQ1OTIsImV4cCI6MjA3Nzc0MDU5Mn0.UToAmJAvACYvnO9hCIeyfm-VYKr5jincXdnEDDtbhvo";
-    const supabase = createClient(supabaseUrl, supabaseKey);
+    export const supabase = createClient(supabaseUrl, supabaseKey);
+    const board = document.getElementById("board");
+    const dialog = document.getElementById("dialog");
+    const saveBtn = document.getElementById("save");
+    const cancelBtn = document.getElementById("cancel");
+    cancelBtn.onclick = ()=>dialog.classList.remove("active");
 
-    const boardEl = document.getElementById("board");
-    const viewSel = document.getElementById("viewSel");
-    const startDateEl = document.getElementById("startDate");
-    const chkUrlaub = document.getElementById("chkUrlaub");
-    const chkAutoReload = document.getElementById("chkAutoReload");
-    const entryDlg = document.getElementById("entryDlg");
-    const masterDlg = document.getElementById("masterDlg");
-    const fabPlus = document.getElementById("fabPlus");
+    document.getElementById("btn14").onclick=()=>renderDays(14);
+    document.getElementById("btn4w").onclick=()=>renderDays(28);
+    document.getElementById("btn12m").onclick=()=>renderMonths();
 
-    // entry fields
-    const entryDate = document.getElementById("entryDate");
-    const entryTitle = document.getElementById("entryTitle");
-    const entryBaustelle = document.getElementById("entryBaustelle");
-    const entryMitarbeiter = document.getElementById("entryMitarbeiter");
-    const entryFahrzeug = document.getElementById("entryFahrzeug");
-    const entryStatus = document.getElementById("entryStatus");
-    const entryNote = document.getElementById("entryNote");
-    const btnEntryDelete = document.getElementById("btnEntryDelete");
-    const rowTitle = document.getElementById("rowTitle");
-
-    // master lists
-    const listMitarbeiter = document.getElementById("listMitarbeiter");
-    const listFahrzeuge = document.getElementById("listFahrzeuge");
-    const listBaustellen = document.getElementById("listBaustellen");
-
-    let currentEditId = null;
-    let autoReloadTimer = null;
-    let masterData = {
-      mitarbeiter: [],
-      fahrzeuge: [],
-      baustellen: []
-    };
-
-    function todayISO() {
-      const d = new Date();
-      d.setMinutes(d.getMinutes() - d.getTimezoneOffset());
-      return d.toISOString().slice(0,10);
-    }
-
-    function addDays(d, n) {
-      const dt = new Date(d);
-      dt.setDate(dt.getDate() + n);
-      return dt;
-    }
-    function toISO(d) {
-      d.setMinutes(d.getMinutes() - d.getTimezoneOffset());
-      return d.toISOString().slice(0,10);
-    }
-    function weekdayName(d) {
-      return d.toLocaleDateString("de-DE", { weekday: "short" });
-    }
-    function monthName(d) {
-      return d.toLocaleDateString("de-DE", { month: "long", year:"numeric" });
-    }
-
-    // Farbe aus Mitarbeitername
-    function colorFromName(name) {
-      if (!name) return "#8f5bff";
-      let h = 0;
-      for (let i=0;i<name.length;i++) h = (h*31 + name.charCodeAt(i)) & 0xffffffff;
-      const hue = Math.abs(h) % 360;
-      return `hsl(${hue} 70% 45%)`;
-    }
-
-    async function loadMasters() {
-      // mitarbeiter
-      let { data: mitarbeiter } = await supabase.from("mitarbeiter").select("*").order("name");
-      let { data: fahrzeuge } = await supabase.from("fahrzeuge").select("*").order("name");
-      let { data: baustellen } = await supabase.from("baustellen").select("*").order("name");
-
-      masterData.mitarbeiter = mitarbeiter || [];
-      masterData.fahrzeuge = fahrzeuge || [];
-      masterData.baustellen = baustellen || [];
-
-      // in Dialog
-      listMitarbeiter.innerHTML = "";
-      masterData.mitarbeiter.forEach(m => {
-        const li = document.createElement("li");
-        li.textContent = m.name;
-        listMitarbeiter.appendChild(li);
-      });
-      listFahrzeuge.innerHTML = "";
-      masterData.fahrzeuge.forEach(f => {
-        const li = document.createElement("li");
-        li.textContent = f.name;
-        listFahrzeuge.appendChild(li);
-      });
-      listBaustellen.innerHTML = "";
-      masterData.baustellen.forEach(b => {
-        const li = document.createElement("li");
-        li.textContent = b.name;
-        listBaustellen.appendChild(li);
-      });
-
-      // in Entry-Form
-      entryMitarbeiter.innerHTML = `<option value="">– keiner –</option>`;
-      masterData.mitarbeiter.forEach(m => {
-        const opt = document.createElement("option");
-        opt.value = m.name;
-        opt.textContent = m.name;
-        entryMitarbeiter.appendChild(opt);
-      });
-      entryFahrzeug.innerHTML = `<option value="">– keines –</option>`;
-      masterData.fahrzeuge.forEach(f => {
-        const opt = document.createElement("option");
-        opt.value = f.name;
-        opt.textContent = f.name;
-        entryFahrzeug.appendChild(opt);
-      });
-      entryBaustelle.innerHTML = `<option value="">– keine –</option>`;
-      masterData.baustellen.forEach(b => {
-        const opt = document.createElement("option");
-        opt.value = b.name;
-        opt.textContent = b.name;
-        entryBaustelle.appendChild(opt);
-      });
-    }
-
-    async function loadBoard() {
-      const view = viewSel.value;
-      const startIso = startDateEl.value || todayISO();
-
-      // alle Einträge ab 1 Jahr zurück bis +1 Jahr holen
-      const { data: entries } = await supabase
-        .from("plantafel")
-        .select("*")
-        .gte("tag", "2024-01-01")
-        .lte("tag", "2030-12-31")
-        .order("tag", { ascending: true });
-
-      boardEl.innerHTML = "";
-      if (view === "weeks") {
-        boardEl.className = "board weeks";
-        // 4 Wochen = 20 Werktage
-        for (let w=0; w<4; w++) {
-          for (let d=0; d<5; d++) {
-            const dayDate = addDays(startIso, w*7 + d);
-            const iso = toISO(dayDate);
-            const dayBox = document.createElement("div");
-            dayBox.className = "day";
-            dayBox.dataset.date = iso;
-            const head = document.createElement("div");
-            head.className = "day-header";
-            head.innerHTML = `<span>${weekdayName(dayDate)} ${iso}</span>`;
-            dayBox.appendChild(head);
-            const list = document.createElement("div");
-            list.className = "entries";
-            dayBox.appendChild(list);
-            boardEl.appendChild(dayBox);
-
-            const dayEntries = (entries || []).filter(e => e.tag === iso);
-            dayEntries.forEach(e => list.appendChild(renderCard(e)));
-          }
-        }
-      } else {
-        boardEl.className = "board months";
-        const startDateObj = new Date(startIso);
-        const startMonth = startDateObj.getMonth();
-        const startYear = startDateObj.getFullYear();
-        for (let i=0;i<12;i++) {
-          const mDate = new Date(startYear, startMonth + i, 1);
-          const mIsoMonth = mDate.toISOString().slice(0,7); // yyyy-mm
-          const box = document.createElement("div");
-          box.className = "month";
-          const head = document.createElement("div");
-          head.className = "month-header";
-          head.textContent = monthName(mDate);
-          box.appendChild(head);
-          const list = document.createElement("div");
-          list.className = "entries";
-          box.appendChild(list);
-          boardEl.appendChild(box);
-
-          const mEntries = (entries || []).filter(e => {
-            // nur Einträge ohne Mitarbeiter UND ohne Fahrzeug zeigen = grob
-            return e.tag.slice(0,7) === mIsoMonth &&
-                   (!e.mitarbeiter || e.mitarbeiter === "") &&
-                   (!e.fahrzeug || e.fahrzeug === "");
-          });
-          mEntries.forEach(e => list.appendChild(renderCard(e)));
-        }
+    async function renderDays(days){
+      board.innerHTML="";
+      board.style.gridTemplateColumns="repeat(5,1fr)";
+      const today=new Date();
+      for(let i=0;i<days;i++){
+        const d=new Date(today);
+        d.setDate(today.getDate()+i);
+        if(d.getDay()==6||d.getDay()==0)continue; // skip weekend
+        const cell=document.createElement("div");
+        cell.className="day";
+        cell.dataset.date=d.toISOString().split("T")[0];
+        cell.innerHTML=`<strong>${d.toLocaleDateString("de-DE",{weekday:"short",day:"2-digit",month:"2-digit"})}</strong>`;
+        cell.onclick=()=>openDialog(cell.dataset.date);
+        board.appendChild(cell);
       }
     }
 
-    function renderCard(e) {
-      const div = document.createElement("div");
-      div.className = "card";
-      div.dataset.id = e.id;
-
-      // Status-Farben
-      if (e.status === "urlaub") div.classList.add("status-urlaub");
-      else if (e.status === "krank") div.classList.add("status-krank");
-      else if (e.status === "schule") div.classList.add("status-schule");
-      else {
-        // Mitarbeiterfarbe
-        if (e.mitarbeiter) {
-          div.style.background = colorFromName(e.mitarbeiter);
-        } else if (e.fahrzeug) {
-          div.style.background = "#2892ff";
-        } else {
-          div.style.background = "#8f5bff";
-        }
-      }
-
-      const title = e.titel && e.titel.trim() !== "" ? e.titel : (e.status && e.status !== "normal" ? e.status : "ohne Titel");
-      div.innerHTML = `<strong>${title}</strong>`;
-      const smalls = [];
-      if (e.mitarbeiter) smalls.push(`<span class="badge">${e.mitarbeiter}</span>`);
-      if (e.fahrzeug) smalls.push(`<span class="badge">${e.fahrzeug}</span>`);
-      if (e.baustelle) smalls.push(`<span class="badge">${e.baustelle}</span>`);
-      if (smalls.length) {
-        const s = document.createElement("div");
-        s.innerHTML = smalls.join(" ");
-        div.appendChild(s);
-      }
-      div.addEventListener("click", () => openEntry(e));
-      return div;
-    }
-
-    function openEntry(e) {
-      currentEditId = e.id;
-      entryDate.value = e.tag;
-      entryTitle.value = e.titel || "";
-      entryBaustelle.value = e.baustelle || "";
-      entryMitarbeiter.value = e.mitarbeiter || "";
-      entryFahrzeug.value = e.fahrzeug || "";
-      entryStatus.value = e.status || "normal";
-      entryNote.value = e.notiz || "";
-      toggleTitleRow();
-      entryDlg.showModal();
-    }
-
-    function newEntry(forDate) {
-      currentEditId = null;
-      entryDate.value = forDate || (startDateEl.value || todayISO());
-      entryTitle.value = "";
-      entryBaustelle.value = "";
-      entryMitarbeiter.value = "";
-      entryFahrzeug.value = "";
-      entryStatus.value = "normal";
-      entryNote.value = "";
-      toggleTitleRow();
-      entryDlg.showModal();
-    }
-
-    function toggleTitleRow() {
-      const st = entryStatus.value;
-      if (st === "urlaub" || st === "krank" || st === "schule") {
-        rowTitle.style.display = "none";
-      } else {
-        rowTitle.style.display = "block";
+    function renderMonths(){
+      board.innerHTML="";
+      board.style.gridTemplateColumns="repeat(4,1fr)";
+      const months=["Jan","Feb","Mär","Apr","Mai","Jun","Jul","Aug","Sep","Okt","Nov","Dez"];
+      for(let i=0;i<12;i++){
+        const cell=document.createElement("div");
+        cell.className="day";
+        cell.dataset.month=i+1;
+        cell.innerHTML=`<strong>${months[i]}</strong>`;
+        board.appendChild(cell);
       }
     }
 
-    entryStatus.addEventListener("change", toggleTitleRow);
+    function openDialog(date){
+      dialog.classList.add("active");
+      document.getElementById("from").value=date;
+      document.getElementById("to").value=date;
+      saveBtn.onclick=()=>saveEntry(date);
+    }
 
-    document.getElementById("btnEntryCancel").addEventListener("click", () => entryDlg.close());
-
-    document.getElementById("entryForm").addEventListener("submit", async (ev) => {
-      ev.preventDefault();
-      const payload = {
-        tag: entryDate.value,
-        titel: (entryStatus.value === "urlaub" || entryStatus.value === "krank" || entryStatus.value === "schule") ? "" : entryTitle.value,
-        baustelle: entryBaustelle.value,
-        mitarbeiter: entryMitarbeiter.value,
-        fahrzeug: entryFahrzeug.value,
-        status: entryStatus.value,
-        notiz: entryNote.value,
-        sort: 0
+    async function saveEntry(date){
+      const data={
+        type:document.getElementById("type").value,
+        title:document.getElementById("title").value,
+        from:document.getElementById("from").value,
+        to:document.getElementById("to").value
       };
-      if (currentEditId) {
-        await supabase.from("plantafel").update(payload).eq("id", currentEditId);
-      } else {
-        await supabase.from("plantafel").insert(payload);
-      }
-      entryDlg.close();
-      loadBoard();
-    });
-
-    btnEntryDelete.addEventListener("click", async () => {
-      if (currentEditId) {
-        await supabase.from("plantafel").delete().eq("id", currentEditId);
-      }
-      entryDlg.close();
-      loadBoard();
-    });
-
-    // Stammdaten add
-    document.getElementById("btnAddMitarbeiter").addEventListener("click", async () => {
-      const val = document.getElementById("newMitarbeiter").value.trim();
-      if (!val) return;
-      await supabase.from("mitarbeiter").insert({ name: val });
-      document.getElementById("newMitarbeiter").value = "";
-      loadMasters();
-    });
-    document.getElementById("btnAddFahrzeug").addEventListener("click", async () => {
-      const val = document.getElementById("newFahrzeug").value.trim();
-      if (!val) return;
-      await supabase.from("fahrzeuge").insert({ name: val });
-      document.getElementById("newFahrzeug").value = "";
-      loadMasters();
-    });
-    document.getElementById("btnAddBaustelle").addEventListener("click", async () => {
-      const val = document.getElementById("newBaustelle").value.trim();
-      if (!val) return;
-      await supabase.from("baustellen").insert({ name: val });
-      document.getElementById("newBaustelle").value = "";
-      loadMasters();
-    });
-    document.getElementById("btnMasterClose").addEventListener("click", () => masterDlg.close());
-
-    // Header buttons
-    document.getElementById("btnReload").addEventListener("click", () => loadBoard());
-    document.getElementById("btnMasters").addEventListener("click", () => masterDlg.showModal());
-    document.getElementById("btnNew").addEventListener("click", () => newEntry());
-    fabPlus.addEventListener("click", () => newEntry());
-
-    viewSel.addEventListener("change", () => loadBoard());
-    chkAutoReload.addEventListener("change", () => {
-      if (chkAutoReload.checked) {
-        autoReloadTimer = setInterval(loadBoard, 20000);
-      } else {
-        clearInterval(autoReloadTimer);
-      }
-    });
-
-    // init
-    startDateEl.value = todayISO();
-    await loadMasters();
-    await loadBoard();
-    autoReloadTimer = setInterval(loadBoard, 20000);
+      await supabase.from("plantafel").insert(data);
+      dialog.classList.remove("active");
+      renderDays(14);
+    }
   </script>
-</body>
-</html>
