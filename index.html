@@ -1,838 +1,175 @@
 <!DOCTYPE html>
 <html lang="de">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Plantafel Dachdeckerei Frey</title>
-  <!-- Supabase -->
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <style>
-    :root {
-      --bg: #edf1f5;
-      --surface: #ffffff;
-      --text: #1f2937;
-      --muted: #6b7280;
-      --primary: #2563eb;
-      --danger: #ef4444;
-      --radius: 12px;
-      --shadow: 0 8px 24px rgba(15, 23, 42, 0.06);
-      --border: #d1d5db;
-      --card-gap: 10px;
-    }
-    * { box-sizing: border-box; }
     body {
+      font-family: Arial, sans-serif;
+      background: #f4f4f4;
       margin: 0;
-      font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
-      background: var(--bg);
-      color: var(--text);
+      padding: 0;
     }
+
     header {
-      background: var(--surface);
-      padding: 14px 18px;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      box-shadow: 0 1px 0 rgba(15,23,42,.04);
-      position: sticky;
-      top: 0;
-      z-index: 100;
-    }
-    header h1 {
-      font-size: 18px;
-      margin: 0 16px 0 0;
-      font-weight: 600;
-      letter-spacing: .01em;
-    }
-    .top-actions {
-      display: flex;
-      gap: 8px;
-      align-items: center;
-    }
-    .btn {
-      border: none;
-      background: var(--primary);
+      background: #004d99;
       color: white;
-      border-radius: 999px;
-      padding: 6px 14px;
-      font-weight: 500;
-      cursor: pointer;
-      display: inline-flex;
+      padding: 15px;
+      text-align: center;
+      font-size: 1.4em;
+      font-weight: bold;
+    }
+
+    .toolbar {
+      display: flex;
+      justify-content: center;
       align-items: center;
-      gap: 4px;
+      background: #e9e9e9;
+      padding: 10px;
+      gap: 10px;
     }
-    .btn-secondary {
-      background: #e5e7eb;
-      color: #111827;
+
+    button {
+      background: #004d99;
+      color: white;
+      border: none;
+      padding: 8px 16px;
+      border-radius: 5px;
+      cursor: pointer;
     }
-    .btn-active {
-      background: var(--primary);
-      color: #fff;
-      box-shadow: 0 4px 10px rgba(37,99,235,.3);
+
+    button:hover {
+      background: #0066cc;
     }
-    main {
-      padding: 16px 18px 60px;
+
+    select, input {
+      padding: 5px;
+      border-radius: 4px;
+      border: 1px solid #ccc;
     }
-    /* Board-Container */
+
     #board {
       display: grid;
-      gap: 12px;
-      min-height: 60vh;
+      gap: 10px;
+      padding: 20px;
+      grid-template-columns: repeat(4, 1fr);
     }
-    /* Tag-/Spaltenkarten */
-    .day-column {
-      background: var(--surface);
-      border: 1px solid rgba(209,213,219,.5);
-      border-radius: 12px;
-      box-shadow: var(--shadow);
-      display: flex;
-      flex-direction: column;
-      min-height: 150px;
-    }
-    .day-header {
-      padding: 8px 10px 4px;
-      border-bottom: 1px solid rgba(209,213,219,.4);
-    }
-    .day-header .date-line {
-      font-size: 12px;
-      color: var(--muted);
-    }
-    .day-header .title-line {
-      font-weight: 600;
-      font-size: 13px;
-      margin-bottom: 2px;
-    }
-    .entries {
-      padding: 6px;
-      display: flex;
-      flex-direction: column;
-      gap: 5px;
-      flex: 1;
-    }
-    /* Eintragskarte */
-    .entry-card {
+
+    .day {
+      background: white;
+      border: 1px solid #ddd;
       border-radius: 8px;
-      padding: 4px 6px 6px;
-      background: #dbeafe;
-      border: 1px solid rgba(148,163,184,.5);
-      cursor: grab;
+      min-height: 120px;
+      padding: 10px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
     }
-    .entry-title {
-      font-size: 12px;
-      font-weight: 600;
-      margin-bottom: 2px;
+
+    .day h3 {
+      margin: 0 0 5px 0;
+      font-size: 0.95em;
+      color: #004d99;
     }
-    .entry-meta {
-      display: flex;
-      gap: 6px;
-      flex-wrap: wrap;
-    }
-    .badge {
-      display: inline-flex;
-      align-items: center;
-      gap: 4px;
-      border-radius: 999px;
-      padding: 1px 8px;
-      font-size: 11px;
-      font-weight: 500;
-      background: rgba(15,23,42,.05);
-    }
-    .badge-small {
-      border-radius: 4px;
-      padding: 1px 5px;
-      font-size: 10px;
-    }
-    .status-red {
-      background: #fee2e2;
-      border: 1px solid #fecaca;
-      color: #b91c1c;
-    }
-    .entry-card.status-urlaub,
-    .entry-card.status-krank,
-    .entry-card.status-schule {
-      background: #fca5a5;
-      border-color: #f97373;
-      color: #fff;
-    }
-    /* Monatsgitter */
-    .month-card {
-      background: var(--surface);
-      border: 1px solid rgba(209,213,219,.5);
-      border-radius: 12px;
-      min-height: 160px;
-      box-shadow: var(--shadow);
-      display: flex;
-      flex-direction: column;
-    }
-    .month-head {
-      padding: 6px 10px;
-      border-bottom: 1px solid rgba(209,213,219,.5);
-      font-weight: 600;
-      font-size: 13px;
-    }
-    .month-body {
-      padding: 6px;
-      display: flex;
-      gap: 5px;
-      flex-wrap: wrap;
-      flex: 1;
-    }
-    /* Dialog */
-    .overlay {
-      position: fixed;
-      inset: 0;
-      background: rgba(15,23,42,.35);
-      display: none;
-      align-items: center;
-      justify-content: center;
-      z-index: 200;
-    }
-    .dialog {
-      background: #fff;
-      border-radius: 14px;
-      width: 360px;
-      max-width: 95vw;
-      box-shadow: 0 10px 30px rgba(15,23,42,.3);
-      padding: 14px 14px 10px;
-    }
-    .dialog h2 {
-      margin-top: 0;
-      font-size: 15px;
-      margin-bottom: 10px;
-    }
-    .form-field {
-      margin-bottom: 8px;
-    }
-    .form-field label {
-      display: block;
-      font-size: 12px;
-      font-weight: 600;
-      margin-bottom: 3px;
-    }
-    .form-field input,
-    .form-field select,
-    .form-field textarea {
-      width: 100%;
-      border: 1px solid #d1d5db;
-      border-radius: 6px;
-      padding: 5px 6px;
-      font-size: 13px;
-    }
-    .dialog-footer {
-      display: flex;
-      justify-content: flex-end;
-      gap: 8px;
-      margin-top: 8px;
-    }
-    .tag-clickable {
+
+    .entry {
+      border-radius: 5px;
+      padding: 5px 8px;
+      margin: 4px 0;
+      color: white;
+      font-size: 0.9em;
       cursor: pointer;
     }
-    /* Stammdaten Dialog */
-    .sd-col {
-      background: #f3f4f6;
-      border: 1px solid #e5e7eb;
-      border-radius: 6px;
-      padding: 6px;
-      margin-bottom: 6px;
+
+    .mitarbeiter {
+      background: #2e8b57;
     }
-    .sd-list {
-      max-height: 100px;
-      overflow: auto;
-      display: flex;
-      gap: 4px;
-      flex-wrap: wrap;
-      margin-top: 4px;
+    .fahrzeug {
+      background: #4682b4;
     }
-    .sd-chip {
-      background: #fff;
-      border: 1px solid #d1d5db;
-      border-radius: 999px;
-      padding: 2px 10px;
-      font-size: 11px;
-      display: flex;
-      align-items: center;
-      gap: 6px;
+    .baustelle {
+      background: #9370db;
     }
-    .sd-color {
-      width: 16px;
-      height: 16px;
-      border-radius: 50%;
+    .urlaub {
+      background: #ffa500;
     }
-    @media (max-width: 1100px) {
-      #board { grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); }
+    .krank {
+      background: #dc143c;
     }
+
+    footer {
+      text-align: center;
+      padding: 15px;
+      background: #004d99;
+      color: white;
+      margin-top: 20px;
+    }
+
   </style>
 </head>
 <body>
 
-<header>
-  <div style="display:flex;align-items:center;gap:12px;">
-    <h1>Plantafel Dachdeckerei Frey</h1>
-    <span id="conn" style="font-size:12px;color:green;">● verbunden</span>
-  </div>
-  <div class="top-actions">
-    <button class="btn btn-active" id="view14">14 Tage</button>
-    <button class="btn btn-secondary" id="view4">4 Wochen</button>
-    <button class="btn btn-secondary" id="view12">12 Monate</button>
-    <input type="date" id="startDate" style="border:1px solid #d1d5db;border-radius:6px;padding:3px 4px;font-size:12px;" />
-    <button class="btn-secondary btn" id="reloadBtn">Neu laden</button>
-    <label style="font-size:12px;display:flex;align-items:center;gap:4px;">
-      <input type="checkbox" id="urlaubFilter" checked /> Urlaub/Krank/Schule
-    </label>
-    <button class="btn-secondary btn" id="sdBtn">Stammdaten</button>
-    <button class="btn" id="newEntryBtn">+ Eintrag</button>
-  </div>
-</header>
+<header>Plantafel Dachdeckerei Frey</header>
 
-<main>
-  <div id="board"></div>
-</main>
-
-<!-- Eintrag Dialog -->
-<div class="overlay" id="entryOverlay">
-  <div class="dialog">
-    <h2 id="entryTitle">Eintrag</h2>
-    <div class="form-field">
-      <label>Datum</label>
-      <input type="date" id="fDatum" />
-    </div>
-    <div class="form-field" id="fTitelWrap">
-      <label>Baustelle / Auftrag</label>
-      <input type="text" id="fTitel" placeholder="z. B. Müller Dach" />
-    </div>
-    <div class="form-field">
-      <label>Mitarbeiter (mehrere möglich)</label>
-      <select id="fMitarbeiter" multiple size="4"></select>
-      <small style="font-size:11px;color:var(--muted);">STRG / Ctrl für mehrere</small>
-    </div>
-    <div class="form-field">
-      <label>Fahrzeug</label>
-      <select id="fFahrzeug">
-        <option value="">– keines –</option>
-      </select>
-    </div>
-    <div class="form-field">
-      <label>Status</label>
-      <select id="fStatus">
-        <option value="normal">normal</option>
-        <option value="urlaub">Urlaub</option>
-        <option value="krank">Krank</option>
-        <option value="schule">Schule</option>
-      </select>
-    </div>
-    <div class="form-field">
-      <label>Notiz</label>
-      <textarea id="fNotiz" rows="2"></textarea>
-    </div>
-    <input type="hidden" id="fId" />
-    <div class="dialog-footer">
-      <button class="btn-secondary btn" onclick="closeEntry()">Abbrechen</button>
-      <button class="btn-secondary btn" id="deleteBtn" style="background:#fee2e2;color:#b91c1c;display:none;">Löschen</button>
-      <button class="btn" onclick="saveEntry()">Speichern</button>
-    </div>
-  </div>
+<div class="toolbar">
+  <button onclick="setView('14tage')">14 Tage</button>
+  <button onclick="setView('4wochen')">4 Wochen</button>
+  <button onclick="setView('12monate')">12 Monate</button>
+  <label>Start:</label>
+  <input type="date" id="startDate" value="2025-11-03">
+  <button onclick="loadData()">Neu laden</button>
+  <button onclick="openDialog()">+ Eintrag</button>
 </div>
 
-<!-- Stammdaten Dialog -->
-<div class="overlay" id="sdOverlay">
-  <div class="dialog" style="width:380px;max-height:90vh;overflow:auto;">
-    <h2>Stammdaten</h2>
-    <div class="sd-col">
-      <label style="font-size:12px;font-weight:600;">Neuer Mitarbeiter</label>
-      <div style="display:flex;gap:5px;margin-top:3px;">
-        <input type="text" id="sdMitName" placeholder="Name" style="flex:1;" />
-        <button class="btn" style="padding:4px 10px;" onclick="addMitarbeiter()">+</button>
-      </div>
-      <div class="sd-list" id="sdMitList"></div>
-    </div>
-    <div class="sd-col">
-      <label style="font-size:12px;font-weight:600;">Neues Fahrzeug</label>
-      <div style="display:flex;gap:5px;margin-top:3px;">
-        <input type="text" id="sdFzName" placeholder="z. B. Crafter Bus" style="flex:1;" />
-        <button class="btn" style="padding:4px 10px;" onclick="addFahrzeug()">+</button>
-      </div>
-      <div class="sd-list" id="sdFzList"></div>
-    </div>
-    <div class="sd-col">
-      <label style="font-size:12px;font-weight:600;">Baustelle (für grobe 12-Monats-Planung)</label>
-      <div style="display:flex;gap:5px;margin-top:3px;">
-        <input type="text" id="sdBsName" placeholder="z. B. Müller Dach" style="flex:1;" />
-        <input type="date" id="sdBsVon" style="width:125px;" />
-      </div>
-      <div style="display:flex;gap:5px;margin-top:3px;">
-        <input type="date" id="sdBsBis" style="flex:1;" />
-        <button class="btn" style="padding:4px 10px;" onclick="addBaustelle()">+</button>
-      </div>
-      <div class="sd-list" id="sdBsList"></div>
-    </div>
-    <div class="dialog-footer">
-      <button class="btn-secondary btn" onclick="closeSd()">Schließen</button>
-    </div>
-  </div>
-</div>
+<div id="board"></div>
 
+<footer>© 2025 Dachdeckerei Frey – Digitale Plantafel</footer>
 
 <script>
-/* ------------------ Supabase Setup ------------------ */
-const SUPABASE_URL = "https://mtybmrkyhavxpvwysglo.supabase.co";
-const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im10eWJtcmt5aGF2eHB2d3lzZ2xvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjIxNjQ1OTIsImV4cCI6MjA3Nzc0MDU5Mn0.UToAmJAvACYvnO9hCIeyfm-VYKr5jincXdnEDDtbhvo";
-const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+  const board = document.getElementById("board");
 
-/* ------------------ State ------------------ */
-let viewMode = "14"; // 14, 4, 12
-let startDate = getMonday(new Date());
-let eintraege = [];    // aus plantafel (fein)
-let mitarbeiter = [];  // aus tabelle
-let fahrzeuge = [];
-let baustellen = [];   // für grob
-const mitarbeiterFarben = [
-  "#0ea5e9","#f97316","#8b5cf6","#22c55e","#14b8a6",
-  "#f43f5e","#a855f7","#6366f1","#f59e0b","#0f766e"
-];
-
-/* ------------------ Helper ------------------ */
-function getMonday(d){
-  d = new Date(d);
-  const day = d.getDay(); // 0 So ... 6 Sa
-  const diff = (day === 0 ? -6 : 1 - day);
-  d.setDate(d.getDate() + diff);
-  d.setHours(0,0,0,0);
-  return d;
-}
-function formatDateISO(d){
-  const dt = new Date(d);
-  return dt.toISOString().slice(0,10);
-}
-function addDays(d, n){
-  const x = new Date(d);
-  x.setDate(x.getDate()+n);
-  return x;
-}
-
-/* ------------------ UI Build ------------------ */
-const board = document.getElementById("board");
-const sdOverlay = document.getElementById("sdOverlay");
-const entryOverlay = document.getElementById("entryOverlay");
-
-document.getElementById("view14").onclick = ()=>{viewMode="14"; renderBoard(); markBtns();};
-document.getElementById("view4").onclick  = ()=>{viewMode="4";  renderBoard(); markBtns();};
-document.getElementById("view12").onclick = ()=>{viewMode="12"; renderBoard(); markBtns();};
-document.getElementById("startDate").onchange = (e)=>{
-  startDate = new Date(e.target.value);
-  renderBoard();
-};
-document.getElementById("reloadBtn").onclick = ()=>{ loadAll(); };
-
-document.getElementById("sdBtn").onclick = ()=>{ sdOverlay.style.display="flex"; };
-function closeSd(){ sdOverlay.style.display="none"; }
-
-document.getElementById("newEntryBtn").onclick = ()=>{
-  openEntry({tag: formatDateISO(new Date())});
-};
-
-document.getElementById("fStatus").onchange = ()=>{
-  const v = document.getElementById("fStatus").value;
-  // bei urlaub/krank/schule kein Titel nötig
-  document.getElementById("fTitelWrap").style.display = (v==="urlaub"||v==="krank"||v==="schule") ? "none":"block";
-};
-
-function markBtns(){
-  ["view14","view4","view12"].forEach(id=>document.getElementById(id).classList.remove("btn-active"));
-  if(viewMode==="14") document.getElementById("view14").classList.add("btn-active");
-  if(viewMode==="4")  document.getElementById("view4").classList.add("btn-active");
-  if(viewMode==="12") document.getElementById("view12").classList.add("btn-active");
-}
-
-function renderBoard(){
-  board.innerHTML = "";
-  if(viewMode==="12"){
-    board.style.gridTemplateColumns = "repeat(4, 1fr)";
-    renderMonths();
-  } else {
-    board.style.gridTemplateColumns = "1fr 1fr 1fr 1fr 1fr";
-    renderDays();
-  }
-}
-
-/* ---------- Tage (14 / 4 Wochen) ---------- */
-function renderDays(){
-  // wie viele arbeitstage?
-  const days = viewMode==="14" ? 10 : 20; // 2 bzw. 4 Wochen Mo-Fr
-  let colDate = new Date(startDate);
-
-  for(let i=0;i<days;i++){
-    // nur Mo-Fr, Sa/So überspringen
-    while(colDate.getDay()===0 || colDate.getDay()===6){
-      colDate = addDays(colDate,1);
-    }
-    const iso = formatDateISO(colDate);
-
-    const col = document.createElement("div");
-    col.className = "day-column tag-clickable";
-    col.dataset.date = iso;
-
-    const head = document.createElement("div");
-    head.className = "day-header";
-    head.innerHTML = `<div class="title-line">${colDate.toLocaleDateString("de-DE",{weekday:"short"})}</div>
-      <div class="date-line">${colDate.toLocaleDateString("de-DE")}</div>`;
-    col.appendChild(head);
-
-    const list = document.createElement("div");
-    list.className = "entries";
-    list.ondragover = ev => ev.preventDefault();
-    list.ondrop = ev => handleDrop(ev, iso);
-
-    // Einträge für diesen Tag
-    const dayEntries = eintraege.filter(e => e.tag === iso);
-    dayEntries.sort((a,b)=>(a.sort||0)-(b.sort||0));
-    dayEntries.forEach(e=>{
-      const card = buildEntryCard(e);
-      list.appendChild(card);
-    });
-
-    col.appendChild(list);
-    col.onclick = (ev)=>{
-      if(ev.target===list || ev.target===head || ev.currentTarget===col){
-        openEntry({tag: iso});
-      }
-    };
-
-    board.appendChild(col);
-    colDate = addDays(colDate,1);
-  }
-}
-
-/* ---------- Monate (grob) ---------- */
-function renderMonths(){
-  // 12 Monate ab Start
-  let mDate = new Date(startDate);
-  mDate.setDate(1);
-  for(let i=0;i<12;i++){
-    const box = document.createElement("div");
-    box.className = "month-card";
-    const head = document.createElement("div");
-    head.className = "month-head";
-    head.textContent = mDate.toLocaleDateString("de-DE",{month:"long", year:"numeric"});
-    box.appendChild(head);
-
-    const body = document.createElement("div");
-    body.className = "month-body";
-    body.ondragover = ev => ev.preventDefault();
-    body.ondrop = ev => handleDropGrob(ev, mDate);
-
-    // baustellen die in diesen monat fallen
-    const ms = baustellen.filter(b=>{
-      if(!b.von) return false;
-      const von = new Date(b.von);
-      return (von.getMonth()===mDate.getMonth() && von.getFullYear()===mDate.getFullYear());
-    });
-    ms.forEach(b=>{
-      const c = document.createElement("div");
-      c.className = "entry-card";
-      c.style.background = "#a855f7";
-      c.style.color = "#fff";
-      c.draggable = true;
-      c.dataset.type = "grob";
-      c.dataset.id = b.id;
-      c.ondragstart = ev => handleDragStart(ev, {kind:"grob",id:b.id});
-
-      c.innerHTML = `<div class="entry-title">${b.name||"Baustelle"}</div>
-      <div class="entry-meta"><span class="badge-small" style="background:rgba(255,255,255,.25);">${b.von||""}${b.bis?(" – "+b.bis):""}</span></div>`;
-      body.appendChild(c);
-    });
-
-    box.appendChild(body);
-    board.appendChild(box);
-
-    mDate.setMonth(mDate.getMonth()+1);
-  }
-}
-
-/* ---------- Eintragskarte bauen ---------- */
-function buildEntryCard(e){
-  const card = document.createElement("div");
-  card.className = "entry-card";
-  if(e.status==="urlaub"||e.status==="krank"||e.status==="schule"){
-    card.classList.add("status-"+e.status);
-  }
-  card.draggable = true;
-  card.ondragstart = ev => handleDragStart(ev, {kind:"fein", id:e.id});
-  card.onclick = ev => { ev.stopPropagation(); openEntry(e); };
-
-  let title = e.titel || e.baustelle || (e.status ? e.status : "Eintrag");
-  card.innerHTML = `<div class="entry-title">${title}</div>`;
-  const meta = document.createElement("div");
-  meta.className = "entry-meta";
-
-  // Mitarbeiter aufsplitten
-  if(e.mitarbeiter){
-    e.mitarbeiter.split(",").filter(x=>x.trim()!=="").forEach(name=>{
-      const farb = getMitarbeiterColor(name.trim());
-      const span = document.createElement("span");
-      span.className = "badge-small";
-      span.style.background = farb;
-      span.style.color = "#fff";
-      span.textContent = name.trim();
-      meta.appendChild(span);
-    });
-  }
-  if(e.fahrzeug){
-    const span = document.createElement("span");
-    span.className = "badge-small";
-    span.style.background = "#0f172a";
-    span.style.color = "#fff";
-    span.textContent = e.fahrzeug;
-    meta.appendChild(span);
-  }
-  if(e.status && e.status!=="normal"){
-    const span = document.createElement("span");
-    span.className = "badge-small";
-    span.style.background = "#ef4444";
-    span.style.color = "#fff";
-    span.textContent = e.status;
-    meta.appendChild(span);
-  }
-
-  card.appendChild(meta);
-  return card;
-}
-
-/* ---------- Drag & Drop ---------- */
-let dragData = null;
-function handleDragStart(ev, data){
-  dragData = data;
-}
-async function handleDrop(ev, isoDate){
-  ev.preventDefault();
-  if(!dragData) return;
-  // grob → fein: wir machen aus baustelle einen Fein-Eintrag
-  if(dragData.kind==="grob"){
-    const ba = baustellen.find(b=>b.id===dragData.id);
-    if(ba){
-      await supabase.from("plantafel").insert({
-        tag: isoDate,
-        titel: ba.name,
-        mitarbeiter: "",
-        fahrzeug: "",
-        status: "normal",
-        notiz: "",
-        baustelle: ba.name
-      });
-      // Grobe soll bleiben? Vorgabe: wenn in Fein → aus grob raus
-      await supabase.from("baustellen").delete().eq("id", ba.id);
+  function setView(mode) {
+    if (mode === '14tage') {
+      board.style.gridTemplateColumns = 'repeat(2, 1fr)';
+    } else if (mode === '4wochen') {
+      board.style.gridTemplateColumns = 'repeat(4, 1fr)';
+    } else {
+      board.style.gridTemplateColumns = 'repeat(4, 1fr)';
     }
   }
-  // fein → fein: Datum ändern
-  if(dragData.kind==="fein"){
-    await supabase.from("plantafel").update({tag: isoDate}).eq("id", dragData.id);
-  }
-  dragData = null;
-  loadAll();
-}
-async function handleDropGrob(ev, monthDate){
-  ev.preventDefault();
-  // fein → grob ergibt hier keinen Sinn, wir ignorieren
-  dragData = null;
-}
 
-/* ------------------ Dialog Eintrag ------------------ */
-function openEntry(e){
-  document.getElementById("entryOverlay").style.display="flex";
-  document.getElementById("fId").value = e.id || "";
-  document.getElementById("fDatum").value = e.tag || formatDateISO(new Date());
-  document.getElementById("fTitel").value = e.titel || e.baustelle || "";
-  document.getElementById("fStatus").value = e.status || "normal";
-  document.getElementById("fNotiz").value = e.notiz || "";
-  document.getElementById("deleteBtn").style.display = e.id ? "inline-flex":"none";
-
-  // status-titel-logik
-  document.getElementById("fTitelWrap").style.display = (e.status==="urlaub"||e.status==="krank"||e.status==="schule") ? "none":"block";
-
-  // Mitarbeiter select füllen + vorauswahl
-  fillMitarbeiterSelect();
-  if(e.mitarbeiter){
-    const arr = e.mitarbeiter.split(",").map(x=>x.trim());
-    const sel = document.getElementById("fMitarbeiter");
-    Array.from(sel.options).forEach(o=>{
-      o.selected = arr.includes(o.value);
-    });
-  } else {
-    Array.from(document.getElementById("fMitarbeiter").options).forEach(o=>o.selected=false);
+  function loadData() {
+    board.innerHTML = "";
+    const startDate = new Date(document.getElementById("startDate").value);
+    for (let i = 0; i < 14; i++) {
+      const d = new Date(startDate);
+      d.setDate(d.getDate() + i);
+      const div = document.createElement("div");
+      div.classList.add("day");
+      div.innerHTML = `<h3>${d.toLocaleDateString('de-DE', { weekday: 'short', day: '2-digit', month: '2-digit', year: 'numeric' })}</h3>`;
+      board.appendChild(div);
+    }
   }
 
-  // Fahrzeuge select
-  fillFahrzeugSelect(e.fahrzeug || "");
-}
-function closeEntry(){
-  document.getElementById("entryOverlay").style.display="none";
-}
-
-/* ------------------ Speichern / Löschen ------------------ */
-async function saveEntry(){
-  const id = document.getElementById("fId").value;
-  const tag = document.getElementById("fDatum").value;
-  const status = document.getElementById("fStatus").value;
-  const titel = (status==="urlaub"||status==="krank"||status==="schule") ? "" : document.getElementById("fTitel").value;
-  const notiz = document.getElementById("fNotiz").value;
-  const mitSel = Array.from(document.getElementById("fMitarbeiter").selectedOptions).map(o=>o.value).join(",");
-  const fz = document.getElementById("fFahrzeug").value;
-
-  const entry = {
-    tag,
-    titel,
-    mitarbeiter: mitSel,
-    fahrzeug: fz,
-    status,
-    notiz,
-    baustelle: titel
-  };
-
-  if(id){
-    await supabase.from("plantafel").update(entry).eq("id", id);
-  } else {
-    await supabase.from("plantafel").insert(entry);
+  function openDialog() {
+    const name = prompt("Eintragstitel (z. B. Baustelle Meier oder Urlaub)");
+    if (!name) return;
+    const typ = prompt("Art: mitarbeiter / fahrzeug / baustelle / urlaub / krank").toLowerCase();
+    const divs = board.getElementsByClassName("day");
+    if (divs.length > 0) {
+      const entry = document.createElement("div");
+      entry.classList.add("entry");
+      if (typ === "mitarbeiter") entry.classList.add("mitarbeiter");
+      if (typ === "fahrzeug") entry.classList.add("fahrzeug");
+      if (typ === "baustelle") entry.classList.add("baustelle");
+      if (typ === "urlaub") entry.classList.add("urlaub");
+      if (typ === "krank") entry.classList.add("krank");
+      entry.innerText = name;
+      divs[0].appendChild(entry);
+    }
   }
-  closeEntry();
-  loadAll();
-}
-document.getElementById("deleteBtn").onclick = async ()=>{
-  const id = document.getElementById("fId").value;
-  if(id) await supabase.from("plantafel").delete().eq("id", id);
-  closeEntry();
-  loadAll();
-};
 
-/* ------------------ Stammdaten Aktionen ------------------ */
-async function addMitarbeiter(){
-  const name = document.getElementById("sdMitName").value.trim();
-  if(!name) return;
-  const color = mitarbeiterFarben[(mitarbeiter.length) % mitarbeiterFarben.length];
-  await supabase.from("mitarbeiter").insert({name, farbe: color});
-  document.getElementById("sdMitName").value="";
-  loadStammdaten();
-}
-async function addFahrzeug(){
-  const name = document.getElementById("sdFzName").value.trim();
-  if(!name) return;
-  await supabase.from("fahrzeuge").insert({name});
-  document.getElementById("sdFzName").value="";
-  loadStammdaten();
-}
-async function addBaustelle(){
-  const name = document.getElementById("sdBsName").value.trim();
-  if(!name) return;
-  const von = document.getElementById("sdBsVon").value || formatDateISO(new Date());
-  const bis = document.getElementById("sdBsBis").value || null;
-  await supabase.from("baustellen").insert({name, von, bis});
-  document.getElementById("sdBsName").value="";
-  loadStammdaten();
-}
-
-/* ------------------ Stammdaten laden + rendern ------------------ */
-async function loadStammdaten(){
-  // Mitarbeiter
-  let { data: mit, error: e1 } = await supabase.from("mitarbeiter").select("*").order("name",{ascending:true});
-  if(!e1 && mit) mitarbeiter = mit;
-  // Fahrzeuge
-  let { data: fz, error: e2 } = await supabase.from("fahrzeuge").select("*").order("name",{ascending:true});
-  if(!e2 && fz) fahrzeuge = fz;
-  // Baustellen
-  let { data: bs, error: e3 } = await supabase.from("baustellen").select("*").order("von",{ascending:true});
-  if(!e3 && bs) baustellen = bs;
-
-  renderSdLists();
-  fillMitarbeiterSelect();
-  fillFahrzeugSelect();
-}
-function renderSdLists(){
-  const mL = document.getElementById("sdMitList");
-  mL.innerHTML = "";
-  mitarbeiter.forEach(m=>{
-    const chip = document.createElement("div");
-    chip.className = "sd-chip";
-    chip.innerHTML = `<span class="sd-color" style="background:${m.farbe||'#0ea5e9'}"></span>${m.name}`;
-    mL.appendChild(chip);
-  });
-
-  const fL = document.getElementById("sdFzList");
-  fL.innerHTML = "";
-  fahrzeuge.forEach(f=>{
-    const chip = document.createElement("div");
-    chip.className = "sd-chip";
-    chip.innerHTML = `<span class="sd-color" style="background:#0f172a"></span>${f.name}`;
-    fL.appendChild(chip);
-  });
-
-  const bL = document.getElementById("sdBsList");
-  bL.innerHTML = "";
-  baustellen.forEach(b=>{
-    const chip = document.createElement("div");
-    chip.className = "sd-chip";
-    chip.innerHTML = `<span class="sd-color" style="background:#a855f7"></span>${b.name} <small>${b.von||""}</small>`;
-    bL.appendChild(chip);
-  });
-}
-function fillMitarbeiterSelect(){
-  const sel = document.getElementById("fMitarbeiter");
-  sel.innerHTML = "";
-  mitarbeiter.forEach(m=>{
-    const opt = document.createElement("option");
-    opt.value = m.name;
-    opt.textContent = m.name;
-    sel.appendChild(opt);
-  });
-}
-function fillFahrzeugSelect(selected=""){
-  const sel = document.getElementById("fFahrzeug");
-  sel.innerHTML = `<option value="">– keines –</option>`;
-  fahrzeuge.forEach(f=>{
-    const opt = document.createElement("option");
-    opt.value = f.name;
-    opt.textContent = f.name;
-    if(f.name===selected) opt.selected = true;
-    sel.appendChild(opt);
-  });
-}
-
-/* ------------------ Einträge laden ------------------ */
-async function loadEintraege(){
-  // wir holen ALLE, filtern im frontend
-  let { data, error } = await supabase.from("plantafel").select("*");
-  if(!error && data){
-    eintraege = data;
-  }
-}
-
-/* ------------------ Farben für Mitarbeiter ------------------ */
-function getMitarbeiterColor(name){
-  const found = mitarbeiter.find(m=>m.name===name);
-  if(found && found.farbe) return found.farbe;
-  // fallback: deterministisch
-  const idx = Math.abs(hashCode(name)) % mitarbeiterFarben.length;
-  return mitarbeiterFarben[idx];
-}
-function hashCode(str){
-  let h=0;
-  for(let i=0;i<str.length;i++){
-    h = (h<<5) - h + str.charCodeAt(i);
-    h |= 0;
-  }
-  return h;
-}
-
-/* ------------------ Alles laden ------------------ */
-async function loadAll(){
-  await Promise.all([
-    loadStammdaten(),
-    loadEintraege()
-  ]);
-  renderBoard();
-}
-
-/* Init */
-document.addEventListener("DOMContentLoaded", ()=>{
-  document.getElementById("startDate").value = formatDateISO(startDate);
-  loadAll();
-});
+  // Start beim Laden
+  loadData();
 </script>
 
 </body>
