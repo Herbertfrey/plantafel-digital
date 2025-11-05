@@ -4,7 +4,6 @@
   <meta charset="UTF-8">
   <title>Plantafel Dachdeckerei Frey</title>
   <meta name="viewport" content="width=device-width,initial-scale=1">
-  <!-- Supabase -->
   <script src="https://unpkg.com/@supabase/supabase-js@2.48.0/dist/umd/supabase.min.js"></script>
   <style>
     :root {
@@ -13,10 +12,6 @@
       --border: #cfd4dc;
       --text: #1f2933;
       --accent: #0b63c7;
-      --danger: #ef4444;
-      --urlaub: #f97316;
-      --krank: #ef4444;
-      --schule: #6366f1;
     }
     * { box-sizing: border-box; }
     body {
@@ -51,163 +46,31 @@
       font-size: 12px;
       cursor: pointer;
     }
-    .btn.active {
-      background: #fff;
-      color: #0b63c7;
-    }
-    main {
-      flex: 1;
-      padding: 12px 14px 70px;
-      display: flex;
-      flex-direction: column;
-      gap: 12px;
-    }
-    #board {
-      display: grid;
-      gap: 10px;
-    }
-    /* 14 Tage / 4 Wochen: 5 Spalten Mo–Fr */
-    .view-days {
-      grid-template-columns: repeat(5, minmax(140px, 1fr));
-    }
-    /* 12 Monate */
-    .view-months {
-      grid-template-columns: repeat(4, minmax(180px, 1fr));
-    }
-    .day-col, .month-col {
-      background: var(--panel);
-      border: 1px solid var(--border);
-      border-radius: 10px;
-      display: flex;
-      flex-direction: column;
-      min-height: 120px;
-    }
-    .day-head, .month-head {
-      padding: 6px 8px 5px;
-      border-bottom: 1px solid #e5e7eb;
-      font-size: 12px;
-      font-weight: 600;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      gap: 6px;
-    }
-    .day-body, .month-body {
-      padding: 5px 6px 6px;
-      display: flex;
-      flex-direction: column;
-      gap: 5px;
-    }
-    .entry {
-      background: #dbeafe;
-      border-radius: 8px;
-      padding: 3px 5px 6px;
-      font-size: 11px;
-      border: 1px solid rgba(0,0,0,.03);
-      cursor: grab;
-      position: relative;
-    }
-    .entry-title {
-      font-weight: 600;
-      margin-bottom: 2px;
-      word-break: break-word;
-    }
-    .entry-line {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 3px;
-    }
-    .chip {
-      background: rgba(255,255,255,.25);
-      border-radius: 999px;
-      padding: 1px 7px 2px;
-      font-size: 10px;
-      color: #fff;
-    }
-    .entry-del {
-      position: absolute;
-      top: 2px;
-      right: 2px;
-      background: rgba(255,255,255,.8);
-      border: none;
-      border-radius: 999px;
-      width: 16px;
-      height: 16px;
-      font-size: 11px;
-      cursor: pointer;
-      line-height: 12px;
-      text-align: center;
-      color: #000;
-    }
-    dialog {
-      border: none;
-      border-radius: 10px;
-      padding: 14px 14px 12px;
-      max-width: 420px;
-      width: 95vw;
-    }
-    dialog h3 {
-      margin-top: 0;
-      margin-bottom: 8px;
-      font-size: 14px;
-    }
-    .fg {
-      margin-bottom: 6px;
-      display: flex;
-      flex-direction: column;
-      gap: 3px;
-    }
+    .btn.active { background: #fff; color: #0b63c7; }
+    main { flex: 1; padding: 12px 14px 70px; display: flex; flex-direction: column; gap: 12px; }
+    #board { display: grid; gap: 10px; }
+    .view-days { grid-template-columns: repeat(5, minmax(140px, 1fr)); }
+    .view-months { grid-template-columns: repeat(4, minmax(180px, 1fr)); }
+    .day-col, .month-col { background: var(--panel); border: 1px solid var(--border); border-radius: 10px; display: flex; flex-direction: column; min-height: 120px; }
+    .day-head, .month-head { padding: 6px 8px 5px; border-bottom: 1px solid #e5e7eb; font-size: 12px; font-weight: 600; display: flex; justify-content: space-between; align-items: center; gap: 6px; }
+    .day-body, .month-body { padding: 5px 6px 6px; display: flex; flex-direction: column; gap: 5px; }
+    .entry { background: #dbeafe; border-radius: 8px; padding: 3px 5px 6px; font-size: 11px; border: 1px solid rgba(0,0,0,.03); cursor: grab; position: relative; }
+    .entry-title { font-weight: 600; margin-bottom: 2px; word-break: break-word; }
+    .entry-line { display: flex; flex-wrap: wrap; gap: 3px; }
+    .chip { background: rgba(255,255,255,.25); border-radius: 999px; padding: 1px 7px 2px; font-size: 10px; color: #fff; }
+    .entry-del { position: absolute; top: 2px; right: 2px; background: rgba(255,255,255,.8); border: none; border-radius: 999px; width: 16px; height: 16px; font-size: 11px; cursor: pointer; line-height: 12px; text-align: center; color: #000; }
+    dialog { border: none; border-radius: 10px; padding: 14px 14px 12px; max-width: 420px; width: 95vw; }
+    dialog h3 { margin-top: 0; margin-bottom: 8px; font-size: 14px; }
+    .fg { margin-bottom: 6px; display: flex; flex-direction: column; gap: 3px; }
     label { font-size: 11px; font-weight: 600; }
-    input[type="text"], input[type="date"], select, textarea {
-      border: 1px solid #cbd5e1;
-      border-radius: 6px;
-      padding: 4px 5px;
-      font-size: 12px;
-    }
+    input[type="text"], input[type="date"], select, textarea { border: 1px solid #cbd5e1; border-radius: 6px; padding: 4px 5px; font-size: 12px; }
     select[multiple] { min-height: 70px; }
-    .dlg-actions {
-      display: flex;
-      justify-content: flex-end;
-      gap: 6px;
-      margin-top: 8px;
-    }
-    .btn-small {
-      padding: 4px 9px;
-      font-size: 11px;
-    }
-    .status-bar {
-      position: fixed;
-      bottom: 0;
-      left: 0;
-      right: 0;
-      background: #0b63c7;
-      color: #fff;
-      font-size: 11px;
-      padding: 4px 10px;
-      display: flex;
-      justify-content: space-between;
-      gap: 6px;
-      align-items: center;
-    }
-    .legend {
-      display: flex;
-      gap: 4px;
-      flex-wrap: wrap;
-    }
-    .legend-item {
-      display: flex;
-      gap: 3px;
-      align-items: center;
-      background: rgba(0,0,0,.12);
-      border-radius: 999px;
-      padding: 1px 6px 2px;
-      font-size: 10px;
-    }
-    .legend-dot {
-      width: 9px;
-      height: 9px;
-      border-radius: 999px;
-    }
+    .dlg-actions { display: flex; justify-content: flex-end; gap: 6px; margin-top: 8px; }
+    .btn-small { padding: 4px 9px; font-size: 11px; }
+    .status-bar { position: fixed; bottom: 0; left: 0; right: 0; background: #0b63c7; color: #fff; font-size: 11px; padding: 4px 10px; display: flex; justify-content: space-between; gap: 6px; align-items: center; }
+    .legend { display: flex; gap: 4px; flex-wrap: wrap; }
+    .legend-item { display: flex; gap: 3px; align-items: center; background: rgba(0,0,0,.12); border-radius: 999px; padding: 1px 6px 2px; font-size: 10px; }
+    .legend-dot { width: 9px; height: 9px; border-radius: 999px; }
     @media (max-width: 950px) {
       .view-days { grid-template-columns: repeat(2, minmax(140px, 1fr)); }
       .view-months { grid-template-columns: repeat(2, minmax(140px, 1fr)); }
@@ -216,652 +79,484 @@
   </style>
 </head>
 <body>
-  <header>
-    <h1>Plantafel Dachdeckerei Frey</h1>
-    <div style="display:flex;gap:6px;flex-wrap:wrap;">
-      <button class="btn" id="btn14">14 Tage</button>
-      <button class="btn active" id="btn4">4 Wochen</button>
-      <button class="btn" id="btn12">12 Monate</button>
-      <label style="font-size:11px;">Start:
-        <input type="date" id="startDate" style="font-size:11px;">
-      </label>
-      <button class="btn" id="btnReload">Neu laden</button>
-      <button class="btn" id="btnStamm">Stammdaten</button>
-      <button class="btn" id="btnNew">+ Eintrag</button>
-    </div>
-    <div id="conn" style="font-size:11px;display:flex;gap:4px;align-items:center;">
-      <span id="connDot" style="width:8px;height:8px;border-radius:999px;background:#ef4444;display:inline-block;"></span>
-      <span id="connText">offline</span>
-    </div>
-  </header>
-
-  <main>
-    <div id="board" class="view-days"></div>
-  </main>
-
-  <div class="status-bar">
-    <span>Stammdaten über „Stammdaten“ verwalten · Drag & Drop zwischen Tagen</span>
-    <div class="legend" id="legend"></div>
+<header>
+  <h1>Plantafel Dachdeckerei Frey</h1>
+  <div style="display:flex;gap:6px;flex-wrap:wrap;">
+    <button class="btn" id="btn14">14 Tage</button>
+    <button class="btn active" id="btn4">4 Wochen</button>
+    <button class="btn" id="btn12">12 Monate</button>
+    <label style="font-size:11px;">Start:
+      <input type="date" id="startDate" style="font-size:11px;">
+    </label>
+    <button class="btn" id="btnReload">Neu laden</button>
+    <button class="btn" id="btnStamm">Stammdaten</button>
+    <button class="btn" id="btnNew">+ Eintrag</button>
   </div>
+  <div id="conn" style="font-size:11px;display:flex;gap:4px;align-items:center;">
+    <span id="connDot" style="width:8px;height:8px;border-radius:999px;background:#ef4444;display:inline-block;"></span>
+    <span id="connText">offline</span>
+  </div>
+</header>
 
-  <!-- Dialog: Eintrag -->
-  <dialog id="dlgEntry">
-    <h3 id="dlgTitle">Eintrag</h3>
-    <div class="fg">
-      <label for="f_titel">Baustelle / Auftrag</label>
-      <input type="text" id="f_titel" placeholder="z. B. Müller Dach">
+<main>
+  <div id="board" class="view-days"></div>
+</main>
+
+<div class="status-bar">
+  <span>Stammdaten über „Stammdaten“ verwalten · Drag & Drop zwischen Tagen</span>
+  <div class="legend" id="legend"></div>
+</div>
+
+<!-- Dialog Eintrag -->
+<dialog id="dlgEntry">
+  <h3 id="dlgTitle">Eintrag</h3>
+  <div class="fg">
+    <label for="f_titel">Baustelle / Auftrag</label>
+    <input type="text" id="f_titel">
+  </div>
+  <div class="fg">
+    <label>Von</label>
+    <input type="date" id="f_von">
+  </div>
+  <div class="fg">
+    <label>Bis (optional)</label>
+    <input type="date" id="f_bis">
+  </div>
+  <div class="fg">
+    <label>Mitarbeiter (mehrere möglich)</label>
+    <select id="f_mitarbeiter" multiple></select>
+  </div>
+  <div class="fg">
+    <label>Fahrzeuge (mehrere möglich)</label>
+    <select id="f_fahrzeuge" multiple></select>
+  </div>
+  <div class="fg">
+    <label>Status</label>
+    <select id="f_status">
+      <option value="normal">normal</option>
+      <option value="urlaub">Urlaub</option>
+      <option value="krank">Krank</option>
+      <option value="schule">Schule</option>
+    </select>
+  </div>
+  <div class="fg">
+    <label>Notiz</label>
+    <textarea id="f_notiz" rows="2"></textarea>
+  </div>
+  <div class="dlg-actions">
+    <button type="button" class="btn-small" id="btnDel" style="margin-right:auto;display:none;background:#fee2e2;border:1px solid #fca5a5;color:#991b1b;">Löschen</button>
+    <button type="button" class="btn-small" onclick="dlgEntry.close()">Abbrechen</button>
+    <button type="button" class="btn-small" id="btnSave" style="background:#0b63c7;color:#fff;">Speichern</button>
+  </div>
+</dialog>
+
+<!-- Dialog Stammdaten -->
+<dialog id="dlgStamm">
+  <h3>Stammdaten</h3>
+  <div class="fg">
+    <label>Neuer Mitarbeiter</label>
+    <div style="display:flex;gap:5px;">
+      <input type="text" id="sd_mitarbeiter" placeholder="Name">
+      <button class="btn-small" id="sd_add_mitarbeiter">+</button>
     </div>
-    <div class="fg">
-      <label>Von</label>
-      <input type="date" id="f_von">
+    <div id="sd_mit_list" style="display:flex;gap:4px;flex-wrap:wrap;margin-top:4px;"></div>
+  </div>
+  <div class="fg">
+    <label>Neues Fahrzeug</label>
+    <div style="display:flex;gap:5px;">
+      <input type="text" id="sd_fahrzeug" placeholder="z. B. Kran">
+      <button class="btn-small" id="sd_add_fahrzeug">+</button>
     </div>
-    <div class="fg">
-      <label>Bis (optional – wenn leer nur 1 Tag)</label>
-      <input type="date" id="f_bis">
+    <div id="sd_fzg_list" style="display:flex;gap:4px;flex-wrap:wrap;margin-top:4px;"></div>
+  </div>
+  <div class="fg">
+    <label>Neue Baustelle</label>
+    <div style="display:flex;gap:5px;">
+      <input type="text" id="sd_baustelle" placeholder="z. B. Müller Dach">
+      <button class="btn-small" id="sd_add_baustelle">+</button>
     </div>
-    <div class="fg">
-      <label>Mitarbeiter (mehrere möglich)</label>
-      <select id="f_mitarbeiter" multiple></select>
-    </div>
-    <div class="fg">
-      <label>Fahrzeuge (mehrere möglich)</label>
-      <select id="f_fahrzeuge" multiple></select>
-    </div>
-    <div class="fg">
-      <label>Status</label>
-      <select id="f_status">
-        <option value="normal">normal</option>
-        <option value="urlaub">Urlaub</option>
-        <option value="krank">Krank</option>
-        <option value="schule">Schule</option>
-      </select>
-    </div>
-    <div class="fg">
-      <label>Notiz</label>
-      <textarea id="f_notiz" rows="2"></textarea>
-    </div>
-    <div class="dlg-actions">
-      <button type="button" class="btn-small" id="btnDel" style="margin-right:auto;display:none;background:#fee2e2;border:1px solid #fca5a5;color:#991b1b;">Löschen</button>
-      <button type="button" class="btn-small" onclick="dlgEntry.close()">Abbrechen</button>
-      <button type="button" class="btn-small" id="btnSave" style="background:#0b63c7;color:#fff;">Speichern</button>
-    </div>
-  </dialog>
+    <div id="sd_bau_list" style="display:flex;gap:4px;flex-wrap:wrap;margin-top:4px;"></div>
+  </div>
+  <div style="text-align:right;margin-top:6px;">
+    <button class="btn-small" onclick="dlgStamm.close()">Schließen</button>
+  </div>
+</dialog>
 
-  <!-- Dialog: Stammdaten -->
-  <dialog id="dlgStamm">
-    <h3>Stammdaten</h3>
-    <div class="fg">
-      <label>Neuer Mitarbeiter</label>
-      <div style="display:flex;gap:5px;">
-        <input type="text" id="sd_mitarbeiter" placeholder="Name">
-        <button class="btn-small" id="sd_add_mitarbeiter">+</button>
-      </div>
-      <div id="sd_mit_list" style="display:flex;gap:4px;flex-wrap:wrap;margin-top:4px;"></div>
-    </div>
-    <div class="fg">
-      <label>Neues Fahrzeug</label>
-      <div style="display:flex;gap:5px;">
-        <input type="text" id="sd_fahrzeug" placeholder="z. B. Kran">
-        <button class="btn-small" id="sd_add_fahrzeug">+</button>
-      </div>
-      <div id="sd_fzg_list" style="display:flex;gap:4px;flex-wrap:wrap;margin-top:4px;"></div>
-    </div>
-    <div class="fg">
-      <label>Neue Baustelle (für grob)</label>
-      <div style="display:flex;gap:5px;">
-        <input type="text" id="sd_baustelle" placeholder="z. B. Müller Dach">
-        <button class="btn-small" id="sd_add_baustelle">+</button>
-      </div>
-      <div id="sd_bau_list" style="display:flex;gap:4px;flex-wrap:wrap;margin-top:4px;"></div>
-    </div>
-    <div style="text-align:right;margin-top:6px;">
-      <button class="btn-small" onclick="dlgStamm.close()">Schließen</button>
-    </div>
-  </dialog>
+<script>
+const SUPA_URL = "https://mtybmrkyhavxpvwysglo.supabase.co";
+const SUPA_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im10eWJtcmt5aGF2eHB2d3lzZ2xvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjIxNjQ1OTIsImV4cCI6MjA3Nzc0MDU5Mn0.UToAmJAvACYvnO9hCIeyfm-VYKr5jincXdnEDDtbhvo";
+const supa = window.supabase.createClient(SUPA_URL, SUPA_KEY);
 
-  <script>
-    // ===== Supabase connection =====
-    const SUPA_URL = "https://mtybmrkyhavxpvwysglo.supabase.co";
-    const SUPA_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im10eWJtcmt5aGF2eHB2d3lzZ2xvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjIxNjQ1OTIsImV4cCI6MjA3Nzc0MDU5Mn0.UToAmJAvACYvnO9hCIeyfm-VYKr5jincXdnEDDtbhvo";
-    const supa = window.supabase.createClient(SUPA_URL, SUPA_KEY);
+let currentView = "4w";
+let startDate = new Date();
+let mitarbeiter = [];
+let fahrzeuge = [];
+let baustellen = [];
+let eintraege = [];
+let editingId = null;
 
-    // ===== globale Daten =====
-    let currentView = "4w"; // "14", "4w", "12m"
-    let startDate = new Date();
-    let mitarbeiter = [];
-    let fahrzeuge = [];
-    let baustellen = [];
-    let eintraege = [];
-    let editingId = null;
+const boardEl = document.getElementById("board");
+const dlgEntry = document.getElementById("dlgEntry");
+const dlgStamm = document.getElementById("dlgStamm");
 
-    const boardEl = document.getElementById("board");
-    const dlgEntry = document.getElementById("dlgEntry");
-    const dlgStamm = document.getElementById("dlgStamm");
+const COLOR_POOL = ["#f97316","#22c55e","#0ea5e9","#a855f7","#ef4444","#14b8a6","#facc15","#6366f1","#f43f5e","#0f766e","#8b5cf6","#10b981","#0ea5e9","#e11d48","#22c55e"];
+function colorFor(name){
+  if(!name) return "#d1d5db";
+  let h=0; for(let i=0;i<name.length;i++) h=(h*31+name.charCodeAt(i))>>>0;
+  return COLOR_POOL[h % COLOR_POOL.length];
+}
+function iso(d){ return d.toISOString().slice(0,10); }
+function addDays(d,n){ const x=new Date(d); x.setDate(x.getDate()+n); return x; }
 
-    // farben pro mitarbeiter (deterministisch aus name)
-    const COLOR_POOL = ["#f97316","#22c55e","#0ea5e9","#a855f7","#ef4444","#14b8a6","#facc15","#6366f1","#f43f5e","#0f766e","#8b5cf6","#10b981","#0ea5e9","#e11d48","#22c55e"];
-    function colorFor(name) {
-      if (!name) return "#d1d5db";
-      let h = 0;
-      for (let i=0;i<name.length;i++) h = (h*31 + name.charCodeAt(i))>>>0;
-      return COLOR_POOL[h % COLOR_POOL.length];
+async function loadStammdaten() {
+  const [mit,fzg,bau] = await Promise.all([
+    supa.from("mitarbeiter").select("*").order("name",{ascending:true}),
+    supa.from("fahrzeuge").select("*").order("name",{ascending:true}),
+    supa.from("baustellen").select("*").order("name",{ascending:true})
+  ]);
+  mitarbeiter = mit.data || [];
+  fahrzeuge = fzg.data || [];
+  baustellen = bau.data || [];
+  renderLegend();
+}
+
+async function loadEintraege() {
+  let from,to;
+  if(currentView==="14"){
+    from = iso(startDate);
+    to = iso(addDays(startDate,13));
+  }else if(currentView==="4w"){
+    from = iso(startDate);
+    to = iso(addDays(startDate,27));
+  }else{
+    const s = new Date(startDate.getFullYear(), startDate.getMonth(), 1);
+    const e = new Date(s.getFullYear(), s.getMonth()+12, 0);
+    from = iso(s); to = iso(e);
+  }
+  const {data,error} = await supa.from("plantafel").select("*").gte("tag",from).lte("tag",to).order("tag",{ascending:true});
+  eintraege = data || [];
+}
+
+function renderBoard(){
+  boardEl.innerHTML = "";
+  if(currentView==="12m"){ boardEl.className = "view-months"; render12Months(); }
+  else { boardEl.className = "view-days"; if(currentView==="14") render14Days(); else render4Weeks(); }
+}
+
+function render14Days(){
+  for(let i=0;i<14;i++){
+    const d = addDays(startDate,i);
+    boardEl.appendChild(createDayColumn(d));
+  }
+}
+function render4Weeks(){
+  for(let w=0;w<4;w++){
+    for(let d=0;d<5;d++){
+      const date = addDays(startDate, w*7 + d);
+      boardEl.appendChild(createDayColumn(date));
     }
+  }
+}
+function render12Months(){
+  const base = new Date(startDate.getFullYear(), startDate.getMonth(), 1);
+  for(let m=0;m<12;m++){
+    const date = new Date(base.getFullYear(), base.getMonth()+m, 1);
+    const col = document.createElement("div");
+    col.className = "month-col";
+    col.dataset.month = date.getFullYear()+"-"+String(date.getMonth()+1).padStart(2,"0");
+    col.addEventListener("dragover", e=>e.preventDefault());
+    col.addEventListener("drop", onDropMonth);
+    const head = document.createElement("div");
+    head.className="month-head";
+    head.textContent = date.toLocaleDateString("de-DE",{month:"long",year:"numeric"});
+    const plus=document.createElement("button");
+    plus.textContent="+"; plus.style.fontSize="11px"; plus.onclick=()=>openEntryDialog(iso(date));
+    head.appendChild(plus);
+    col.appendChild(head);
+    const body=document.createElement("div");
+    body.className="month-body";
+    const entries = eintraege.filter(e=>{
+      const dt=new Date(e.tag);
+      return dt.getFullYear()===date.getFullYear() && dt.getMonth()===date.getMonth();
+    });
+    entries.forEach(e=>body.appendChild(renderEntry(e)));
+    col.appendChild(body);
+    boardEl.appendChild(col);
+  }
+}
 
-    function iso(d) {
-      return d.toISOString().slice(0,10);
-    }
-    function addDays(d,n) {
-      const x = new Date(d); x.setDate(x.getDate()+n); return x;
-    }
+function createDayColumn(date){
+  const col=document.createElement("div");
+  col.className="day-col";
+  col.dataset.date=iso(date);
+  col.addEventListener("dragover", e=>e.preventDefault());
+  col.addEventListener("drop", onDropDay);
+  const head=document.createElement("div");
+  head.className="day-head";
+  head.textContent=date.toLocaleDateString("de-DE",{weekday:"short",day:"2-digit",month:"2-digit",year:"numeric"});
+  const plus=document.createElement("button");
+  plus.textContent="+"; plus.style.fontSize="11px"; plus.onclick=()=>openEntryDialog(iso(date));
+  head.appendChild(plus);
+  col.appendChild(head);
+  const body=document.createElement("div");
+  body.className="day-body";
+  const entries=eintraege.filter(e=>e.tag===iso(date));
+  entries.forEach(e=>body.appendChild(renderEntry(e)));
+  col.appendChild(body);
+  return col;
+}
 
-    // ===== Stammdaten laden =====
-    async function loadStammdaten() {
-      const [mit, fzg, bau] = await Promise.all([
-        supa.from("mitarbeiter").select("*").order("name", {ascending: true}),
-        supa.from("fahrzeuge").select("*").order("name", {ascending: true}),
-        supa.from("baustellen").select("*").order("name", {ascending: true})
-      ]);
-      mitarbeiter = mit.data || [];
-      fahrzeuge = fzg.data || [];
-      baustellen = bau.data || [];
-      renderLegend();
-    }
+function renderEntry(e){
+  const div=document.createElement("div");
+  div.className="entry"; div.draggable=true; div.dataset.id=e.id;
+  div.addEventListener("dragstart", onDragStart);
+  div.onclick=()=>openEntryDialog(null,e);
+  if(e.status==="urlaub") div.style.background="#fed7aa";
+  else if(e.status==="krank") div.style.background="#fecaca";
+  else if(e.status==="schule") div.style.background="#e0e7ff";
+  else if(e.mitarbeiter){
+    const arr=e.mitarbeiter.split(",").map(s=>s.trim()).filter(Boolean);
+    if(arr.length){ div.style.background=colorFor(arr[0]); div.style.color="#fff"; }
+  }
+  const title=document.createElement("div");
+  title.className="entry-title";
+  title.textContent=e.titel || e.baustelle || "(ohne Titel)";
+  div.appendChild(title);
+  if(e.mitarbeiter){
+    const line=document.createElement("div"); line.className="entry-line";
+    e.mitarbeiter.split(",").map(s=>s.trim()).filter(Boolean).forEach(n=>{
+      const c=document.createElement("span"); c.className="chip"; c.style.background=colorFor(n); c.textContent=n;
+      line.appendChild(c);
+    });
+    div.appendChild(line);
+  }
+  if(e.fahrzeuge){
+    const line=document.createElement("div"); line.className="entry-line";
+    e.fahrzeuge.split(",").map(s=>s.trim()).filter(Boolean).forEach(n=>{
+      const c=document.createElement("span"); c.className="chip"; c.style.background="rgba(0,0,0,.35)"; c.textContent=n;
+      line.appendChild(c);
+    });
+    div.appendChild(line);
+  }
+  const del=document.createElement("button");
+  del.className="entry-del"; del.textContent="×";
+  del.onclick=(ev)=>{ev.stopPropagation(); deleteEntry(e.id);};
+  div.appendChild(del);
+  return div;
+}
 
-    // ===== Einträge laden =====
-    async function loadEintraege() {
-      let from, to;
-      if (currentView === "14") {
-        from = iso(startDate);
-        to = iso(addDays(startDate, 13));
-      } else if (currentView === "4w") {
-        from = iso(startDate);
-        to = iso(addDays(startDate, 27)); // reicht
-      } else {
-        const s = new Date(startDate.getFullYear(), startDate.getMonth(), 1);
-        const e = new Date(s.getFullYear(), s.getMonth()+12, 0);
-        from = iso(s);
-        to = iso(e);
+// drag-drop
+let dragId=null;
+function onDragStart(ev){ dragId=ev.currentTarget.dataset.id; }
+async function onDropDay(ev){
+  ev.preventDefault();
+  if(!dragId) return;
+  const date=ev.currentTarget.dataset.date;
+  await supa.from("plantafel").update({tag:date}).eq("id",dragId);
+  await loadEintraege(); renderBoard(); dragId=null;
+}
+async function onDropMonth(ev){
+  ev.preventDefault();
+  if(!dragId) return;
+  const m=ev.currentTarget.dataset.month;
+  const dateStr=m+"-01";
+  await supa.from("plantafel").update({tag:dateStr}).eq("id",dragId);
+  await loadEintraege(); renderBoard(); dragId=null;
+}
+
+// entry dialog usw. (gleich wie vorher)
+function fillSelect(id, arr){
+  const sel=document.getElementById(id); sel.innerHTML="";
+  arr.forEach(o=>{
+    const opt=document.createElement("option");
+    opt.value=o.name; opt.textContent=o.name; sel.appendChild(opt);
+  });
+}
+function openEntryDialog(prefillDate, entry=null){
+  fillSelect("f_mitarbeiter", mitarbeiter);
+  fillSelect("f_fahrzeuge", fahrzeuge);
+  editingId=null; document.getElementById("btnDel").style.display="none";
+  document.getElementById("f_titel").value="";
+  document.getElementById("f_von").value=prefillDate || iso(new Date());
+  document.getElementById("f_bis").value="";
+  document.getElementById("f_status").value="normal";
+  document.getElementById("f_notiz").value="";
+  Array.from(document.getElementById("f_mitarbeiter").options).forEach(o=>o.selected=false);
+  Array.from(document.getElementById("f_fahrzeuge").options).forEach(o=>o.selected=false);
+  if(entry){
+    editingId=entry.id; document.getElementById("btnDel").style.display="inline-block";
+    document.getElementById("f_titel").value=entry.titel || "";
+    document.getElementById("f_von").value=entry.tag;
+    document.getElementById("f_bis").value=entry.bis || "";
+    document.getElementById("f_status").value=entry.status || "normal";
+    document.getElementById("f_notiz").value=entry.notiz || "";
+    if(entry.mitarbeiter){
+      const arr=entry.mitarbeiter.split(",").map(s=>s.trim());
+      Array.from(document.getElementById("f_mitarbeiter").options).forEach(o=>o.selected=arr.includes(o.value));
+    }
+    if(entry.fahrzeuge){
+      const arr=entry.fahrzeuge.split(",").map(s=>s.trim());
+      Array.from(document.getElementById("f_fahrzeuge").options).forEach(o=>o.selected=arr.includes(o.value));
+    }
+  }
+  dlgEntry.showModal();
+}
+async function saveEntry(){
+  const titel=document.getElementById("f_titel").value.trim();
+  const von=document.getElementById("f_von").value;
+  const bis=document.getElementById("f_bis").value;
+  const status=document.getElementById("f_status").value;
+  const notiz=document.getElementById("f_notiz").value.trim();
+  const mits=Array.from(document.getElementById("f_mitarbeiter").selectedOptions).map(o=>o.value);
+  const fzgs=Array.from(document.getElementById("f_fahrzeuge").selectedOptions).map(o=>o.value);
+  if(!von){alert("Datum fehlt");return;}
+  if(editingId){
+    await supa.from("plantafel").update({
+      titel: titel || status,
+      tag: von,
+      bis: bis || null,
+      status,
+      notiz,
+      mitarbeiter: mits.join(", "),
+      fahrzeuge: fzgs.join(", ")
+    }).eq("id",editingId);
+  }else{
+    let dates=[von];
+    if(bis && bis>von){
+      dates=[];
+      let d=new Date(von), e=new Date(bis);
+      while(d<=e){
+        const day=d.getDay(); if(day!==0 && day!==6) dates.push(iso(d));
+        d.setDate(d.getDate()+1);
       }
-      const {data, error} = await supa
-        .from("plantafel")
-        .select("*")
-        .gte("tag", from)
-        .lte("tag", to)
-        .order("tag", {ascending: true});
-      eintraege = data || [];
     }
+    const rows=dates.map(d=>({
+      tag:d,
+      titel: titel || status,
+      bis:null,
+      status,
+      notiz,
+      mitarbeiter: mits.join(", "),
+      fahrzeuge: fzgs.join(", ")
+    }));
+    await supa.from("plantafel").insert(rows);
+  }
+  dlgEntry.close(); await loadEintraege(); renderBoard();
+}
+async function deleteEntry(id){
+  if(!confirm("Eintrag wirklich löschen?"))return;
+  await supa.from("plantafel").delete().eq("id",id);
+  dlgEntry.close(); await loadEintraege(); renderBoard();
+}
 
-    // ===== Board rendern =====
-    function renderBoard() {
-      boardEl.innerHTML = "";
-      if (currentView === "12m") {
-        boardEl.className = "view-months";
-        render12Months();
-      } else {
-        boardEl.className = "view-days";
-        if (currentView === "14") render14Days();
-        else render4Weeks();
-      }
-    }
+// Stammdaten render
+function renderStammdaten(){
+  const mitEl=document.getElementById("sd_mit_list");
+  const fzgEl=document.getElementById("sd_fzg_list");
+  const bauEl=document.getElementById("sd_bau_list");
+  mitEl.innerHTML=""; fzgEl.innerHTML=""; bauEl.innerHTML="";
+  mitarbeiter.forEach(m=>{
+    const span=document.createElement("span");
+    span.className="legend-item";
+    span.innerHTML=`<span class="legend-dot" style="background:${colorFor(m.name)}"></span>${m.name}`;
+    const del=document.createElement("button");
+    del.className="btn-small"; del.style.background="#fee2e2"; del.textContent="x";
+    del.onclick=async()=>{await supa.from("mitarbeiter").delete().eq("id",m.id);await loadStammdaten();renderStammdaten();};
+    span.appendChild(del);
+    mitEl.appendChild(span);
+  });
+  fahrzeuge.forEach(f=>{
+    const span=document.createElement("span");
+    span.className="legend-item"; span.textContent=f.name;
+    const del=document.createElement("button");
+    del.className="btn-small"; del.style.background="#fee2e2"; del.textContent="x";
+    del.onclick=async()=>{await supa.from("fahrzeuge").delete().eq("id",f.id);await loadStammdaten();renderStammdaten();};
+    span.appendChild(del); fzgEl.appendChild(span);
+  });
+  baustellen.forEach(b=>{
+    const span=document.createElement("span");
+    span.className="legend-item"; span.textContent=b.name;
+    const del=document.createElement("button");
+    del.className="btn-small"; del.style.background="#fee2e2"; del.textContent="x";
+    del.onclick=async()=>{await supa.from("baustellen").delete().eq("id",b.id);await loadStammdaten();renderStammdaten();};
+    span.appendChild(del); bauEl.appendChild(span);
+  });
+}
+function renderLegend(){
+  const leg=document.getElementById("legend");
+  leg.innerHTML="";
+  mitarbeiter.forEach(m=>{
+    const span=document.createElement("span");
+    span.className="legend-item";
+    span.innerHTML=`<span class="legend-dot" style="background:${colorFor(m.name)}"></span>${m.name}`;
+    leg.appendChild(span);
+  });
+}
 
-    function render14Days() {
-      for (let i=0;i<14;i++) {
-        const d = addDays(startDate, i);
-        const col = createDayColumn(d);
-        boardEl.appendChild(col);
-      }
-    }
+// Buttons
+document.getElementById("btnSave").onclick = saveEntry;
+document.getElementById("btnDel").onclick = ()=>{ if(editingId) deleteEntry(editingId); };
+document.getElementById("btnNew").onclick = ()=>openEntryDialog();
+document.getElementById("btnStamm").onclick = ()=>{ renderStammdaten(); dlgStamm.showModal(); };
+document.getElementById("sd_add_mitarbeiter").onclick = async ()=>{
+  const name=document.getElementById("sd_mitarbeiter").value.trim();
+  if(!name)return;
+  await supa.from("mitarbeiter").insert({name});
+  document.getElementById("sd_mitarbeiter").value="";
+  await loadStammdaten(); renderStammdaten(); renderLegend();
+};
+document.getElementById("sd_add_fahrzeug").onclick = async ()=>{
+  const name=document.getElementById("sd_fahrzeug").value.trim();
+  if(!name)return;
+  await supa.from("fahrzeuge").insert({name});
+  document.getElementById("sd_fahrzeug").value="";
+  await loadStammdaten(); renderStammdaten();
+};
+document.getElementById("sd_add_baustelle").onclick = async ()=>{
+  const name=document.getElementById("sd_baustelle").value.trim();
+  if(!name)return;
+  await supa.from("baustellen").insert({name});
+  document.getElementById("sd_baustelle").value="";
+  await loadStammdaten(); renderStammdaten();
+};
 
-    function render4Weeks() {
-      // 4 Wochen Mo–Fr
-      for (let w=0;w<4;w++) {
-        for (let d=0;d<5;d++) {
-          const date = addDays(startDate, w*7 + d);
-          const col = createDayColumn(date);
-          boardEl.appendChild(col);
-        }
-      }
-    }
+document.getElementById("btn14").onclick = async ()=>{
+  currentView="14"; await loadEintraege().catch(()=>{}); renderBoard(); setActive("btn14");
+};
+document.getElementById("btn4").onclick = async ()=>{
+  currentView="4w"; await loadEintraege().catch(()=>{}); renderBoard(); setActive("btn4");
+};
+document.getElementById("btn12").onclick = async ()=>{
+  currentView="12m"; await loadEintraege().catch(()=>{}); renderBoard(); setActive("btn12");
+};
+document.getElementById("btnReload").onclick = async ()=>{
+  await loadStammdaten().catch(()=>{}); await loadEintraege().catch(()=>{}); renderBoard();
+};
+document.getElementById("startDate").onchange = async (e)=>{
+  startDate = new Date(e.target.value);
+  await loadEintraege().catch(()=>{}); renderBoard();
+};
+function setActive(id){
+  ["btn14","btn4","btn12"].forEach(b=>document.getElementById(b).classList.remove("active"));
+  document.getElementById(id).classList.add("active");
+}
 
-    function render12Months() {
-      const base = new Date(startDate.getFullYear(), startDate.getMonth(), 1);
-      for (let m=0;m<12;m++) {
-        const date = new Date(base.getFullYear(), base.getMonth()+m, 1);
-        const col = document.createElement("div");
-        col.className = "month-col";
-        col.dataset.month = date.getFullYear()+"-"+String(date.getMonth()+1).padStart(2,"0");
-
-        col.addEventListener("dragover", e=>e.preventDefault());
-        col.addEventListener("drop", onDropMonth);
-
-        const head = document.createElement("div");
-        head.className = "month-head";
-        head.textContent = date.toLocaleDateString("de-DE",{month:"long",year:"numeric"});
-        const plus = document.createElement("button");
-        plus.textContent = "+";
-        plus.style.fontSize = "11px";
-        plus.style.padding = "0 5px";
-        plus.onclick = () => openEntryDialog(iso(date));
-        head.appendChild(plus);
-        col.appendChild(head);
-
-        const body = document.createElement("div");
-        body.className = "month-body";
-
-        const entries = eintraege.filter(e => {
-          const dt = new Date(e.tag);
-          return dt.getFullYear()===date.getFullYear() && dt.getMonth()===date.getMonth();
-        });
-        entries.forEach(e => body.appendChild(renderEntry(e)));
-
-        col.appendChild(body);
-        boardEl.appendChild(col);
-      }
-    }
-
-    function createDayColumn(date) {
-      const col = document.createElement("div");
-      col.className = "day-col";
-      col.dataset.date = iso(date);
-      col.addEventListener("dragover", e=>e.preventDefault());
-      col.addEventListener("drop", onDropDay);
-      const head = document.createElement("div");
-      head.className = "day-head";
-      head.textContent = date.toLocaleDateString("de-DE",{weekday:"short",day:"2-digit",month:"2-digit",year:"numeric"});
-      const plus = document.createElement("button");
-      plus.textContent = "+";
-      plus.style.fontSize = "11px";
-      plus.style.padding = "0 5px";
-      plus.onclick = () => openEntryDialog(iso(date));
-      head.appendChild(plus);
-      col.appendChild(head);
-
-      const body = document.createElement("div");
-      body.className = "day-body";
-
-      // Einträge für diesen Tag
-      const entries = eintraege.filter(e => e.tag === iso(date));
-      entries.forEach(e => body.appendChild(renderEntry(e)));
-
-      col.appendChild(body);
-      return col;
-    }
-
-    function renderEntry(e) {
-      const div = document.createElement("div");
-      div.className = "entry";
-      div.draggable = true;
-      div.dataset.id = e.id;
-      div.addEventListener("dragstart", onDragStart);
-      div.onclick = () => openEntryDialog(null, e);
-
-      // Statusfarbe
-      if (e.status === "urlaub") {
-        div.style.background = "#fed7aa";
-      } else if (e.status === "krank") {
-        div.style.background = "#fecaca";
-      } else if (e.status === "schule") {
-        div.style.background = "#e0e7ff";
-      } else {
-        // normale Farbe aus erstem Mitarbeiter
-        if (e.mitarbeiter) {
-          const arr = e.mitarbeiter.split(",").map(s=>s.trim()).filter(Boolean);
-          if (arr.length) {
-            div.style.background = colorFor(arr[0]);
-            div.style.color = "#fff";
-          }
-        }
-      }
-
-      const title = document.createElement("div");
-      title.className = "entry-title";
-      title.textContent = e.titel || e.baustelle || "(ohne Titel)";
-      div.appendChild(title);
-
-      if (e.mitarbeiter) {
-        const line = document.createElement("div");
-        line.className = "entry-line";
-        e.mitarbeiter.split(",").map(s=>s.trim()).filter(Boolean).forEach(n => {
-          const c = document.createElement("span");
-          c.className = "chip";
-          c.style.background = colorFor(n);
-          c.textContent = n;
-          line.appendChild(c);
-        });
-        div.appendChild(line);
-      }
-
-      if (e.fahrzeuge) {
-        const line = document.createElement("div");
-        line.className = "entry-line";
-        e.fahrzeuge.split(",").map(s=>s.trim()).filter(Boolean).forEach(n => {
-          const c = document.createElement("span");
-          c.className = "chip";
-          c.style.background = "rgba(0,0,0,.35)";
-          c.textContent = n;
-          line.appendChild(c);
-        });
-        div.appendChild(line);
-      }
-
-      if (e.status && e.status !== "normal") {
-        const s = document.createElement("span");
-        s.className = "chip";
-        s.style.background = "rgba(0,0,0,.25)";
-        s.textContent = e.status;
-        div.appendChild(s);
-      }
-
-      const del = document.createElement("button");
-      del.className = "entry-del";
-      del.textContent = "×";
-      del.onclick = (ev) => { ev.stopPropagation(); deleteEntry(e.id); };
-      div.appendChild(del);
-
-      return div;
-    }
-
-    // ===== Drag & Drop =====
-    let dragId = null;
-    function onDragStart(ev) {
-      dragId = ev.currentTarget.dataset.id;
-    }
-    async function onDropDay(ev) {
-      ev.preventDefault();
-      if (!dragId) return;
-      const date = ev.currentTarget.dataset.date;
-      await supa.from("plantafel").update({tag: date}).eq("id", dragId);
-      await loadEintraege();
-      renderBoard();
-      dragId = null;
-    }
-    async function onDropMonth(ev) {
-      ev.preventDefault();
-      if (!dragId) return;
-      const month = ev.currentTarget.dataset.month; // yyyy-mm
-      const dateStr = month + "-01";
-      await supa.from("plantafel").update({tag: dateStr}).eq("id", dragId);
-      await loadEintraege();
-      renderBoard();
-      dragId = null;
-    }
-
-    // ===== Eintrag Dialog =====
-    function fillSelect(id, arr) {
-      const sel = document.getElementById(id);
-      sel.innerHTML = "";
-      arr.forEach(o => {
-        const opt = document.createElement("option");
-        opt.value = o.name;
-        opt.textContent = o.name;
-        sel.appendChild(opt);
-      });
-    }
-
-    function openEntryDialog(prefillDate, entry=null) {
-      fillSelect("f_mitarbeiter", mitarbeiter);
-      fillSelect("f_fahrzeuge", fahrzeuge);
-      editingId = null;
-      document.getElementById("btnDel").style.display = "none";
-      document.getElementById("f_titel").value = "";
-      document.getElementById("f_von").value = prefillDate || iso(new Date());
-      document.getElementById("f_bis").value = "";
-      document.getElementById("f_status").value = "normal";
-      document.getElementById("f_notiz").value = "";
-      Array.from(document.getElementById("f_mitarbeiter").options).forEach(o=>o.selected=false);
-      Array.from(document.getElementById("f_fahrzeuge").options).forEach(o=>o.selected=false);
-
-      if (entry) {
-        editingId = entry.id;
-        document.getElementById("btnDel").style.display = "inline-block";
-        document.getElementById("f_titel").value = entry.titel || "";
-        document.getElementById("f_von").value = entry.tag;
-        document.getElementById("f_bis").value = entry.bis || "";
-        document.getElementById("f_status").value = entry.status || "normal";
-        document.getElementById("f_notiz").value = entry.notiz || "";
-        // Mehrfachauswahl setzen
-        if (entry.mitarbeiter) {
-          const arr = entry.mitarbeiter.split(",").map(s=>s.trim());
-          Array.from(document.getElementById("f_mitarbeiter").options).forEach(o=>{
-            o.selected = arr.includes(o.value);
-          });
-        }
-        if (entry.fahrzeuge) {
-          const arr = entry.fahrzeuge.split(",").map(s=>s.trim());
-          Array.from(document.getElementById("f_fahrzeuge").options).forEach(o=>{
-            o.selected = arr.includes(o.value);
-          });
-        }
-      }
-
-      dlgEntry.showModal();
-    }
-
-    async function saveEntry() {
-      const titel = document.getElementById("f_titel").value.trim();
-      const von = document.getElementById("f_von").value;
-      const bis = document.getElementById("f_bis").value;
-      const status = document.getElementById("f_status").value;
-      const notiz = document.getElementById("f_notiz").value.trim();
-      const mits = Array.from(document.getElementById("f_mitarbeiter").selectedOptions).map(o=>o.value);
-      const fzgs = Array.from(document.getElementById("f_fahrzeuge").selectedOptions).map(o=>o.value);
-
-      if (!von) { alert("Datum fehlt"); return; }
-
-      if (editingId) {
-        await supa.from("plantafel").update({
-          titel: titel || status,
-          tag: von,
-          bis: bis || null,
-          status,
-          notiz,
-          mitarbeiter: mits.join(", "),
-          fahrzeuge: fzgs.join(", ")
-        }).eq("id", editingId);
-      } else {
-        // von-bis -> einzelne Tage Anlage
-        let dates = [von];
-        if (bis && bis > von) {
-          dates = [];
-          let d = new Date(von);
-          const e = new Date(bis);
-          while (d <= e) {
-            // nur Mo–Fr
-            const day = d.getDay();
-            if (day !== 0 && day !== 6) {
-              dates.push(iso(d));
-            }
-            d.setDate(d.getDate()+1);
-          }
-        }
-        const rows = dates.map(d => ({
-          tag: d,
-          titel: titel || status,
-          bis: null,
-          status,
-          notiz,
-          mitarbeiter: mits.join(", "),
-          fahrzeuge: fzgs.join(", ")
-        }));
-        await supa.from("plantafel").insert(rows);
-      }
-      dlgEntry.close();
-      await loadEintraege();
-      renderBoard();
-    }
-
-    async function deleteEntry(id) {
-      if (!confirm("Eintrag wirklich löschen?")) return;
-      await supa.from("plantafel").delete().eq("id", id);
-      dlgEntry.close();
-      await loadEintraege();
-      renderBoard();
-    }
-
-    // ===== Stammdaten =====
-    function renderStammdaten() {
-      const mitEl = document.getElementById("sd_mit_list");
-      const fzgEl = document.getElementById("sd_fzg_list");
-      const bauEl = document.getElementById("sd_bau_list");
-      mitEl.innerHTML = "";
-      fzgEl.innerHTML = "";
-      bauEl.innerHTML = "";
-
-      mitarbeiter.forEach(m => {
-        const span = document.createElement("span");
-        span.className = "legend-item";
-        span.innerHTML = `<span class="legend-dot" style="background:${colorFor(m.name)}"></span>${m.name}`;
-        const del = document.createElement("button");
-        del.className = "btn-small";
-        del.style.background = "#fee2e2";
-        del.style.border = "1px solid #fca5a5";
-        del.style.color = "#991b1b";
-        del.textContent = "x";
-        del.onclick = async ()=>{ await supa.from("mitarbeiter").delete().eq("id", m.id); await loadStammdaten(); renderStammdaten(); };
-        span.appendChild(del);
-        mitEl.appendChild(span);
-      });
-
-      fahrzeuge.forEach(f => {
-        const span = document.createElement("span");
-        span.className = "legend-item";
-        span.textContent = f.name;
-        const del = document.createElement("button");
-        del.className = "btn-small";
-        del.style.background = "#fee2e2";
-        del.style.border = "1px solid #fca5a5";
-        del.style.color = "#991b1b";
-        del.textContent = "x";
-        del.onclick = async ()=>{ await supa.from("fahrzeuge").delete().eq("id", f.id); await loadStammdaten(); renderStammdaten(); };
-        span.appendChild(del);
-        fzgEl.appendChild(span);
-      });
-
-      baustellen.forEach(b => {
-        const span = document.createElement("span");
-        span.className = "legend-item";
-        span.textContent = b.name;
-        const del = document.createElement("button");
-        del.className = "btn-small";
-        del.style.background = "#fee2e2";
-        del.style.border = "1px solid #fca5a5";
-        del.style.color = "#991b1b";
-        del.textContent = "x";
-        del.onclick = async ()=>{ await supa.from("baustellen").delete().eq("id", b.id); await loadStammdaten(); renderStammdaten(); };
-        span.appendChild(del);
-        bauEl.appendChild(span);
-      });
-    }
-
-    async function addMitarbeiter() {
-      const name = document.getElementById("sd_mitarbeiter").value.trim();
-      if (!name) return;
-      await supa.from("mitarbeiter").insert({name});
-      document.getElementById("sd_mitarbeiter").value = "";
-      await loadStammdaten();
-      renderStammdaten();
-    }
-    async function addFahrzeug() {
-      const name = document.getElementById("sd_fahrzeug").value.trim();
-      if (!name) return;
-      await supa.from("fahrzeuge").insert({name});
-      document.getElementById("sd_fahrzeug").value = "";
-      await loadStammdaten();
-      renderStammdaten();
-    }
-    async function addBaustelle() {
-      const name = document.getElementById("sd_baustelle").value.trim();
-      if (!name) return;
-      await supa.from("baustellen").insert({name});
-      document.getElementById("sd_baustelle").value = "";
-      await loadStammdaten();
-      renderStammdaten();
-    }
-
-    function renderLegend() {
-      const leg = document.getElementById("legend");
-      leg.innerHTML = "";
-      mitarbeiter.forEach(m => {
-        const span = document.createElement("span");
-        span.className = "legend-item";
-        span.innerHTML = `<span class="legend-dot" style="background:${colorFor(m.name)}"></span>${m.name}`;
-        leg.appendChild(span);
-      });
-      const ur = document.createElement("span");
-      ur.className = "legend-item";
-      ur.innerHTML = `<span class="legend-dot" style="background:#f97316"></span>Urlaub`;
-      leg.appendChild(ur);
-      const kr = document.createElement("span");
-      kr.className = "legend-item";
-      kr.innerHTML = `<span class="legend-dot" style="background:#ef4444"></span>Krank`;
-      leg.appendChild(kr);
-      const sc = document.createElement("span");
-      sc.className = "legend-item";
-      sc.innerHTML = `<span class="legend-dot" style="background:#6366f1"></span>Schule`;
-      leg.appendChild(sc);
-    }
-
-    // ===== Events =====
-    document.getElementById("btnSave").onclick = saveEntry;
-    document.getElementById("btnDel").onclick = () => { if (editingId) deleteEntry(editingId); };
-    document.getElementById("btnNew").onclick = () => openEntryDialog();
-    document.getElementById("btnStamm").onclick = () => { renderStammdaten(); dlgStamm.showModal(); };
-    document.getElementById("sd_add_mitarbeiter").onclick = addMitarbeiter;
-    document.getElementById("sd_add_fahrzeug").onclick = addFahrzeug;
-    document.getElementById("sd_add_baustelle").onclick = addBaustelle;
-
-    document.getElementById("btn14").onclick = async () => {
-      currentView = "14";
-      await loadEintraege();
-      renderBoard();
-      setActiveBtn("btn14");
-    };
-    document.getElementById("btn4").onclick = async () => {
-      currentView = "4w";
-      await loadEintraege();
-      renderBoard();
-      setActiveBtn("btn4");
-    };
-    document.getElementById("btn12").onclick = async () => {
-      currentView = "12m";
-      await loadEintraege();
-      renderBoard();
-      setActiveBtn("btn12");
-    };
-
-    document.getElementById("btnReload").onclick = async () => {
-      await loadStammdaten();
-      await loadEintraege();
-      renderBoard();
-    };
-
-    document.getElementById("startDate").onchange = async (e) => {
-      startDate = new Date(e.target.value);
-      await loadEintraege();
-      renderBoard();
-    };
-
-    function setActiveBtn(id) {
-      ["btn14","btn4","btn12"].forEach(b => {
-        document.getElementById(b).classList.remove("active");
-      });
-      document.getElementById(id).classList.add("active");
-    }
-
-    // ===== Init =====
-    (async function init() {
-      try {
-        document.getElementById("startDate").value = iso(startDate);
-        await loadStammdaten();
-        await loadEintraege();
-        renderBoard();
-        document.getElementById("connDot").style.background = "#22c55e";
-        document.getElementById("connText").textContent = "verbunden";
-      } catch (e) {
-        document.getElementById("connDot").style.background = "#ef4444";
-        document.getElementById("connText").textContent = "Fehler";
-      }
-    })();
-  </script>
+// INIT
+(async function init(){
+  document.getElementById("startDate").value = iso(startDate);
+  try {
+    await loadStammdaten();
+    await loadEintraege();
+    document.getElementById("connDot").style.background = "#22c55e";
+    document.getElementById("connText").textContent = "verbunden";
+  } catch(e) {
+    // WICHTIG: trotzdem zeichnen
+    document.getElementById("connDot").style.background = "#ef4444";
+    document.getElementById("connText").textContent = "offline";
+  }
+  // IMMER anzeigen
+  renderBoard();
+})();
+</script>
 </body>
 </html>
