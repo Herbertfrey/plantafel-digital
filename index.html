@@ -1,477 +1,857 @@
 <!DOCTYPE html>
 <html lang="de">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta charset="UTF-8" />
   <title>Plantafel Dachdeckerei Frey</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
   <style>
     :root {
-      --bg: #f7f8fa;
-      --card: #fff;
-      --accent: #1e3a8a;
-      --text: #111;
-      --muted: #666;
+      --bg: #eef1f5;
+      --panel: #ffffff;
+      --line: #d6dce5;
+      --accent: #0b6ed0;
+      --accent-dark: #085aab;
+      --txt: #1f2937;
+      --txt-dim: #6b7280;
+      --card-radius: 10px;
       --danger: #ef4444;
-      --ok: #10b981;
-      font-family: system-ui, Arial, sans-serif;
+      --urlaub: #f97316;
+      --krank: #ef4444;
+      --schule: #6366f1;
+      --fahrzeug: #1f2937;
     }
+    * { box-sizing: border-box; }
     body {
-      background: var(--bg);
       margin: 0;
-      padding: 0;
-      color: var(--text);
+      background: var(--bg);
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      color: var(--txt);
       display: flex;
       flex-direction: column;
-      height: 100vh;
+      min-height: 100vh;
     }
     header {
-      background: var(--accent);
-      color: white;
-      padding: 10px 20px;
+      background: #0b6ed0;
+      color: #fff;
+      padding: 10px 16px;
       display: flex;
       align-items: center;
-      justify-content: space-between;
+      gap: 12px;
     }
-    header h1 { font-size: 20px; margin: 0; }
-    nav button {
-      background: white;
-      color: var(--accent);
-      border: none;
-      margin-left: 6px;
-      padding: 6px 10px;
-      border-radius: 5px;
-      cursor: pointer;
-      font-weight: 500;
-    }
-    #board {
+    header h1 {
+      font-size: 18px;
+      margin: 0;
       flex: 1;
-      display: grid;
-      grid-template-columns: repeat(5, 1fr);
-      grid-auto-rows: 140px;
-      gap: 8px;
-      padding: 12px;
-      overflow-y: auto;
     }
-    .day {
-      background: var(--card);
-      border-radius: 10px;
-      box-shadow: 0 1px 3px rgba(0,0,0,.1);
-      display: flex;
-      flex-direction: column;
-      justify-content: flex-start;
-      padding: 6px;
-    }
-    .day h3 {
-      font-size: 14px;
-      margin: 0 0 4px 0;
-      color: var(--accent);
-    }
-    .entry {
-      background: #e0e7ff;
+    .toolbar-btn {
+      background: #fff;
+      border: none;
+      padding: 6px 12px;
       border-radius: 6px;
-      margin: 2px 0;
-      padding: 4px 6px;
-      cursor: grab;
-      font-size: 13px;
+      font-weight: 500;
+      cursor: pointer;
+      color: #0b6ed0;
     }
-    .entry[data-status="Krank"],
-    .entry[data-status="Urlaub"],
-    .entry[data-status="Schule"] {
-      background: var(--danger);
+    .toolbar-btn.active {
+      background: #084f95;
       color: #fff;
     }
-    .entry.dragging { opacity: 0.6; }
-    footer {
-      background: var(--card);
-      text-align: center;
-      padding: 6px;
-      font-size: 12px;
-      color: var(--muted);
+    main {
+      flex: 1;
+      padding: 12px 16px 70px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
     }
+    .top-controls {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+    input[type="date"] {
+      padding: 4px 6px;
+    }
+    .board {
+      flex: 1;
+      display: grid;
+      gap: 10px;
+    }
+    /* 14 Tage & 4 Wochen: 5 Spalten (Mo–Fr) */
+    .view-days {
+      grid-template-columns: repeat(5, minmax(140px, 1fr));
+      grid-auto-rows: 180px;
+    }
+    /* 12 Monate: 4 Spalten, 3 Reihen */
+    .view-months {
+      grid-template-columns: repeat(4, minmax(160px, 1fr));
+      grid-auto-rows: 200px;
+    }
+    .day-col, .month-col {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      min-height: 120px;
+    }
+    .day-head, .month-head {
+      padding: 6px 10px;
+      border-bottom: 1px solid var(--line);
+      font-weight: 600;
+      font-size: 13px;
+      background: #f8fafc;
+      display: flex;
+      justify-content: space-between;
+      gap: 10px;
+    }
+    .card-list {
+      flex: 1;
+      overflow-y: auto;
+      padding: 8px;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+    .entry-card {
+      border-radius: 8px;
+      background: #dbeafe;
+      padding: 5px 6px 6px;
+      font-size: 12px;
+      cursor: pointer;
+      border: 1px solid rgba(0,0,0,0.05);
+    }
+    .entry-title {
+      font-weight: 600;
+      margin-bottom: 2px;
+      display: flex;
+      justify-content: space-between;
+      gap: 6px;
+    }
+    .entry-meta {
+      font-size: 11px;
+      color: rgba(0,0,0,0.5);
+    }
+    .status-badge {
+      font-size: 10px;
+      padding: 1px 5px;
+      border-radius: 999px;
+      color: #fff;
+    }
+    .status-urlaub { background: var(--urlaub); }
+    .status-krank { background: var(--krank); }
+    .status-schule { background: var(--schule); }
+
     dialog {
       border: none;
-      border-radius: 8px;
-      padding: 20px;
-      width: 300px;
+      border-radius: 12px;
+      max-width: 420px;
+      width: 95vw;
+      padding: 0;
     }
-    dialog label { display:block; margin-top:8px; }
-    dialog input, dialog select {
-      width: 100%; padding: 4px; margin-top:2px;
+    dialog::backdrop {
+      background: rgba(0,0,0,0.35);
     }
-    dialog button {
-      margin-top:10px; padding:6px 10px; border:none; border-radius:5px;
-      background: var(--accent); color:white; cursor:pointer;
+    .dlg-body {
+      padding: 16px 16px 14px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+    .dlg-title {
+      font-size: 16px;
+      font-weight: 600;
+    }
+    label {
+      font-size: 13px;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+    input[type="text"], select, textarea, input[type="date"] {
+      padding: 5px 7px;
+      border: 1px solid #cbd5e1;
+      border-radius: 6px;
+      font-size: 13px;
+    }
+    select[multiple] {
+      height: 80px;
+    }
+    .dlg-actions {
+      display: flex;
+      justify-content: flex-end;
+      gap: 8px;
+      padding: 10px 16px 14px;
+      background: #f3f4f6;
+      border-radius: 0 0 12px 12px;
+    }
+    .btn {
+      border: none;
+      border-radius: 6px;
+      padding: 6px 12px;
+      cursor: pointer;
+      font-weight: 500;
+      font-size: 13px;
+    }
+    .btn-primary {
+      background: var(--accent);
+      color: #fff;
+    }
+    .btn-secondary {
+      background: #e2e8f0;
+    }
+    .status-bar {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      background: #0b6ed0;
+      color: #fff;
+      padding: 5px 16px;
+      font-size: 12px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .pill {
+      background: rgba(255,255,255,0.15);
+      padding: 3px 6px;
+      border-radius: 99px;
+      margin-right: 4px;
+      display: inline-flex;
+      gap: 3px;
+      align-items: center;
+    }
+    .pill button {
+      background: none;
+      border: none;
+      color: inherit;
+      cursor: pointer;
+      font-size: 11px;
+    }
+    @media (max-width: 920px) {
+      .view-days {
+        grid-template-columns: repeat(2, minmax(140px, 1fr));
+      }
+      .view-months {
+        grid-template-columns: repeat(2, minmax(140px, 1fr));
+      }
+      header {
+        flex-wrap: wrap;
+      }
     }
   </style>
+  <!-- Supabase UMD -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.3/dist/umd/supabase.js"></script>
 </head>
 <body>
   <header>
-    <h1>Digitale Plantafel – Dachdeckerei Frey</h1>
-    <nav>
-      <button id="view14">14 Tage</button>
-      <button id="view4w">4 Wochen</button>
-      <button id="view12m">12 Monate</button>
-      <button id="add">+ Eintrag</button>
-      <button id="stammdaten">Stammdaten</button>
-    </nav>
+    <h1>Plantafel Dachdeckerei Frey</h1>
+    <button class="toolbar-btn active" data-view="14">14 Tage</button>
+    <button class="toolbar-btn" data-view="28">4 Wochen</button>
+    <button class="toolbar-btn" data-view="365">12 Monate</button>
+    <label style="color:#fff;font-size:13px;">Start:
+      <input type="date" id="startDate" />
+    </label>
+    <button class="toolbar-btn" id="btnReload">Neu laden</button>
+    <button class="toolbar-btn" id="btnUrlaubMode">
+      <input type="checkbox" id="chkUrlaub" checked style="vertical-align:middle;margin-right:3px;"> Urlaub/Krank/Schule
+    </button>
+    <button class="toolbar-btn" id="btnMaster">Stammdaten</button>
+    <button class="toolbar-btn" id="btnNew">+ Eintrag</button>
   </header>
 
-  <main id="board"></main>
-  <footer>© 2025 Dachdeckerei Frey</footer>
+  <main>
+    <div id="board" class="board view-days">
+      <!-- wird per JS gefüllt -->
+    </div>
+  </main>
 
-  <!-- Dialog neues Projekt -->
-  <dialog id="dlg">
-    <form id="frm">
-      <h3>Neuer Eintrag</h3>
-      <label>Baustelle
-        <input id="baustelle" required />
+  <div class="status-bar">
+    <div>
+      <span id="connDot" style="height:8px;width:8px;border-radius:99px;background:#22c55e;display:inline-block;margin-right:6px;"></span>
+      <span id="connText">verbunden</span>
+    </div>
+    <div id="legend" style="font-size:11px;">
+      <!-- Legende mit Mitarbeitern wird per JS ergänzt -->
+    </div>
+  </div>
+
+  <!-- Dialog: Neuer / Bearbeiten -->
+  <dialog id="dlgEntry">
+    <form id="entryForm" class="dlg-body">
+      <div class="dlg-title" id="dlgTitle">Neuer Eintrag</div>
+
+      <label id="lblBaustelle">
+        Baustelle / Auftrag (optional bei Urlaub/Krank)
+        <input type="text" id="inpBaustelle" placeholder="z. B. Müller Dach" />
       </label>
-      <label>Von (bis optional)
-        <input type="date" id="von" required />
-        <input type="date" id="bis" />
+
+      <label>
+        Von (Datum)
+        <input type="date" id="inpVon" required />
       </label>
-      <label>Mitarbeiter (Mehrfachwahl mit Strg)
-        <select id="mitarbeiter" multiple></select>
+      <label>
+        Bis (optional, leer = 1 Tag)
+        <input type="date" id="inpBis" />
       </label>
-      <label>Fahrzeuge (Mehrfachwahl mit Strg)
-        <select id="fahrzeuge" multiple></select>
+
+      <label>
+        Mitarbeiter (STRG halten für mehrere)
+        <select id="selMitarbeiter" multiple></select>
       </label>
-      <label>Status
-        <select id="status">
-          <option value="">– – –</option>
-          <option value="Krank">Krank</option>
-          <option value="Urlaub">Urlaub</option>
-          <option value="Schule">Schule</option>
+
+      <label>
+        Fahrzeuge (STRG halten für mehrere)
+        <select id="selFahrzeuge" multiple></select>
+      </label>
+
+      <label>
+        Status
+        <select id="selStatus">
+          <option value="normal">normal</option>
+          <option value="urlaub">Urlaub</option>
+          <option value="krank">Krank</option>
+          <option value="schule">Schule</option>
         </select>
       </label>
-      <button type="submit">Speichern</button>
+
+      <label>
+        Notiz
+        <textarea id="inpNotiz" rows="2" placeholder="optional"></textarea>
+      </label>
     </form>
+    <div class="dlg-actions">
+      <button class="btn btn-secondary" type="button" id="btnDel" style="margin-right:auto;display:none;">Löschen</button>
+      <button class="btn btn-secondary" type="button" onclick="dlgEntry.close()">Abbrechen</button>
+      <button class="btn btn-primary" type="button" id="btnSave">Speichern</button>
+    </div>
   </dialog>
+
+  <!-- Dialog: Stammdaten -->
+  <dialog id="dlgMaster">
+    <div class="dlg-body">
+      <div class="dlg-title">Stammdaten</div>
+
+      <label>
+        Neuer Mitarbeiter
+        <div style="display:flex;gap:6px;">
+          <input type="text" id="newMitName" placeholder="Name" style="flex:1;">
+          <button class="btn btn-primary" type="button" id="btnAddMit">+</button>
+        </div>
+      </label>
+      <div id="mitList" style="display:flex;flex-wrap:wrap;gap:4px;"></div>
+
+      <label>
+        Neues Fahrzeug
+        <div style="display:flex;gap:6px;">
+          <input type="text" id="newFzgName" placeholder="z. B. Crafter Bus" style="flex:1;">
+          <button class="btn btn-primary" type="button" id="btnAddFzg">+</button>
+        </div>
+      </label>
+      <div id="fzgList" style="display:flex;flex-wrap:wrap;gap:4px;"></div>
+
+    </div>
+    <div class="dlg-actions">
+      <button class="btn btn-secondary" type="button" onclick="dlgMaster.close()">Schließen</button>
+    </div>
+  </dialog>
+
   <script>
-    // ====== BASIS-DATEN (werden in Block 3 aus Supabase geladen) ======
-    let STAMM_MITARBEITER = [];   // z.B. ["Sepp", "Hans"]
-    let STAMM_FAHRZEUGE = [];     // z.B. ["Bus 1", "Kran"]
-    let EINTRAEGE = [];           // wird angezeigt
-
-    // aktuelle Ansicht
-    let currentView = "14"; // "14" | "4w" | "12m"
-
-    const boardEl = document.getElementById("board");
-    const dlg = document.getElementById("dlg");
-    const frm = document.getElementById("frm");
-    const selMitarbeiter = document.getElementById("mitarbeiter");
-    const selFahrzeuge = document.getElementById("fahrzeuge");
-    const fldBaustelle = document.getElementById("baustelle");
-    const fldVon = document.getElementById("von");
-    const fldBis = document.getElementById("bis");
-    const fldStatus = document.getElementById("status");
-
-    // ========= HILFE =========
-    function toISO(d) {
-      return d.toISOString().slice(0,10);
-    }
-    function addDays(d, n) {
-      const c = new Date(d);
-      c.setDate(c.getDate() + n);
-      return c;
-    }
-    function mondayOf(d) {
-      const c = new Date(d);
-      const day = c.getDay(); // So=0
-      const diff = (day === 0 ? -6 : 1 - day);
-      c.setDate(c.getDate() + diff);
-      return c;
-    }
-
-    // ========= ANSICHT RENDERN =========
-    function render() {
-      boardEl.innerHTML = "";
-      if (currentView === "12m") {
-        render12Months();
-      } else if (currentView === "4w") {
-        renderWeeks(4);
-      } else {
-        renderWeeks(2); // 14 Tage
-      }
-    }
-
-    // nur Mo–Fr-Spalten
-    function renderWeeks(weeks) {
-      boardEl.className = "board-grid view-4w";
-      boardEl.innerHTML = "";
-      const start = mondayOf(new Date());
-      let dayCursor = start;
-      for (let w = 0; w < weeks; w++) {
-        for (let d = 0; d < 5; d++) { // Mo–Fr
-          const iso = toISO(dayCursor);
-          const dayDiv = document.createElement("div");
-          dayDiv.className = "day";
-          dayDiv.dataset.date = iso;
-          dayDiv.ondragover = ev => ev.preventDefault();
-          dayDiv.ondrop = onDropDay;
-          const head = document.createElement("h3");
-          head.textContent = dayCursor.toLocaleDateString("de-DE", { weekday: "short", day:"2-digit", month:"2-digit" });
-          dayDiv.appendChild(head);
-
-          // Einträge für diesen Tag
-          EINTRAEGE.filter(e => e.tag === iso).forEach(e => {
-            const card = renderEntryCard(e);
-            dayDiv.appendChild(card);
-          });
-
-          boardEl.appendChild(dayDiv);
-          dayCursor = addDays(dayCursor, 1);
-        }
-        // Wochenende überspringen
-        dayCursor = addDays(dayCursor, 2);
-      }
-    }
-
-    function render12Months() {
-      boardEl.className = "board-grid view-12m";
-      boardEl.innerHTML = "";
-      const now = new Date();
-      const year = now.getFullYear();
-      for (let m = 0; m < 12; m++) {
-        const cell = document.createElement("div");
-        cell.className = "day";
-        const head = document.createElement("h3");
-        head.textContent = new Date(year, m, 1).toLocaleDateString("de-DE", { month:"long", year:"numeric" });
-        cell.appendChild(head);
-
-        // alle Einträge aus diesem Monat
-        EINTRAEGE.filter(e => {
-          if (!e.tag) return false;
-          const dt = new Date(e.tag);
-          return dt.getFullYear() === year && dt.getMonth() === m;
-        }).forEach(e => {
-          const card = renderEntryCard(e);
-          cell.appendChild(card);
-        });
-
-        boardEl.appendChild(cell);
-      }
-    }
-
-    function renderEntryCard(e) {
-      const div = document.createElement("div");
-      div.className = "entry";
-      div.draggable = true;
-      div.dataset.id = e.id;
-      div.textContent = e.baustelle || "(ohne Titel)";
-      if (e.status) {
-        div.dataset.status = e.status;
-      }
-      div.ondragstart = onDragStart;
-      div.onclick = () => editEntry(e.id);
-      return div;
-    }
-
-    // ========= DRAG & DROP =========
-    let dragId = null;
-    function onDragStart(ev) {
-      dragId = ev.target.dataset.id;
-    }
-    function onDropDay(ev) {
-      ev.preventDefault();
-      const day = ev.currentTarget.dataset.date;
-      if (!dragId) return;
-      // Eintrag verschieben
-      const idx = EINTRAEGE.findIndex(x => x.id == dragId);
-      if (idx >= 0) {
-        EINTRAEGE[idx].tag = day;
-        saveEntryToStorage(EINTRAEGE[idx]); // in Block 3 ersetzen wir das mit Supabase
-        render();
-      }
-      dragId = null;
-    }
-
-    // ========= DIALOG =========
-    function openDialog(defaultDate) {
-      fillStammdatenInDialog();
-      fldBaustelle.value = "";
-      fldVon.value = defaultDate || toISO(new Date());
-      fldBis.value = "";
-      fldStatus.value = "";
-      dlg.showModal();
-      frm.onsubmit = onDialogSubmit;
-    }
-
-    function editEntry(id) {
-      const e = EINTRAEGE.find(x => x.id == id);
-      if (!e) return;
-      fillStammdatenInDialog();
-      fldBaustelle.value = e.baustelle || "";
-      fldVon.value = e.tag || toISO(new Date());
-      fldBis.value = e.bis || "";
-      fldStatus.value = e.status || "";
-      // Mehrfachauswahl
-      Array.from(selMitarbeiter.options).forEach(o => o.selected = e.mitarbeiter?.includes(o.value));
-      Array.from(selFahrzeuge.options).forEach(o => o.selected = e.fahrzeuge?.includes(o.value));
-      dlg.showModal();
-      frm.onsubmit = (ev) => {
-        ev.preventDefault();
-        // aktualisieren
-        e.baustelle = fldBaustelle.value;
-        e.tag = fldVon.value;
-        e.bis = fldBis.value;
-        e.status = fldStatus.value;
-        e.mitarbeiter = Array.from(selMitarbeiter.selectedOptions).map(o => o.value);
-        e.fahrzeuge = Array.from(selFahrzeuge.selectedOptions).map(o => o.value);
-        saveEntryToStorage(e);
-        dlg.close();
-        render();
-      };
-    }
-
-    function onDialogSubmit(ev) {
-      ev.preventDefault();
-      const neu = {
-        id: Date.now().toString(),
-        baustelle: fldBaustelle.value,
-        tag: fldVon.value,
-        bis: fldBis.value,
-        status: fldStatus.value,
-        mitarbeiter: Array.from(selMitarbeiter.selectedOptions).map(o => o.value),
-        fahrzeuge: Array.from(selFahrzeuge.selectedOptions).map(o => o.value),
-      };
-      EINTRAEGE.push(neu);
-      saveEntryToStorage(neu);
-      dlg.close();
-      render();
-    }
-
-    function fillStammdatenInDialog() {
-      selMitarbeiter.innerHTML = "";
-      STAMM_MITARBEITER.forEach(n => {
-        const o = document.createElement("option");
-        o.value = o.textContent = n;
-        selMitarbeiter.appendChild(o);
-      });
-      selFahrzeuge.innerHTML = "";
-      STAMM_FAHRZEUGE.forEach(n => {
-        const o = document.createElement("option");
-        o.value = o.textContent = n;
-        selFahrzeuge.appendChild(o);
-      });
-    }
-
-    // ========= LOKAL SPEICHERN (Platzhalter) =========
-    function saveEntryToStorage(e) {
-      // hier kommt in Block 3 Supabase hin
-      localStorage.setItem("plantafelEntries", JSON.stringify(EINTRAEGE));
-    }
-    function loadEntriesFromStorage() {
-      const raw = localStorage.getItem("plantafelEntries");
-      if (raw) {
-        EINTRAEGE = JSON.parse(raw);
-      } else {
-        EINTRAEGE = [];
-      }
-    }
-
-    // ========= EVENTS =========
-    document.getElementById("view14").onclick = () => { currentView = "14"; render(); };
-    document.getElementById("view4w").onclick  = () => { currentView = "4w"; render(); };
-    document.getElementById("view12m").onclick = () => { currentView = "12m"; render(); };
-    document.getElementById("add").onclick = () => openDialog();
-
-    document.getElementById("stammdaten").onclick = () => {
-      alert("Stammdaten kommen aus Supabase – wird im nächsten Block geladen.\nJetzt erst mal nur Testdaten.");
-    };
-
-    // ========= START =========
-    (function init() {
-      // Demo-Stammdaten – werden in Block 3 von Supabase ersetzt
-      STAMM_MITARBEITER = ["Herbert", "Max", "Sven", "Timo"];
-      STAMM_FAHRZEUGE = ["Bus 1", "Bus 2", "Kran"];
-      loadEntriesFromStorage();
-      render();
-    })();
-  </script>
-</body>
-</html>
-  <script>
-    // ... alles aus Block 2 bleibt oben drüber stehen ...
-
-    // ===== Supabase: deine Daten =====
+    // === Supabase einrichten ===
     const SUPA_URL = "https://mtybmrkyhavxpvwysglo.supabase.co";
     const SUPA_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im10eWJtcmt5aGF2eHB2d3lzZ2xvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjIxNjQ1OTIsImV4cCI6MjA3Nzc0MDU5Mn0.UToAmJAvACYvnO9hCIeyfm-VYKr5jincXdnEDDtbhvo";
     const supa = window.supabase.createClient(SUPA_URL, SUPA_KEY);
 
-    // 👉 ersetze die alten Speicherfunktionen jetzt durch Supabase:
+    // globale Daten
+    let currentView = 14; // 14, 28, 365
+    let startDate = new Date(); // wird unten auf Montag gesetzt
+    let allEntries = [];
+    let allMitarbeiter = [];
+    let allFahrzeuge = [];
+    let editingId = null;
 
-    async function saveEntryToStorage(e) {
-      // prüfen ob Eintrag schon existiert
-      const { data: exists, error: err1 } = await supa
-        .from("plantafel")
-        .select("id")
-        .eq("id", e.id)
-        .maybeSingle();
+    // Mitarbeiter-Farben (fest)
+    const mitFarben = [
+      "#22c55e","#3b82f6","#a855f7","#f97316","#ef4444",
+      "#0ea5e9","#f43f5e","#14b8a6","#facc15","#6366f1",
+      "#84cc16","#ec4899"
+    ];
 
-      // Supabase kann keine Arrays direkt, daher als JSON-String
-      const payload = {
-        id: e.id,
-        tag: e.tag,
-        bis: e.bis || null,
-        baustelle: e.baustelle || "",
-        status: e.status || "",
-        mitarbeiter: JSON.stringify(e.mitarbeiter || []),
-        fahrzeuge: JSON.stringify(e.fahrzeuge || [])
-      };
+    // Montag ermitteln
+    function toMonday(d) {
+      const day = d.getDay(); // So=0
+      const diff = (day === 0 ? -6 : 1 - day);
+      const nd = new Date(d);
+      nd.setDate(d.getDate() + diff);
+      nd.setHours(0,0,0,0);
+      return nd;
+    }
 
-      if (exists) {
-        await supa.from("plantafel").update(payload).eq("id", e.id);
+    function fmtDateIso(d) {
+      return d.toISOString().slice(0,10);
+    }
+
+    function addDays(d, n) {
+      const nd = new Date(d);
+      nd.setDate(nd.getDate() + n);
+      return nd;
+    }
+
+    function isWeekend(d) {
+      const dw = d.getDay();
+      return dw === 0 || dw === 6;
+    }
+
+    // ==== Board rendern ====
+    function renderBoard() {
+      const board = document.getElementById("board");
+      board.innerHTML = "";
+      if (currentView === 365) {
+        board.className = "board view-months";
+        renderMonths(board);
       } else {
-        await supa.from("plantafel").insert(payload);
+        board.className = "board view-days";
+        renderDays(board);
       }
     }
 
-    async function loadEntriesFromStorage() {
-      EINTRAEGE = [];
-      // Einträge holen
-      const { data: rows, error } = await supa
-        .from("plantafel")
-        .select("*")
-        .order("tag", { ascending: true });
+    function renderDays(board) {
+      // 14 Tage = 2 Wochen (Mo–Fr)
+      // 28 Tage = 4 Wochen (Mo–Fr)
+      const weeks = currentView === 14 ? 2 : 4;
+      for (let w = 0; w < weeks; w++) {
+        for (let d = 0; d < 5; d++) {
+          const dayDate = addDays(startDate, w*7 + d);
+          const dayIso = fmtDateIso(dayDate);
+          const col = document.createElement("div");
+          col.className = "day-col";
+          const head = document.createElement("div");
+          head.className = "day-head";
+          head.textContent = dayDate.toLocaleDateString("de-DE", {weekday:"short", day:"2-digit", month:"2-digit", year:"numeric"});
+          const plus = document.createElement("button");
+          plus.textContent = "+";
+          plus.style.border = "none";
+          plus.style.background = "transparent";
+          plus.style.cursor = "pointer";
+          plus.onclick = () => openNewEntry(dayIso);
+          head.appendChild(plus);
+          col.appendChild(head);
 
-      if (!error && rows) {
-        EINTRAEGE = rows.map(r => ({
-          id: r.id,
-          tag: r.tag,
-          bis: r.bis,
-          baustelle: r.baustelle,
-          status: r.status,
-          mitarbeiter: r.mitarbeiter ? JSON.parse(r.mitarbeiter) : [],
-          fahrzeuge: r.fahrzeuge ? JSON.parse(r.fahrzeuge) : []
-        }));
+          const list = document.createElement("div");
+          list.className = "card-list";
+          const entries = allEntries.filter(e => e.tag === dayIso);
+          entries.sort((a,b)=>(a.sort||0)-(b.sort||0));
+
+          for (const e of entries) {
+            list.appendChild(makeEntryCard(e));
+          }
+
+          col.appendChild(list);
+          board.appendChild(col);
+        }
       }
-
-      // Stammdaten holen
-      const { data: mit, error: e1 } = await supa.from("mitarbeiter").select("*").order("name");
-      const { data: fah, error: e2 } = await supa.from("fahrzeuge").select("*").order("name");
-
-      STAMM_MITARBEITER = (mit || []).map(x => x.name);
-      STAMM_FAHRZEUGE = (fah || []).map(x => x.name);
-
-      render();
     }
 
-    // Stammdaten-Buttons aus Block 2 ersetzen:
-    document.getElementById("stammdaten").onclick = async () => {
-      const name = prompt("Neuer Mitarbeiter/Fahrzeug? 'm:Name' oder 'f:Name'");
+    function renderMonths(board) {
+      // 3 x 4 Monate
+      const base = new Date(startDate);
+      base.setDate(1);
+      for (let m = 0; m < 12; m++) {
+        const md = new Date(base.getFullYear(), base.getMonth() + m, 1);
+        const box = document.createElement("div");
+        box.className = "month-col";
+        const head = document.createElement("div");
+        head.className = "month-head";
+        head.textContent = md.toLocaleDateString("de-DE", {month:"long", year:"numeric"});
+        const plus = document.createElement("button");
+        plus.textContent = "+";
+        plus.style.border = "none";
+        plus.style.background = "transparent";
+        plus.style.cursor = "pointer";
+        plus.onclick = () => {
+          // neuen Eintrag in diesem Monat an 1. Tag
+          openNewEntry(fmtDateIso(md));
+        };
+        head.appendChild(plus);
+        box.appendChild(head);
+
+        const list = document.createElement("div");
+        list.className = "card-list";
+
+        // alle Einträge dieses Monats (egal welcher Tag)
+        const monthEntries = allEntries.filter(e => {
+          const d = new Date(e.tag);
+          return d.getFullYear() === md.getFullYear() && d.getMonth() === md.getMonth();
+        });
+        for (const e of monthEntries) {
+          list.appendChild(makeEntryCard(e));
+        }
+
+        box.appendChild(list);
+        board.appendChild(box);
+      }
+    }
+
+    function makeEntryCard(e) {
+      const card = document.createElement("div");
+      card.className = "entry-card";
+      // farbe bestimmen
+      let bg = "#dbeafe";
+      if (e.status === "urlaub") bg = "#fed7aa";
+      else if (e.status === "krank") bg = "#fecaca";
+      else if (e.status === "schule") bg = "#e0e7ff";
+      else {
+        // normale Baustelle: nach 1. Mitarbeiter einfärben
+        const firstMit = parseCSV(e.mitarbeiter)[0];
+        const idx = allMitarbeiter.findIndex(m => m.name === firstMit);
+        if (idx >= 0) {
+          bg = allMitarbeiter[idx].color || mitFarben[idx % mitFarben.length];
+        }
+      }
+      card.style.background = bg;
+
+      const title = document.createElement("div");
+      title.className = "entry-title";
+      title.textContent = e.titel || "(ohne Titel)";
+      if (e.status && e.status !== "normal") {
+        const sb = document.createElement("span");
+        sb.className = "status-badge status-" + e.status;
+        sb.textContent = e.status;
+        title.appendChild(sb);
+      }
+      card.appendChild(title);
+
+      const meta = document.createElement("div");
+      meta.className = "entry-meta";
+      const mit = parseCSV(e.mitarbeiter).join(", ");
+      const fzg = parseCSV(e.fahrzeuge).join(", ");
+      meta.innerHTML = `
+        ${mit ? mit : ""} ${fzg ? " · " + fzg : ""} ${e.notiz ? " · " + e.notiz : ""}
+      `;
+      card.appendChild(meta);
+
+      card.onclick = () => openEditEntry(e);
+      return card;
+    }
+
+    // CSV helpers (weil deine Tabellen vermutlich text statt array haben)
+    function parseCSV(val) {
+      if (!val) return [];
+      if (Array.isArray(val)) return val;
+      return val.split(",").map(s => s.trim()).filter(Boolean);
+    }
+    function toCSV(arr) {
+      return (arr || []).join(", ");
+    }
+
+    // ==== Eintrags-Dialog öffnen ====
+    function openNewEntry(dateIso) {
+      editingId = null;
+      document.getElementById("dlgTitle").textContent = "Neuer Eintrag";
+      document.getElementById("inpBaustelle").value = "";
+      document.getElementById("inpVon").value = dateIso || fmtDateIso(startDate);
+      document.getElementById("inpBis").value = "";
+      document.getElementById("selStatus").value = "normal";
+      document.getElementById("inpNotiz").value = "";
+      deselectAll("selMitarbeiter");
+      deselectAll("selFahrzeuge");
+      document.getElementById("btnDel").style.display = "none";
+      dlgEntry.showModal();
+    }
+
+    function openEditEntry(e) {
+      editingId = e.id;
+      document.getElementById("dlgTitle").textContent = "Eintrag bearbeiten";
+      document.getElementById("inpBaustelle").value = e.titel || "";
+      document.getElementById("inpVon").value = e.tag;
+      document.getElementById("inpBis").value = e.bis || "";
+      document.getElementById("selStatus").value = e.status || "normal";
+      document.getElementById("inpNotiz").value = e.notiz || "";
+
+      selectValues("selMitarbeiter", parseCSV(e.mitarbeiter));
+      selectValues("selFahrzeuge", parseCSV(e.fahrzeuge));
+      document.getElementById("btnDel").style.display = "inline-flex";
+      dlgEntry.showModal();
+    }
+
+    function deselectAll(id) {
+      const sel = document.getElementById(id);
+      for (const opt of sel.options) opt.selected = false;
+    }
+    function selectValues(id, values) {
+      const sel = document.getElementById(id);
+      const set = new Set(values);
+      for (const opt of sel.options) {
+        opt.selected = set.has(opt.value);
+      }
+    }
+    function getSelectedValues(id) {
+      const sel = document.getElementById(id);
+      const vals = [];
+      for (const opt of sel.options) {
+        if (opt.selected) vals.push(opt.value);
+      }
+      return vals;
+    }
+
+    // ==== speichern / löschen ====
+    async function saveEntry() {
+      const titel = document.getElementById("inpBaustelle").value.trim();
+      const von = document.getElementById("inpVon").value;
+      const bis = document.getElementById("inpBis").value;
+      const status = document.getElementById("selStatus").value;
+      const notiz = document.getElementById("inpNotiz").value.trim();
+      const mit = getSelectedValues("selMitarbeiter");
+      const fzg = getSelectedValues("selFahrzeuge");
+
+      if (!von) {
+        alert("Bitte Datum wählen.");
+        return;
+      }
+      // wenn Status normal, dann darf Titel leer sein? du wolltest: bei Urlaub/Krank kein Titel nötig
+      if (status === "normal" && !titel) {
+        alert("Bitte Baustelle / Auftrag eingeben.");
+        return;
+      }
+
+      // wenn bis leer -> nur 1 Tag
+      const endDate = bis || von;
+
+      // mehrere Tage -> einzelne Einträge erstellen
+      const startD = new Date(von);
+      const endD = new Date(endDate);
+
+      if (editingId) {
+        // 1 bestehenden Eintrag updaten (wir gehen davon aus: ein Tag)
+        const { error } = await supa
+          .from("plantafel")
+          .update({
+            tag: von,
+            titel: status === "normal" ? titel : status,
+            mitarbeiter: toCSV(mit),
+            fahrzeuge: toCSV(fzg),
+            status: status,
+            notiz: notiz
+          })
+          .eq("id", editingId);
+        if (error) {
+          alert("Fehler beim Speichern: " + error.message);
+        }
+      } else {
+        // neue anlegen
+        for (let d = new Date(startD); d <= endD; d.setDate(d.getDate()+1)) {
+          const dayIso = fmtDateIso(d);
+          // nur Mo–Fr
+          if (isWeekend(d)) continue;
+          const { error } = await supa
+            .from("plantafel")
+            .insert({
+              tag: dayIso,
+              titel: status === "normal" ? titel : status,
+              mitarbeiter: toCSV(mit),
+              fahrzeuge: toCSV(fzg),
+              status: status,
+              notiz: notiz
+            });
+          if (error) {
+            console.log(error);
+          }
+        }
+      }
+
+      dlgEntry.close();
+      await loadEntries();
+    }
+
+    async function deleteEntry() {
+      if (!editingId) return;
+      if (!confirm("Eintrag wirklich löschen?")) return;
+      await supa.from("plantafel").delete().eq("id", editingId);
+      dlgEntry.close();
+      await loadEntries();
+    }
+
+    // ==== Stammdaten ====
+    async function loadMasters() {
+      // Mitarbeiter
+      const { data: mData } = await supa.from("mitarbeiter").select("*").order("id");
+      allMitarbeiter = (mData || []).map((m, idx) => ({
+        id: m.id,
+        name: m.name || m.mitarbeitername || ("Mitarbeiter " + (idx+1)),
+        color: m.farbe || mitFarben[idx % mitFarben.length]
+      }));
+      // Fahrzeuge
+      const { data: fData } = await supa.from("fahrzeuge").select("*").order("id");
+      allFahrzeuge = (fData || []).map(f => ({
+        id: f.id,
+        name: f.name || f.fahrzeug || "Fahrzeug"
+      }));
+
+      // Selects füllen
+      fillSelect("selMitarbeiter", allMitarbeiter.map(m => m.name));
+      fillSelect("selFahrzeuge", allFahrzeuge.map(f => f.name));
+
+      // Legende unten
+      renderLegend();
+
+      // im Dialog anzeigen
+      renderMasterChips();
+    }
+
+    function fillSelect(id, items) {
+      const sel = document.getElementById(id);
+      sel.innerHTML = "";
+      for (const it of items) {
+        const opt = document.createElement("option");
+        opt.value = it;
+        opt.textContent = it;
+        sel.appendChild(opt);
+      }
+    }
+
+    function renderLegend() {
+      const box = document.getElementById("legend");
+      box.innerHTML = "";
+      for (let i=0;i<allMitarbeiter.length;i++) {
+        const m = allMitarbeiter[i];
+        const span = document.createElement("span");
+        span.className = "pill";
+        span.style.background = m.color;
+        span.style.color = "#fff";
+        span.textContent = m.name;
+        box.appendChild(span);
+      }
+      const spanU = document.createElement("span");
+      spanU.className = "pill";
+      spanU.style.background = "var(--urlaub)";
+      spanU.textContent = "Urlaub";
+      box.appendChild(spanU);
+      const spanK = document.createElement("span");
+      spanK.className = "pill";
+      spanK.style.background = "var(--krank)";
+      spanK.textContent = "Krank";
+      box.appendChild(spanK);
+      const spanS = document.createElement("span");
+      spanS.className = "pill";
+      spanS.style.background = "var(--schule)";
+      spanS.textContent = "Schule";
+      box.appendChild(spanS);
+    }
+
+    function renderMasterChips() {
+      const mitBox = document.getElementById("mitList");
+      mitBox.innerHTML = "";
+      for (const m of allMitarbeiter) {
+        const c = document.createElement("span");
+        c.className = "pill";
+        c.style.background = m.color;
+        c.style.color = "#fff";
+        c.innerHTML = m.name + " <button data-type='mit' data-id='"+m.id+"'>&times;</button>";
+        mitBox.appendChild(c);
+      }
+      const fzgBox = document.getElementById("fzgList");
+      fzgBox.innerHTML = "";
+      for (const f of allFahrzeuge) {
+        const c = document.createElement("span");
+        c.className = "pill";
+        c.innerHTML = f.name + " <button data-type='fzg' data-id='"+f.id+"'>&times;</button>";
+        fzgBox.appendChild(c);
+      }
+
+      // delete handler
+      mitBox.querySelectorAll("button").forEach(btn=>{
+        btn.onclick = async () => {
+          await supa.from("mitarbeiter").delete().eq("id", btn.dataset.id);
+          await loadMasters();
+        };
+      });
+      fzgBox.querySelectorAll("button").forEach(btn=>{
+        btn.onclick = async () => {
+          await supa.from("fahrzeuge").delete().eq("id", btn.dataset.id);
+          await loadMasters();
+        };
+      });
+    }
+
+    async function addMitarbeiter() {
+      const name = document.getElementById("newMitName").value.trim();
       if (!name) return;
-      if (name.startsWith("m:")) {
-        await supa.from("mitarbeiter").insert({ name: name.substring(2).trim() });
-      } else if (name.startsWith("f:")) {
-        await supa.from("fahrzeuge").insert({ name: name.substring(2).trim() });
+      const color = mitFarben[Math.floor(Math.random()*mitFarben.length)];
+      await supa.from("mitarbeiter").insert({ name, farbe: color });
+      document.getElementById("newMitName").value = "";
+      await loadMasters();
+    }
+    async function addFahrzeug() {
+      const name = document.getElementById("newFzgName").value.trim();
+      if (!name) return;
+      await supa.from("fahrzeuge").insert({ name });
+      document.getElementById("newFzgName").value = "";
+      await loadMasters();
+    }
+
+    // ==== Einträge laden ====
+    async function loadEntries() {
+      // Zeitraum bestimmen
+      if (currentView === 365) {
+        const yearStart = new Date(startDate.getFullYear(), 0, 1);
+        const yearEnd = new Date(startDate.getFullYear(), 11, 31);
+        const { data, error } = await supa
+          .from("plantafel")
+          .select("*")
+          .gte("tag", fmtDateIso(yearStart))
+          .lte("tag", fmtDateIso(yearEnd));
+        allEntries = data || [];
+      } else {
+        const days = currentView;
+        const end = addDays(startDate, days - 1 + Math.floor(days/7)*2); // aber wir speichern eh nur Mo-Fr
+        const { data, error } = await supa
+          .from("plantafel")
+          .select("*")
+          .gte("tag", fmtDateIso(startDate))
+          .lte("tag", fmtDateIso(end));
+        allEntries = data || [];
       }
-      await loadEntriesFromStorage();
+      renderBoard();
+    }
+
+    // ==== Events ====
+    document.getElementById("btnNew").onclick = () => openNewEntry(fmtDateIso(startDate));
+    document.getElementById("btnSave").onclick = saveEntry;
+    document.getElementById("btnDel").onclick = deleteEntry;
+    document.getElementById("btnMaster").onclick = () => dlgMaster.showModal();
+    document.getElementById("btnAddMit").onclick = addMitarbeiter;
+    document.getElementById("btnAddFzg").onclick = addFahrzeug;
+
+    document.querySelectorAll(".toolbar-btn[data-view]").forEach(btn=>{
+      btn.onclick = async () => {
+        document.querySelectorAll(".toolbar-btn[data-view]").forEach(b=>b.classList.remove("active"));
+        btn.classList.add("active");
+        const v = parseInt(btn.dataset.view,10);
+        currentView = v;
+        await loadEntries();
+      };
+    });
+
+    document.getElementById("btnReload").onclick = async () => {
+      await loadEntries();
+      await loadMasters();
     };
 
-    // beim Start nicht localStorage, sondern Supabase:
-    (async function initSupabase() {
-      await loadEntriesFromStorage();
+    document.getElementById("startDate").onchange = async (e) => {
+      const d = new Date(e.target.value);
+      startDate = toMonday(d);
+      document.getElementById("startDate").value = fmtDateIso(startDate);
+      await loadEntries();
+    };
+
+    // ==== Init ====
+    (async function init() {
+      startDate = toMonday(new Date("2025-11-03")); // deiner Demo entsprechend
+      document.getElementById("startDate").value = fmtDateIso(startDate);
+      await loadMasters();
+      await loadEntries();
     })();
   </script>
 </body>
