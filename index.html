@@ -157,12 +157,13 @@
       flex: 1;
       min-height: 140px;
     }
+
     dialog {
       border: none;
       border-radius: 14px;
       padding: 1rem 1rem 1.2rem;
-      max-width: 440px;
-      width: min(95vw,440px);
+      max-width: 460px;
+      width: min(95vw,460px);
       background: #fff;
       box-shadow: 0 18px 60px rgba(15,23,42,.25);
     }
@@ -176,7 +177,7 @@
       margin-bottom: .15rem;
       font-weight: 600;
     }
-    input[type="text"], textarea, select, input[type="date"] {
+    input[type="text"], textarea, input[type="date"] {
       width: 100%;
       border: 1px solid #d0d4dd;
       border-radius: 6px;
@@ -185,7 +186,6 @@
       background: #fff;
       color: #000;
     }
-    select[multiple] { height: 80px; }
     textarea { min-height: 50px; }
     .dialog-buttons {
       margin-top: .6rem;
@@ -202,6 +202,27 @@
       font-size: .6rem;
       margin-bottom: .2rem;
     }
+    .checklist {
+      border: 1px solid #d0d4dd;
+      border-radius: 6px;
+      padding: .25rem .4rem;
+      max-height: 90px;
+      overflow-y: auto;
+      background: #fff;
+    }
+    .checklist label {
+      font-weight: 400;
+      margin: 0;
+      display: flex;
+      align-items: center;
+      gap: .25rem;
+      font-size: .72rem;
+      padding: .1rem 0;
+    }
+    .checklist input[type="checkbox"] {
+      margin: 0;
+    }
+
     footer {
       text-align:center;
       padding:.35rem;
@@ -209,6 +230,7 @@
       background:#0b63c6;
       color:#fff;
     }
+
     @media (min-width: 1100px){
       .board.fourweeks { grid-template-columns: repeat(5, minmax(180px,1fr)); }
       .board.fourteen { grid-template-columns: repeat(7, minmax(140px,1fr)); }
@@ -258,12 +280,13 @@
       <label>Bis (optional – wenn leer: 1 Tag)
         <input type="date" id="fBis" />
       </label>
-      <label>Mitarbeiter (Mehrfachwahl)
-        <select id="fMitarbeiter" multiple></select>
-      </label>
-      <label>Fahrzeuge (Mehrfachwahl)
-        <select id="fFahrzeuge" multiple></select>
-      </label>
+
+      <label>Mitarbeiter (mehrere möglich)</label>
+      <div id="fMitarbeiterBox" class="checklist"></div>
+
+      <label>Fahrzeuge (mehrere möglich)</label>
+      <div id="fFahrzeugeBox" class="checklist"></div>
+
       <label>Status
         <select id="fStatus">
           <option value="">normal</option>
@@ -582,8 +605,43 @@
     const entryForm = document.getElementById("entryForm");
     const deleteEntryBtn = document.getElementById("deleteEntryBtn");
 
+    function buildChecklist(containerId, items, selectedCsv, useColors){
+      const cont = document.getElementById(containerId);
+      cont.innerHTML = "";
+      const selected = (selectedCsv || "")
+        .split(",")
+        .map(x=>x.trim())
+        .filter(Boolean);
+      items.forEach((obj, index)=>{
+        const name = obj.name;
+        const id = containerId + "_" + obj.id;
+        const wrap = document.createElement("label");
+        const cb = document.createElement("input");
+        cb.type = "checkbox";
+        cb.value = name;
+        cb.id = id;
+        if (selected.includes(name)) cb.checked = true;
+        if (useColors) {
+          cb.style.accentColor = pickColorFor(name, index);
+        }
+        wrap.appendChild(cb);
+        wrap.append(" " + name);
+        cont.appendChild(wrap);
+      });
+    }
+
+    function getChecklistValues(containerId){
+      return Array.from(
+        document.querySelectorAll("#"+containerId+" input[type='checkbox']:checked")
+      ).map(cb=>cb.value);
+    }
+
     function openEntryDialog(entry){
-      fillSelects();
+      const existingM = entry && entry.mitarbeiter ? entry.mitarbeiter : "";
+      const existingF = entry && entry.fahrzeug ? entry.fahrzeug : "";
+      buildChecklist("fMitarbeiterBox", mitarbeiter, existingM, true);
+      buildChecklist("fFahrzeugeBox", fahrzeuge, existingF, false);
+
       if (entry && entry.id){
         document.getElementById("fId").value = entry.id;
         document.getElementById("fBaustelle").value = entry.titel || "";
@@ -591,8 +649,6 @@
         document.getElementById("fBis").value = entry.tag;
         document.getElementById("fStatus").value = entry.status || "";
         document.getElementById("fNotiz").value = entry.notiz || "";
-        setMultiSelect(document.getElementById("fMitarbeiter"), entry.mitarbeiter);
-        setMultiSelect(document.getElementById("fFahrzeuge"), entry.fahrzeug);
         deleteEntryBtn.style.display = "inline-block";
         deleteEntryBtn.onclick = ()=>deleteEntry(entry.id);
       } else {
@@ -602,8 +658,6 @@
         document.getElementById("fBis").value = "";
         document.getElementById("fStatus").value = "";
         document.getElementById("fNotiz").value = "";
-        setMultiSelect(document.getElementById("fMitarbeiter"), "");
-        setMultiSelect(document.getElementById("fFahrzeuge"), "");
         deleteEntryBtn.style.display = "none";
       }
       entryDialog.showModal();
@@ -617,8 +671,8 @@
       const von = document.getElementById("fVon").value;
       const status = document.getElementById("fStatus").value;
       const notiz = document.getElementById("fNotiz").value.trim();
-      const mitSel = getMultiSelect(document.getElementById("fMitarbeiter"));
-      const fahrSel = getMultiSelect(document.getElementById("fFahrzeuge"));
+      const mitSel = getChecklistValues("fMitarbeiterBox");
+      const fahrSel = getChecklistValues("fFahrzeugeBox");
 
       const payload = {
         titel,
@@ -642,32 +696,6 @@
       await supa.from("plantafel").delete().eq("id", id);
       closeEntryDialog();
       loadEntries();
-    }
-
-    function fillSelects(){
-      const mSel = document.getElementById("fMitarbeiter");
-      const fSel = document.getElementById("fFahrzeuge");
-      mSel.innerHTML = "";
-      mitarbeiter.forEach(m=>{
-        const opt = document.createElement("option");
-        opt.value = m.name;
-        opt.textContent = m.name;
-        mSel.appendChild(opt);
-      });
-      fSel.innerHTML = "";
-      fahrzeuge.forEach(f=>{
-        const opt = document.createElement("option");
-        opt.value = f.name;
-        opt.textContent = f.name;
-        fSel.appendChild(opt);
-      });
-    }
-    function setMultiSelect(sel, csv){
-      const items = (csv||"").split(",").map(x=>x.trim()).filter(Boolean);
-      Array.from(sel.options).forEach(o=>o.selected = items.includes(o.value));
-    }
-    function getMultiSelect(sel){
-      return Array.from(sel.selectedOptions).map(o=>o.value);
     }
 
     const stammDialog = document.getElementById("stammDialog");
