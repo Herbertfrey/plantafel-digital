@@ -1,747 +1,526 @@
 <!DOCTYPE html>
 <html lang="de">
 <head>
-  <meta charset="UTF-8" />
-  <title>Plantafel Dachdeckerei Frey</title>
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <style>
-    :root {
-      --blue: #0b63c6;
-      --bg: #e6e6ea;
-      --card: #ffffff;
-      --line: #d0d0d4;
-      --text: #0f172a;
-      --radius: 10px;
-    }
-    * { box-sizing: border-box; }
-    body {
-      margin: 0;
-      background: var(--bg);
-      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-      color: var(--text);
-    }
-    header {
-      background: var(--blue);
-      color: #fff;
-      padding: .8rem 1rem .6rem;
-      display: flex;
-      flex-wrap: wrap;
-      gap: .5rem;
-      align-items: center;
-    }
-    header h1 {
-      font-size: 1.15rem;
-      margin: 0 1rem 0 0;
-      white-space: nowrap;
-    }
-    .btn-tabs button {
-      background: rgba(255,255,255,.12);
-      color: #fff;
-      border: 1px solid rgba(255,255,255,.25);
-      border-radius: 7px;
-      padding: .25rem .7rem;
-      cursor: pointer;
-      font-weight: 500;
-    }
-    .btn-tabs button.active {
-      background: #fff;
-      color: var(--blue);
-    }
-    select, input[type="date"] {
-      border: 1px solid rgba(255,255,255,.4);
-      background: rgba(255,255,255,.25);
-      color: #fff;
-      border-radius: 6px;
-      padding: .25rem .4rem;
-    }
-    option { color: #000; }
-    .btn {
-      background: #fff;
-      color: var(--blue);
-      border: none;
-      border-radius: 6px;
-      padding: .35rem .75rem;
-      font-weight: 500;
-      cursor: pointer;
-    }
-    .btn.secondary {
-      background: rgba(255,255,255,.15);
-      color: #fff;
-    }
-    .status-dot {
-      width: .55rem; height: .55rem;
-      border-radius: 50%;
-      display: inline-block;
-      margin-left: .4rem;
-    }
-    main {
-      padding: 1rem;
-      min-height: calc(100vh - 120px);
-    }
-    .board {
-      display: grid;
-      gap: .75rem;
-    }
-    .day-column {
-      background: var(--card);
-      border: 1px solid var(--line);
-      border-radius: var(--radius);
-      min-height: 120px;
-      display: flex;
-      flex-direction: column;
-    }
-    .day-head {
-      padding: .4rem .5rem;
-      border-bottom: 1px solid #e5e7eb;
-      font-weight: 600;
-      font-size: .8rem;
-      background: #f1f5f9;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-    }
-    .day-add {
-      background: transparent;
-      border: none;
-      font-size: 1rem;
-      line-height: 1;
-      cursor: pointer;
-      color: #0f172a;
-    }
-    .day-list {
-      flex: 1;
-      padding: .4rem .4rem .5rem;
-      display: flex;
-      gap: .35rem;
-      flex-direction: column;
-      min-height: 70px;
-    }
-    .entry {
-      border-radius: 7px;
-      background: #f8fafc;
-      border: 1px solid rgba(15,23,42,.03);
-      padding: .25rem .4rem .35rem;
-      font-size: .7rem;
-      cursor: grab;
-      box-shadow: 0 1px 0 rgba(15,23,42,.02);
-    }
-    .entry-title { font-weight: 600; }
-    .entry-meta { font-size: .65rem; opacity: .95; }
+<meta charset="UTF-8">
+<title>Plantafel Dachdeckerei Frey – V2</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
 
-    /* 12 Monate fest 4 Spalten */
-    .months-grid {
-      display: grid;
-      grid-template-columns: repeat(4, 1fr);
-      gap: .7rem;
-    }
-    .month-box {
-      background: var(--card);
-      border: 1px solid var(--line);
-      border-radius: var(--radius);
-      min-height: 180px;
-      display: flex;
-      flex-direction: column;
-    }
-    .month-head {
-      padding: .4rem .5rem;
-      background: #f1f5f9;
-      border-bottom: 1px solid #e5e7eb;
-      font-weight: 600;
-      font-size: .8rem;
-    }
-    .month-body {
-      padding: .4rem .4rem .5rem;
-      display: flex;
-      flex-direction: column;
-      gap: .35rem;
-      flex: 1;
-      min-height: 140px;
-    }
+<style>
+:root {
+  --blue:#0b63c6; --bg:#e9e9ee; --card:#fff;
+  --line:#d0d0d4; --text:#0f172a; --radius:10px;
+  --vehicle:#cc0000; --urlaub:#facc15;
+  --krank:#ef4444; --schule:#38bdf8;
+}
+*{box-sizing:border-box;}
+body{margin:0;background:var(--bg);font-family:system-ui;color:var(--text);}
+header{background:var(--blue);color:#fff;padding:.8rem 1rem;display:flex;gap:.8rem;flex-wrap:wrap;align-items:center;}
+header h1{margin:0;font-size:1.2rem;white-space:nowrap;}
 
-    dialog {
-      border: none;
-      border-radius: 14px;
-      padding: 1rem 1rem 1.2rem;
-      max-width: 460px;
-      width: min(95vw,460px);
-      background: #fff;
-      box-shadow: 0 18px 60px rgba(15,23,42,.25);
-    }
-    dialog::backdrop {
-      background: rgba(15,23,42,.35);
-    }
-    form label {
-      display: block;
-      font-size: .7rem;
-      margin-top: .3rem;
-      margin-bottom: .15rem;
-      font-weight: 600;
-    }
-    input[type="text"], textarea, input[type="date"] {
-      width: 100%;
-      border: 1px solid #d0d4dd;
-      border-radius: 6px;
-      padding: .3rem .4rem;
-      font-size: .75rem;
-      background: #fff;
-      color: #000;
-    }
-    textarea { min-height: 50px; }
-    .dialog-buttons {
-      margin-top: .6rem;
-      display: flex;
-      justify-content: space-between;
-      gap: .4rem;
-      align-items: center;
-    }
-    .pill {
-      display: inline-block;
-      padding: .25rem .45rem;
-      border-radius: 999px;
-      background: #eef2ff;
-      font-size: .6rem;
-      margin-bottom: .2rem;
-    }
-    .checklist {
-      border: 1px solid #d0d4dd;
-      border-radius: 6px;
-      padding: .25rem .4rem;
-      max-height: 90px;
-      overflow-y: auto;
-      background: #fff;
-    }
-    .checklist label {
-      font-weight: 400;
-      margin: 0;
-      display: flex;
-      align-items: center;
-      gap: .25rem;
-      font-size: .72rem;
-      padding: .1rem 0;
-    }
-    .checklist input[type="checkbox"] {
-      margin: 0;
-    }
+.btn-tabs button{
+  background:rgba(255,255,255,.15);
+  color:#fff;border:1px solid rgba(255,255,255,.3);
+  border-radius:6px;padding:.3rem .7rem;cursor:pointer;
+}
+.btn-tabs .active{background:#fff;color:var(--blue);}
 
-    footer {
-      text-align:center;
-      padding:.35rem;
-      font-size:.65rem;
-      background:#0b63c6;
-      color:#fff;
-    }
+input[type="date"]{
+  border:1px solid rgba(255,255,255,.4);
+  background:rgba(255,255,255,.25);
+  color:#fff;border-radius:6px;padding:.25rem .4rem;
+}
+.btn{
+  background:#fff;color:var(--blue);
+  border:none;border-radius:6px;
+  padding:.35rem .75rem;cursor:pointer;
+  font-weight:600;
+}
+.btn.secondary{background:rgba(255,255,255,.2);color:#fff;}
 
-    @media (min-width: 1100px){
-      .board.fourweeks { grid-template-columns: repeat(5, minmax(180px,1fr)); }
-      .board.fourteen { grid-template-columns: repeat(7, minmax(140px,1fr)); }
-    }
-    @media (max-width: 1099px){
-      .board.fourweeks,
-      .board.fourteen { grid-template-columns: repeat(auto-fit,minmax(180px,1fr)); }
-      .months-grid { grid-template-columns: repeat(auto-fit,minmax(200px,1fr)); }
-    }
-  </style>
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+.legend{
+  margin-left:auto;background:rgba(255,255,255,.2);
+  padding:.4rem .6rem;border-radius:6px;
+  display:flex;flex-direction:column;gap:.25rem;font-size:.65rem;
+}
+.legend-row{display:flex;align-items:center;gap:.35rem;}
+.legend-color{width:14px;height:14px;border-radius:3px;border:1px solid #fff;}
+
+main{padding:1rem;min-height:calc(100vh - 120px);}
+
+/* Monatsraster 3x4 */
+.months-grid{
+  display:grid;grid-template-columns:repeat(4,1fr);
+  gap:.8rem;
+}
+
+.month-box{
+  background:var(--card);border:1px solid var(--line);
+  border-radius:var(--radius);display:flex;
+  flex-direction:column;min-height:180px;
+}
+.month-head{
+  background:#f1f5f9;border-bottom:1px solid #d0d4dd;
+  padding:.5rem .6rem;font-weight:600;font-size:.85rem;
+}
+.month-body{
+  padding:.5rem;display:flex;flex-direction:column;
+  gap:.35rem;flex:1;
+}
+
+.entry{
+  padding:.25rem .35rem;border-radius:6px;cursor:pointer;
+  font-size:.72rem;border:1px solid rgba(0,0,0,.08);
+  box-shadow:0 1px 2px rgba(0,0,0,.07);
+}
+.entry-title{font-weight:600;}
+.entry-meta{font-size:.65rem;}
+
+dialog{
+  border:none;border-radius:12px;padding:1rem 1.2rem;
+  width:min(95vw,480px);box-shadow:0 15px 40px rgba(0,0,0,.35);
+}
+dialog::backdrop{background:rgba(0,0,0,.4);}
+label{margin-top:.5rem;display:block;font-size:.78rem;font-weight:600;}
+input,textarea,select{
+  width:100%;border:1px solid #ccd;
+  border-radius:6px;padding:.3rem .4rem;font-size:.8rem;
+}
+textarea{min-height:60px;}
+
+.checklist{
+  border:1px solid #ccd;border-radius:6px;padding:.3rem;
+  max-height:120px;overflow-y:auto;display:flex;flex-direction:column;gap:.25rem;
+}
+.checklist label{display:flex;align-items:center;gap:.5rem;font-weight:500;margin:0;}
+
+footer{
+  background:var(--blue);color:#fff;text-align:center;
+  padding:.4rem;font-size:.7rem;
+}
+</style>
 </head>
+
 <body>
-  <header>
-    <h1>Plantafel Dachdeckerei Frey</h1>
-    <div class="btn-tabs" id="viewTabs">
-      <button data-view="4w" class="active">4 Wochen</button>
-      <button data-view="14d">14 Tage</button>
-      <button data-view="12m">12 Monate</button>
+<header>
+  <h1>Plantafel Dachdeckerei Frey</h1>
+
+  <div class="btn-tabs" id="viewTabs">
+    <button data-view="4w" class="active">4 Wochen</button>
+    <button data-view="14d">14 Tage</button>
+    <button data-view="12m">12 Monate</button>
+  </div>
+
+  <div>Start: <input type="date" id="startDate"></div>
+
+  <button class="btn secondary" id="reloadBtn">Neu laden</button>
+  <button class="btn secondary" id="stammBtn">Stammdaten</button>
+  <button class="btn" id="newEntryBtn">+ Eintrag</button>
+
+  <div class="legend">
+    <div class="legend-row"><div class="legend-color" style="background:var(--urlaub)"></div>Urlaub</div>
+    <div class="legend-row"><div class="legend-color" style="background:var(--krank)"></div>Krank</div>
+    <div class="legend-row"><div class="legend-color" style="background:var(--schule)"></div>Schule</div>
+    <div class="legend-row"><div class="legend-color" style="background:var(--vehicle)"></div>Fahrzeug</div>
+  </div>
+</header>
+
+<main>
+  <div id="boardContainer"></div>
+</main>
+
+<!-- EINTRAG DIALOG -->
+<dialog id="entryDialog">
+  <form id="entryForm" method="dialog">
+    <h3>Eintrag</h3>
+
+    <label>Baustelle / Auftrag
+      <input type="text" id="fBaustelle" required>
+    </label>
+
+    <label>Von
+      <input type="date" id="fVon" required>
+    </label>
+
+    <label>Bis (optional)
+      <input type="date" id="fBis">
+    </label>
+
+    <label>Mitarbeiter</label>
+    <div class="checklist" id="fMitarbeiterBox"></div>
+
+    <label>Fahrzeuge</label>
+    <div class="checklist" id="fFahrzeugeBox"></div>
+
+    <label>Status
+      <select id="fStatus">
+        <option value="">normal</option>
+        <option>Urlaub</option>
+        <option>Krank</option>
+        <option>Schule</option>
+      </select>
+    </label>
+
+    <label>Notiz
+      <textarea id="fNotiz"></textarea>
+    </label>
+
+    <input type="hidden" id="fId">
+
+    <div style="margin-top:.7rem;display:flex;gap:.4rem;">
+      <button type="button" id="deleteEntryBtn" style="background:#fee2e2;border:1px solid #fca5a5;padding:.3rem .6rem;display:none;">Löschen</button>
+      <button type="button" onclick="entryDialog.close()">Abbrechen</button>
+      <button class="btn">Speichern</button>
     </div>
-    <div style="margin-left:.5rem;">
-      Start:
-      <input type="date" id="startDate">
-    </div>
-    <button class="btn secondary" id="reloadBtn">Neu laden</button>
-    <button class="btn secondary" id="stammdatenBtn">Stammdaten</button>
-    <button class="btn" id="newEntryBtn">+ Eintrag</button>
-    <span id="onlineDot" style="margin-left:auto; display:flex; align-items:center; gap:.35rem;">
-      <span id="stateDot" class="status-dot" style="background:#ef4444;"></span>
-      <span id="stateText" style="font-size:.65rem;">offline</span>
-    </span>
-  </header>
-  <main>
-    <div id="boardContainer"></div>
-  </main>
+  </form>
+</dialog>
 
-  <!-- Eintrag -->
-  <dialog id="entryDialog">
-    <form id="entryForm" method="dialog">
-      <h3 style="margin-top:0;">Eintrag</h3>
-      <label>Baustelle / Auftrag
-        <input type="text" id="fBaustelle" required />
-      </label>
-      <label>Von
-        <input type="date" id="fVon" required />
-      </label>
-      <label>Bis (optional – wenn leer: 1 Tag)
-        <input type="date" id="fBis" />
-      </label>
+<!-- STAMMDATEN -->
+<dialog id="stammDialog">
+  <form id="stammForm" method="dialog">
+    <h3>Stammdaten</h3>
 
-      <label>Mitarbeiter (mehrere möglich)</label>
-      <div id="fMitarbeiterBox" class="checklist"></div>
+    <label>Neuer Mitarbeiter
+      <input type="text" id="sMitarbeiter">
+    </label>
+    <button type="button" class="btn" onclick="addStamm('mitarbeiter')">+ hinzufügen</button>
+    <div id="listMitarbeiter"></div>
 
-      <label>Fahrzeuge (mehrere möglich)</label>
-      <div id="fFahrzeugeBox" class="checklist"></div>
+    <label>Neues Fahrzeug
+      <input type="text" id="sFahrzeug">
+    </label>
+    <button type="button" class="btn" onclick="addStamm('fahrzeuge')">+ hinzufügen</button>
+    <div id="listFahrzeuge"></div>
 
-      <label>Status
-        <select id="fStatus">
-          <option value="">normal</option>
-          <option value="Urlaub">Urlaub</option>
-          <option value="Krank">Krank</option>
-          <option value="Schule">Schule</option>
-        </select>
-      </label>
-      <label>Notiz
-        <textarea id="fNotiz" placeholder="optional"></textarea>
-      </label>
-      <input type="hidden" id="fId" />
-      <div class="dialog-buttons">
-        <button type="button" id="deleteEntryBtn" style="background:#fee2e2; border:1px solid #fca5a5; border-radius:5px; padding:.3rem .6rem; font-size:.7rem; display:none;">Löschen</button>
-        <div style="margin-left:auto; display:flex; gap:.4rem;">
-          <button type="button" onclick="closeEntryDialog()">Abbrechen</button>
-          <button type="submit" class="btn">Speichern</button>
-        </div>
-      </div>
-    </form>
-  </dialog>
+    <label>Neue Baustelle
+      <input type="text" id="sBaustelle">
+    </label>
+    <button type="button" class="btn" onclick="addStamm('baustellen')">+ hinzufügen</button>
+    <div id="listBaustellen"></div>
 
-  <!-- Stammdaten -->
-  <dialog id="stammDialog">
-    <form id="stammForm" method="dialog">
-      <h3 style="margin-top:0;">Stammdaten</h3>
-      <p style="font-size:.7rem; margin-top:0;">Mitarbeiter, Fahrzeuge, Baustellen pflegen.</p>
-      <label>Neuer Mitarbeiter
-        <input type="text" id="sMitarbeiter" placeholder="Name" />
-      </label>
-      <button type="button" class="btn" onclick="addStamm('mitarbeiter')">+ hinzufügen</button>
-      <div id="listMitarbeiter" style="margin:.4rem 0 .7rem;"></div>
+    <button type="button" onclick="stammDialog.close()" style="margin-top:.7rem;">Schließen</button>
+  </form>
+</dialog>
 
-      <label>Neues Fahrzeug
-        <input type="text" id="sFahrzeug" placeholder="z. B. Crafter Bus" />
-      </label>
-      <button type="button" class="btn" onclick="addStamm('fahrzeuge')">+ hinzufügen</button>
-      <div id="listFahrzeuge" style="margin:.4rem 0 .7rem;"></div>
+<footer>© 2025 Dachdeckerei Frey – Digitale Plantafel</footer>
 
-      <label>Baustelle (für Grobplanung)
-        <input type="text" id="sBaustelle" placeholder="z. B. Müller Dach" />
-      </label>
-      <button type="button" class="btn" onclick="addStamm('baustellen')">+ hinzufügen</button>
-      <div id="listBaustellen" style="margin:.4rem 0 .7rem;"></div>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
 
-      <div style="text-align:right; margin-top:.6rem;">
-        <button type="button" onclick="closeStammDialog()">Schließen</button>
-      </div>
-    </form>
-  </dialog>
+// SUPABASE
+const supa = supabase.createClient(
+  "https://mtybmrkyhavxpvwysglo.supabase.co",
+  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im10eWJtcmt5aGF2eHB2d3lzZ2xvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjIxNjQ1OTIsImV4cCI6MjA3Nzc0MDU5Mn0.UToAmJAvACYvnO9hCIeyfm-VYKr5jincXdnEDDtbhvo"
+);
 
-  <footer>© 2025 Dachdeckerei Frey – Digitale Plantafel</footer>
+let mitarbeiter=[], fahrzeuge=[], baustellen=[], eintraege=[];
+let currentView="4w";
 
-  <script>
-    // Supabase
-    const SUPABASE_URL = "https://mtybmrkyhavxpvwysglo.supabase.co";
-    const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im10eWJtcmt5aGF2eHB2d3lzZ2xvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjIxNjQ1OTIsImV4cCI6MjA3Nzc0MDU5Mn0.UToAmJAvACYvnO9hCIeyfm-VYKr5jincXdnEDDtbhvo";
-    const supa = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+// Farben für Mitarbeiter
+function colorFromName(name){
+  if(!name)return "#94a3b8";
+  let hash=0;
+  for(let i=0;i<name.length;i++){
+    hash=name.charCodeAt(i)+((hash<<5)-hash);
+  }
+  const h=Math.abs(hash)%360;
+  return `hsl(${h},65%,50%)`;
+}
 
-    let mitarbeiter = [];
-    let fahrzeuge = [];
-    let baustellen = [];
-    let eintraege = [];
+// Laden aller Daten
+async function loadAll(){
+  const m=await supa.from("mitarbeiter").select("*").order("name");
+  mitarbeiter=m.data||[];
+  const f=await supa.from("fahrzeuge").select("*").order("name");
+  fahrzeuge=f.data||[];
+  const b=await supa.from("baustellen").select("*").order("name");
+  baustellen=b.data||[];
+  await loadEntries();
+}
 
-    // feste Farben für Mitarbeiter
-    const colorPool = [
-      "#0ea5e9","#6366f1","#f97316","#ec4899",
-      "#10b981","#f59e0b","#a855f7","#ef4444",
-      "#22c55e","#0f766e","#0369a1","#6d28d9",
-      "#e11d48","#facc15"
-    ];
-    const mitarbeiterColorMap = {};
-    function pickColorFor(name, i){
-      if (mitarbeiterColorMap[name]) return mitarbeiterColorMap[name];
-      const idx = typeof i === "number" ? (i % colorPool.length) : (Object.keys(mitarbeiterColorMap).length % colorPool.length);
-      const col = colorPool[idx];
-      mitarbeiterColorMap[name] = col;
-      return col;
-    }
+// Einträge laden
+async function loadEntries(){
+  const e=await supa.from("plantafel").select("*").order("tag");
+  eintraege=e.data||[];
+  renderBoard();
+}
 
-    const boardContainer = document.getElementById("boardContainer");
-    const startDateInput = document.getElementById("startDate");
-    const stateDot = document.getElementById("stateDot");
-    const stateText = document.getElementById("stateText");
-    const viewTabs = document.getElementById("viewTabs");
-    let currentView = "4w";
+// BOARD rendern
+function renderBoard(){
+  const start=new Date(startDateInput.value);
+  boardContainer.innerHTML="";
 
-    const today = new Date();
-    startDateInput.value = today.toISOString().slice(0,10);
+  if(currentView==="12m") renderMonths(start);
+  else if(currentView==="14d") render14days(start);
+  else render4weeks(start);
+}
 
-    viewTabs.addEventListener("click", (e)=>{
-      if (e.target.tagName === "BUTTON") {
-        viewTabs.querySelectorAll("button").forEach(b=>b.classList.remove("active"));
-        e.target.classList.add("active");
-        currentView = e.target.dataset.view;
-        renderBoard();
-      }
-    });
-    document.getElementById("reloadBtn").addEventListener("click", loadAll);
-    document.getElementById("newEntryBtn").addEventListener("click", ()=>openEntryDialog());
-    document.getElementById("stammdatenBtn").addEventListener("click", openStammDialog);
-    startDateInput.addEventListener("change", renderBoard);
+// 12 MONATE – ROLLING 3x4
+function renderMonths(startDate){
+  const wrap=document.createElement("div");
+  wrap.className="months-grid";
 
-    async function loadAll(){
-      try {
-        const { data: mData } = await supa.from("mitarbeiter").select().order("name");
-        const { data: fData } = await supa.from("fahrzeuge").select().order("name");
-        const { data: bData } = await supa.from("baustellen").select().order("name");
-        mitarbeiter = mData || [];
-        fahrzeuge = fData || [];
-        baustellen = bData || [];
-        mitarbeiter.forEach((m,i)=>pickColorFor(m.name,i));
+  for(let i=0;i<12;i++){
+    const d=new Date(startDate);
+    d.setMonth(d.getMonth()+i);
 
-        await loadEntries();
-        stateDot.style.background = "#22c55e";
-        stateText.textContent = "verbunden";
-      } catch (err) {
-        stateDot.style.background = "#ef4444";
-        stateText.textContent = "offline";
-        renderBoard();
-      }
-      renderStammListen();
-    }
+    const box=document.createElement("div");
+    box.className="month-box";
 
-    async function loadEntries(){
-      const { data, error } = await supa.from("plantafel").select().order("tag");
-      if (!error) {
-        eintraege = data || [];
-      }
-      renderBoard();
-    }
+    const head=document.createElement("div");
+    head.className="month-head";
+    head.textContent=d.toLocaleString("de-DE",{month:"long",year:"numeric"});
 
-    function renderBoard(){
-      const start = new Date(startDateInput.value);
-      if (isNaN(start)) return;
-      boardContainer.innerHTML = "";
+    const body=document.createElement("div");
+    body.className="month-body";
 
-      if (currentView === "12m") {
-        renderMonths(start);
-      } else if (currentView === "14d") {
-        render14Workdays(start);
-      } else {
-        renderWeeks(start, 4);
-      }
-    }
-
-    // 14 Tage = 14 Arbeitstage (Mo–Fr)
-    function render14Workdays(startDate){
-      const wrap = document.createElement("div");
-      wrap.className = "board fourteen";
-      let d = new Date(startDate);
-      let added = 0;
-      while (added < 14) {
-        const day = d.getDay(); // 0=So,6=Sa
-        if (day !== 0 && day !== 6) {
-          wrap.appendChild(buildDayBox(new Date(d)));
-          added++;
-        }
-        d.setDate(d.getDate()+1);
-      }
-      boardContainer.appendChild(wrap);
-    }
-
-    function renderWeeks(startDate, weekCount){
-      const wrap = document.createElement("div");
-      wrap.className = "board fourweeks";
-      const s = new Date(startDate);
-      const day = s.getDay();
-      const diff = (day===0 ? 6 : day-1);
-      s.setDate(s.getDate() - diff);
-      for (let w=0; w<weekCount; w++){
-        for (let wd=0; wd<5; wd++){
-          const d = new Date(s);
-          d.setDate(d.getDate()+w*7+wd);
-          wrap.appendChild(buildDayBox(d));
-        }
-      }
-      boardContainer.appendChild(wrap);
-    }
-
-    function renderMonths(startDate){
-      const wrap = document.createElement("div");
-      wrap.className = "months-grid";
-      const s = new Date(startDate);
-      s.setDate(1);
-      for (let m=0; m<12; m++){
-        const d = new Date(s);
-        d.setMonth(d.getMonth()+m);
-
-        const box = document.createElement("div");
-        box.className = "month-box";
-        box.dataset.month = d.toISOString().slice(0,7); // YYYY-MM
-        box.ondragover = (ev)=>ev.preventDefault();
-        box.ondrop = (ev)=>{
-          ev.preventDefault();
-          const id = ev.dataTransfer.getData("entry-id");
-          if (id) {
-            const nd = new Date(d);
-            nd.setDate(1);
-            moveEntryToDate(id, nd.toISOString().slice(0,10));
-          }
-        };
-
-        const head = document.createElement("div");
-        head.className = "month-head";
-        head.textContent = d.toLocaleString("de-DE",{month:"long",year:"numeric"});
-        const body = document.createElement("div");
-        body.className = "month-body";
-
-        const monthEntries = eintraege.filter(e=>{
-          const ed = new Date(e.tag);
-          return ed.getFullYear()===d.getFullYear() && ed.getMonth()===d.getMonth();
-        });
-        monthEntries.forEach(e=>body.appendChild(buildEntryCard(e,true)));
-
-        box.appendChild(head);
-        box.appendChild(body);
-        wrap.appendChild(box);
-      }
-      boardContainer.appendChild(wrap);
-    }
-
-    function buildDayBox(dateObj){
-      const col = document.createElement("div");
-      col.className = "day-column";
-      const dateStr = dateObj.toISOString().slice(0,10);
-      col.dataset.date = dateStr;
-      col.ondragover = (ev)=>ev.preventDefault();
-      col.ondrop = (ev)=>{
-        ev.preventDefault();
-        const id = ev.dataTransfer.getData("entry-id");
-        if (id) moveEntryToDate(id, dateStr);
-      };
-
-      const head = document.createElement("div");
-      head.className = "day-head";
-      head.textContent = dateObj.toLocaleString("de-DE",{weekday:"short", day:"2-digit", month:"2-digit", year:"numeric"});
-
-      const addBtn = document.createElement("button");
-      addBtn.type = "button";
-      addBtn.className = "day-add";
-      addBtn.textContent = "+";
-      addBtn.onclick = ()=>openEntryDialog({ tag: dateStr });
-      head.appendChild(addBtn);
-
-      const list = document.createElement("div");
-      list.className = "day-list";
-      const items = eintraege.filter(e=>e.tag===dateStr).sort((a,b)=>(a.sort||0)-(b.sort||0));
-      items.forEach(e=>list.appendChild(buildEntryCard(e,false)));
-
-      col.appendChild(head);
-      col.appendChild(list);
-      return col;
-    }
-
-    function buildEntryCard(e, compact){
-      const div = document.createElement("div");
-      div.className = "entry";
-      div.dataset.id = e.id;
-      div.draggable = true;
-      div.ondragstart = (ev)=>{
-        ev.dataTransfer.setData("entry-id", e.id);
-      };
-
-      let bg = "#f8fafc", col = "#000";
-      if (e.status === "Urlaub") { bg="#facc15"; col="#000"; }
-      else if (e.status === "Krank") { bg="#f43f5e"; col="#fff"; }
-      else if (e.status === "Schule") { bg="#38bdf8"; col="#fff"; }
-      else if (e.mitarbeiter){
-        const first = e.mitarbeiter.split(",")[0].trim();
-        if (first) { bg = pickColorFor(first); col="#fff"; }
-      }
-      div.style.background = bg;
-      div.style.color = col;
-
-      const title = document.createElement("div");
-      title.className = "entry-title";
-      title.textContent = e.titel || "(ohne Titel)";
-      div.appendChild(title);
-
-      const meta = document.createElement("div");
-      meta.className = "entry-meta";
-      const m = e.mitarbeiter ? e.mitarbeiter.split(",").map(x=>x.trim()).filter(Boolean) : [];
-      if (m.length) {
-        const span = document.createElement("div");
-        span.textContent = m.join(", ");
-        meta.appendChild(span);
-      }
-      const f = e.fahrzeug ? e.fahrzeug.split(",").map(x=>x.trim()).filter(Boolean) : [];
-      if (f.length){
-        const span = document.createElement("div");
-        span.textContent = f.join(", ");
-        meta.appendChild(span);
-      }
-      if (!compact && e.notiz){
-        const span = document.createElement("div");
-        span.textContent = e.notiz;
-        meta.appendChild(span);
-      }
-      div.appendChild(meta);
-      div.onclick = ()=>openEntryDialog(e);
-      return div;
-    }
-
-    async function moveEntryToDate(id, newDate){
-      const entry = eintraege.find(x=>x.id===id);
-      if (!entry) return;
-      const { error } = await supa.from("plantafel").update({ tag:newDate }).eq("id", id);
-      if (!error) {
-        entry.tag = newDate;
-        renderBoard();
-      }
-    }
-
-    const entryDialog = document.getElementById("entryDialog");
-    const entryForm = document.getElementById("entryForm");
-    const deleteEntryBtn = document.getElementById("deleteEntryBtn");
-
-    function buildChecklist(containerId, items, selectedCsv, useColors){
-      const cont = document.getElementById(containerId);
-      cont.innerHTML = "";
-      const selected = (selectedCsv || "")
-        .split(",")
-        .map(x=>x.trim())
-        .filter(Boolean);
-      items.forEach((obj, index)=>{
-        const name = obj.name;
-        const id = containerId + "_" + obj.id;
-        const wrap = document.createElement("label");
-        const cb = document.createElement("input");
-        cb.type = "checkbox";
-        cb.value = name;
-        cb.id = id;
-        if (selected.includes(name)) cb.checked = true;
-        if (useColors) {
-          cb.style.accentColor = pickColorFor(name, index);
-        }
-        wrap.appendChild(cb);
-        wrap.append(" " + name);
-        cont.appendChild(wrap);
-      });
-    }
-
-    function getChecklistValues(containerId){
-      return Array.from(
-        document.querySelectorAll("#"+containerId+" input[type='checkbox']:checked")
-      ).map(cb=>cb.value);
-    }
-
-    function openEntryDialog(entry){
-      const existingM = entry && entry.mitarbeiter ? entry.mitarbeiter : "";
-      const existingF = entry && entry.fahrzeug ? entry.fahrzeug : "";
-      buildChecklist("fMitarbeiterBox", mitarbeiter, existingM, true);
-      buildChecklist("fFahrzeugeBox", fahrzeuge, existingF, false);
-
-      if (entry && entry.id){
-        document.getElementById("fId").value = entry.id;
-        document.getElementById("fBaustelle").value = entry.titel || "";
-        document.getElementById("fVon").value = entry.tag;
-        document.getElementById("fBis").value = entry.tag;
-        document.getElementById("fStatus").value = entry.status || "";
-        document.getElementById("fNotiz").value = entry.notiz || "";
-        deleteEntryBtn.style.display = "inline-block";
-        deleteEntryBtn.onclick = ()=>deleteEntry(entry.id);
-      } else {
-        document.getElementById("fId").value = "";
-        document.getElementById("fBaustelle").value = "";
-        document.getElementById("fVon").value = entry && entry.tag ? entry.tag : startDateInput.value;
-        document.getElementById("fBis").value = "";
-        document.getElementById("fStatus").value = "";
-        document.getElementById("fNotiz").value = "";
-        deleteEntryBtn.style.display = "none";
-      }
-      entryDialog.showModal();
-    }
-    function closeEntryDialog(){ entryDialog.close(); }
-
-    entryForm.addEventListener("submit", async (ev)=>{
-      ev.preventDefault();
-      const id = document.getElementById("fId").value;
-      const titel = document.getElementById("fBaustelle").value.trim();
-      const von = document.getElementById("fVon").value;
-      const status = document.getElementById("fStatus").value;
-      const notiz = document.getElementById("fNotiz").value.trim();
-      const mitSel = getChecklistValues("fMitarbeiterBox");
-      const fahrSel = getChecklistValues("fFahrzeugeBox");
-
-      const payload = {
-        titel,
-        tag: von,
-        mitarbeiter: mitSel.join(", "),
-        fahrzeug: fahrSel.join(", "),
-        status,
-        notiz
-      };
-
-      if (id){
-        await supa.from("plantafel").update(payload).eq("id", id);
-      } else {
-        await supa.from("plantafel").insert(payload);
-      }
-      closeEntryDialog();
-      loadEntries();
+    const items=eintraege.filter(e=>{
+      const t=new Date(e.tag);
+      return t.getFullYear()==d.getFullYear() && t.getMonth()==d.getMonth();
     });
 
-    async function deleteEntry(id){
-      await supa.from("plantafel").delete().eq("id", id);
-      closeEntryDialog();
-      loadEntries();
-    }
+    items.forEach(e=>body.appendChild(buildEntryCard(e)));
 
-    const stammDialog = document.getElementById("stammDialog");
-    function openStammDialog(){ renderStammListen(); stammDialog.showModal(); }
-    function closeStammDialog(){ stammDialog.close(); }
+    box.appendChild(head);
+    box.appendChild(body);
+    wrap.appendChild(box);
+  }
+  boardContainer.appendChild(wrap);
+}
 
-    async function addStamm(kind){
-      let id="", table="";
-      if (kind==="mitarbeiter"){ id="sMitarbeiter"; table="mitarbeiter"; }
-      else if (kind==="fahrzeuge"){ id="sFahrzeug"; table="fahrzeuge"; }
-      else { id="sBaustelle"; table="baustellen"; }
-      const val = document.getElementById(id).value.trim();
-      if (!val) return;
-      await supa.from(table).insert({ name: val });
-      document.getElementById(id).value = "";
-      loadAll();
-    }
-    function renderStammListen(){
-      const lm = document.getElementById("listMitarbeiter");
-      const lf = document.getElementById("listFahrzeuge");
-      const lb = document.getElementById("listBaustellen");
-      lm.innerHTML = "";
-      mitarbeiter.forEach(m=>{
-        const d = document.createElement("div");
-        d.innerHTML = `<span class="pill" style="background:${pickColorFor(m.name)};color:#fff;">${m.name}</span> <button type="button" style="font-size:.6rem" onclick="delStamm('mitarbeiter','${m.id}')">x</button>`;
-        lm.appendChild(d);
-      });
-      lf.innerHTML = "";
-      fahrzeuge.forEach(f=>{
-        const d = document.createElement("div");
-        d.innerHTML = `<span class="pill">${f.name}</span> <button type="button" style="font-size:.6rem" onclick="delStamm('fahrzeuge','${f.id}')">x</button>`;
-        lf.appendChild(d);
-      });
-      lb.innerHTML = "";
-      baustellen.forEach(b=>{
-        const d = document.createElement("div");
-        d.innerHTML = `<span class="pill" style="background:#f97316;color:#fff;">${b.name}</span> <button type="button" style="font-size:.6rem" onclick="delStamm('baustellen','${b.id}')">x</button>`;
-        lb.appendChild(d);
-      });
-    }
-    async function delStamm(table, id){
-      await supa.from(table).delete().eq("id", id);
-      loadAll();
-    }
 
-    loadAll();
-  </script>
+// 14 Tage
+function render14days(start){
+  const wrap=document.createElement("div");
+  wrap.style.display="grid";
+  wrap.style.gridTemplateColumns="repeat(auto-fit,minmax(180px,1fr))";
+  wrap.style.gap=".8rem";
+
+  let d=new Date(start);
+  let added=0;
+
+  while(added<14){
+    const day=d.getDay();
+    if(day!==0 && day!==6){
+      wrap.appendChild(buildDayBox(new Date(d)));
+      added++;
+    }
+    d.setDate(d.getDate()+1);
+  }
+  boardContainer.appendChild(wrap);
+}
+
+// 4 Wochen
+function render4weeks(start){
+  const wrap=document.createElement("div");
+  wrap.style.display="grid";
+  wrap.style.gridTemplateColumns="repeat(5,minmax(160px,1fr))";
+  wrap.style.gap=".8rem";
+
+  const s=new Date(start);
+  const day=s.getDay();
+  const diff=(day===0?6:day-1);
+  s.setDate(s.getDate()-diff);
+
+  for(let w=0;w<4;w++){
+    for(let wd=0;wd<5;wd++){
+      const d=new Date(s);
+      d.setDate(s.getDate()+w*7+wd);
+      wrap.appendChild(buildDayBox(d));
+    }
+  }
+  boardContainer.appendChild(wrap);
+}
+
+// EINZELNER TAG
+function buildDayBox(d){
+  const col=document.createElement("div");
+  col.className="month-box";
+  col.dataset.date=d.toISOString().slice(0,10);
+
+  const head=document.createElement("div");
+  head.className="month-head";
+  head.textContent=d.toLocaleDateString("de-DE",{weekday:"short",day:"2-digit",month:"2-digit"});
+
+  const list=document.createElement("div");
+  list.className="month-body";
+
+  const items=eintraege.filter(e=>e.tag===col.dataset.date);
+  items.forEach(e=>list.appendChild(buildEntryCard(e)));
+
+  col.appendChild(head);
+  col.appendChild(list);
+  return col;
+}
+
+// EINTRAG CARD
+function buildEntryCard(e){
+  const div=document.createElement("div");
+  div.className="entry";
+  div.onclick=()=>openEntry(e);
+
+  let bg="#f8fafc", col="#000";
+
+  if(e.status==="Urlaub"){bg="var(--urlaub)";col="#000";}
+  else if(e.status==="Krank"){bg="var(--krank)";col="#fff";}
+  else if(e.status==="Schule"){bg="var(--schule)";col="#fff";}
+  else if(e.mitarbeiter){
+    const first=e.mitarbeiter.split(",")[0].trim();
+    bg=colorFromName(first); col="#fff";
+  }
+
+  div.style.background=bg;
+  div.style.color=col;
+
+  const title=document.createElement("div");
+  title.className="entry-title";
+  title.textContent=e.titel;
+
+  const meta=document.createElement("div");
+  meta.className="entry-meta";
+  meta.textContent=(e.mitarbeiter||"") + " " + (e.fahrzeug||"");
+
+  div.appendChild(title);
+  div.appendChild(meta);
+  return div;
+}
+
+// ENTRY DIALOG ÖFFNEN
+function openEntry(e){
+  document.getElementById("fId").value=e.id||"";
+  document.getElementById("fBaustelle").value=e.titel||"";
+  document.getElementById("fVon").value=e.tag||startDateInput.value;
+  document.getElementById("fBis").value=e.tag||"";
+  document.getElementById("fStatus").value=e.status||"";
+  document.getElementById("fNotiz").value=e.notiz||"";
+
+  buildChecklist("fMitarbeiterBox",mitarbeiter,e.mitarbeiter);
+  buildChecklist("fFahrzeugeBox",fahrzeuge,e.fahrzeug);
+
+  deleteEntryBtn.style.display=e.id?"inline-block":"none";
+  entryDialog.showModal();
+}
+
+// CHECKLISTE BAUEN
+function buildChecklist(id, list, selected){
+  const box=document.getElementById(id);
+  box.innerHTML="";
+  const sel=(selected||"").split(",").map(s=>s.trim());
+  list.forEach(item=>{
+    const lbl=document.createElement("label");
+    const cb=document.createElement("input");
+    cb.type="checkbox";
+    cb.value=item.name;
+    if(sel.includes(item.name))cb.checked=true;
+    lbl.appendChild(cb);
+    lbl.append(" "+item.name);
+    box.appendChild(lbl);
+  });
+}
+
+// SPEICHERN EINTRAG
+entryForm.addEventListener("submit", async (e)=>{
+  e.preventDefault();
+
+  const id=fId.value;
+  const titel=fBaustelle.value.trim();
+  const von=fVon.value;
+  const bis=fBis.value||von;
+  const status=fStatus.value;
+  const notiz=fNotiz.value.trim();
+
+  const mit=Array.from(document.querySelectorAll("#fMitarbeiterBox input:checked")).map(e=>e.value).join(", ");
+  const fahr=Array.from(document.querySelectorAll("#fFahrzeugeBox input:checked")).map(e=>e.value).join(", ");
+
+  if(id){
+    await supa.from("plantafel").update({
+      titel,tag:von,status,notiz,mitarbeiter:mit,fahrzeug:fahr
+    }).eq("id",id);
+  } else {
+    const s=new Date(von);
+    const e2=new Date(bis);
+    let cur=new Date(s);
+
+    const rows=[];
+    while(cur<=e2){
+      rows.push({
+        titel,tag:cur.toISOString().slice(0,10),
+        status,notiz,mitarbeiter:mit,fahrzeug:fahr
+      });
+      cur.setDate(cur.getDate()+1);
+    }
+    await supa.from("plantafel").insert(rows);
+  }
+
+  entryDialog.close();
+  loadEntries();
+});
+
+// EINTRAG LÖSCHEN
+deleteEntryBtn.onclick=async()=>{
+  const id=fId.value;
+  await supa.from("plantafel").delete().eq("id",id);
+  entryDialog.close();
+  loadEntries();
+};
+
+// STAMMDATEN
+stammBtn.onclick=()=>{renderStamm();stammDialog.showModal();};
+
+async function addStamm(type){
+  const idMap={
+    mitarbeiter:"sMitarbeiter",
+    fahrzeuge:"sFahrzeug",
+    baustellen:"sBaustelle"
+  };
+  const val=document.getElementById(idMap[type]).value.trim();
+  if(!val) return;
+  await supa.from(type).insert({name:val});
+  document.getElementById(idMap[type]).value="";
+  loadAll();
+}
+
+async function delStamm(type,id){
+  await supa.from(type).delete().eq("id",id);
+  loadAll();
+}
+
+function renderStamm(){
+  renderList("listMitarbeiter",mitarbeiter,"mitarbeiter");
+  renderList("listFahrzeuge",fahrzeuge,"fahrzeuge");
+  renderList("listBaustellen",baustellen,"baustellen");
+}
+
+function renderList(boxId,list,type){
+  const box=document.getElementById(boxId);
+  box.innerHTML="";
+  list.forEach(i=>{
+    const div=document.createElement("div");
+    div.style.margin=".2rem 0";
+    div.innerHTML=
+      `<span style="background:#eef;padding:.2rem .4rem;border-radius:4px;">${i.name}</span>
+       <button onclick="delStamm('${type}', '${i.id}')" style="margin-left:.4rem;font-size:.7rem;">x</button>`;
+    box.appendChild(div);
+  });
+}
+
+// NAVIGATION
+viewTabs.onclick=(e)=>{
+  if(e.target.tagName!=="BUTTON")return;
+  viewTabs.querySelectorAll("button").forEach(b=>b.classList.remove("active"));
+  e.target.classList.add("active");
+  currentView=e.target.dataset.view;
+  renderBoard();
+};
+
+startDateInput.onchange=renderBoard;
+reloadBtn.onclick=loadAll;
+newEntryBtn.onclick=()=>openEntry({tag:startDateInput.value});
+
+const today=new Date();
+startDateInput.value=today.toISOString().slice(0,10);
+
+loadAll();
+
+</script>
 </body>
 </html>
