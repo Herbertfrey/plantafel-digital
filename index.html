@@ -2,10 +2,9 @@
 <html lang="de">
 <head>
 <meta charset="UTF-8">
-<title>Plantafel Dachdeckerei Frey – V3</title>
+<title>Plantafel Dachdeckerei Frey – V4</title>
 <meta name="viewport" content="width=device-width, initial-scale=1">
 
-<!-- GLOBAL CSS -->
 <style>
 :root {
   --blue:#0b63c6;
@@ -13,7 +12,6 @@
   --card:#ffffff;
   --line:#d0d4dd;
   --text:#0f172a;
-  --radius:10px;
 
   --urlaub:#facc15;
   --krank:#ef4444;
@@ -28,7 +26,6 @@ body {
   color: var(--text);
 }
 
-/* HEADER BAR */
 header {
   background: var(--blue);
   color: #fff;
@@ -39,21 +36,13 @@ header {
   flex-wrap: wrap;
 }
 
-header img#logo {
-  height: 38px;
-  width: auto;
-  border-radius: 6px;
-  background:#fff;
-  padding:2px;
-}
-
 header h1 {
   margin: 0;
   font-size: 1.25rem;
   white-space: nowrap;
 }
 
-/* Views Tabs */
+/* Tabs */
 .btn-tabs {
   display: flex;
   gap: .4rem;
@@ -72,7 +61,7 @@ header h1 {
   color: var(--blue);
 }
 
-/* Date Input */
+/* Date */
 input[type="date"] {
   border: 1px solid rgba(255,255,255,.3);
   background: rgba(255,255,255,.25);
@@ -96,7 +85,7 @@ input[type="date"] {
   color: #fff;
 }
 
-/* LEGEND */
+/* Legend */
 .legend {
   margin-left: auto;
   display: flex;
@@ -119,24 +108,24 @@ input[type="date"] {
   border: 1px solid #fff;
 }
 
-/* MAIN AREA */
+/* Main */
 main {
   padding: 1rem;
-  min-height: calc(100vh - 120px);
+  min-height: calc(100vh - 100px);
 }
 
-/* 3x4 Monatsraster */
+/* 3x4 Monate */
 .months-grid {
   display: grid;
   grid-template-columns: repeat(4,1fr);
   gap: 1rem;
 }
 
-/* Month Card */
+/* Day/Month Boxes */
 .month-box {
   background: var(--card);
   border: 1px solid var(--line);
-  border-radius: var(--radius);
+  border-radius: 10px;
   display: flex;
   flex-direction: column;
   min-height: 180px;
@@ -150,13 +139,6 @@ main {
   justify-content:space-between;
   align-items:center;
 }
-.month-nav-buttons button {
-  background: #fff;
-  border: 1px solid #ccc;
-  border-radius:4px;
-  padding: .15rem .4rem;
-  cursor:pointer;
-}
 .month-body {
   flex:1;
   padding:.5rem;
@@ -165,7 +147,7 @@ main {
   gap:.4rem;
 }
 
-/* Entry Cards */
+/* Entry Card */
 .entry {
   padding:.3rem .45rem;
   border-radius:6px;
@@ -181,7 +163,7 @@ main {
   font-size:.68rem;
 }
 
-/* Dialogs */
+/* Dialog */
 dialog {
   border:none;
   border-radius:12px;
@@ -223,6 +205,7 @@ textarea { min-height:70px; }
   gap:.5rem;
   font-weight:500;
 }
+
 footer {
   background: var(--blue);
   color:#fff;
@@ -236,36 +219,35 @@ footer {
 <body>
 
 <header>
-  <!-- LOGO LINKS -->
-  <img id="logo" src="logo.png" alt="Logo">
 
   <h1>Plantafel Dachdeckerei Frey</h1>
 
-  <!-- VIEW TABS -->
+  <!-- Ansicht Tabs -->
   <div class="btn-tabs" id="viewTabs">
     <button class="active" data-view="14d">14 Tage</button>
     <button data-view="4w">4 Wochen</button>
     <button data-view="12m">12 Monate</button>
   </div>
 
-  <!-- STARTDATUM -->
+  <!-- Datum -->
   <div>
     Start:
     <input type="date" id="startDate">
   </div>
 
-  <!-- NAVIGATION (MONAT VOR / ZURÜCK) -->
-  <div class="month-nav-buttons">
+  <!-- Navigation -->
+  <div>
     <button id="prevMonthBtn">&#9664;</button>
     <button id="nextMonthBtn">&#9654;</button>
   </div>
 
-  <!-- ACTION BUTTONS -->
+  <!-- Funktionen -->
   <button class="btn secondary" id="reloadBtn">Neu laden</button>
   <button class="btn secondary" id="backupBtn">Backup</button>
+  <button class="btn secondary" id="stammBtn">Stammdaten</button>
   <button class="btn" id="newEntryBtn">+ Eintrag</button>
 
-  <!-- FILTER -->
+  <!-- Legende -->
   <div class="legend">
     <div class="legend-row"><div class="legend-color" style="background:var(--urlaub)"></div> Urlaub</div>
     <div class="legend-row"><div class="legend-color" style="background:var(--krank)"></div> Krank</div>
@@ -281,7 +263,7 @@ footer {
 <!-- EINTRAG DIALOG -->
 <dialog id="entryDialog">
   <form id="entryForm" method="dialog">
-    <h3 style="margin-bottom:.5rem;">Eintrag bearbeiten</h3>
+    <h3>Eintrag</h3>
 
     <label>Baustelle / Auftrag
       <input type="text" id="fBaustelle" required>
@@ -317,7 +299,7 @@ footer {
     <input type="hidden" id="fId">
 
     <div style="margin-top:.7rem;display:flex;gap:.4rem;justify-content:flex-end;">
-      <button type="button" id="deleteEntryBtn" 
+      <button type="button" id="deleteEntryBtn"
         style="background:#fee2e2;border:1px solid #fca5a5;padding:.35rem .7rem;display:none;">Löschen</button>
       <button type="button" onclick="entryDialog.close()">Abbrechen</button>
       <button class="btn">Speichern</button>
@@ -327,35 +309,32 @@ footer {
 
 <!-- STAMMDATEN DIALOG -->
 <dialog id="stammDialog">
-  <form id="stammForm" method="dialog">
-    <h3>Stammdaten</h3>
+  <h3>Stammdaten</h3>
 
-    <label>Neuer Mitarbeiter
-      <input type="text" id="sMitarbeiter">
-    </label>
-    <button type="button" class="btn" onclick="addStamm('mitarbeiter')">+ hinzufügen</button>
-    <div id="listMitarbeiter" style="margin:.4rem 0;"></div>
+  <label>Neuer Mitarbeiter
+    <input type="text" id="sMitarbeiter">
+  </label>
+  <button class="btn" type="button" onclick="addStamm('mitarbeiter')">+ hinzufügen</button>
+  <div id="listMitarbeiter" style="margin:.5rem 0;"></div>
 
-    <label>Neues Fahrzeug
-      <input type="text" id="sFahrzeug">
-    </label>
-    <button type="button" class="btn" onclick="addStamm('fahrzeuge')">+ hinzufügen</button>
-    <div id="listFahrzeuge" style="margin:.4rem 0;"></div>
+  <label>Neues Fahrzeug
+    <input type="text" id="sFahrzeug">
+  </label>
+  <button class="btn" type="button" onclick="addStamm('fahrzeuge')">+ hinzufügen</button>
+  <div id="listFahrzeuge" style="margin:.5rem 0;"></div>
 
-    <label>Neue Baustelle
-      <input type="text" id="sBaustelle">
-    </label>
-    <button type="button" class="btn" onclick="addStamm('baustellen')">+ hinzufügen</button>
-    <div id="listBaustellen" style="margin:.4rem 0;"></div>
+  <label>Neue Baustelle
+    <input type="text" id="sBaustelle">
+  </label>
+  <button class="btn" type="button" onclick="addStamm('baustellen')">+ hinzufügen</button>
+  <div id="listBaustellen" style="margin:.5rem 0;"></div>
 
-    <button type="button" onclick="stammDialog.close()" style="margin-top:.5rem;">Schließen</button>
-  </form>
+  <button type="button" style="margin-top:1rem;" onclick="stammDialog.close()">Schließen</button>
 </dialog>
 
 <!-- BACKUP DIALOG -->
 <dialog id="backupDialog">
-  <h3>Backup & Restore</h3>
-  <p style="font-size:.8rem;margin-bottom:.7rem;">Daten sichern oder wiederherstellen.</p>
+  <h3>Backup & Wiederherstellung</h3>
 
   <button class="btn" id="exportBackupBtn">Backup herunterladen</button>
 
@@ -363,34 +342,67 @@ footer {
     <input type="file" id="backupFileInput" accept=".json">
   </label>
 
-  <button class="btn" style="margin-top:.7rem;" id="importBackupBtn">Import starten</button>
+  <button class="btn" id="importBackupBtn" style="margin-top:.6rem;">Import starten</button>
 
-  <button type="button" style="margin-top:1rem;" onclick="backupDialog.close()">Schließen</button>
+  <button type="button" onclick="backupDialog.close()" style="margin-top:1rem;">Schließen</button>
 </dialog>
 
-<!-- PDF EXPORT OPTIONS -->
+<!-- PDF DIALOG -->
 <dialog id="pdfDialog">
   <h3>PDF Export</h3>
-  <p>Welche Ansicht soll als PDF exportiert werden?</p>
+  <p>Ansicht auswählen:</p>
 
   <button class="btn" id="pdf14Btn">PDF – 14 Tage</button>
   <button class="btn" id="pdf4wBtn" style="margin-top:.5rem;">PDF – 4 Wochen</button>
 
-  <button type="button" style="margin-top:1rem;" onclick="pdfDialog.close()">Schließen</button>
+  <button type="button" onclick="pdfDialog.close()" style="margin-top:1rem;">Schließen</button>
 </dialog>
 
-
-<!-- JAVASCRIPT START -->
+<!-- SCRIPTS -->
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 
 <script>
-// SUPABASE INIT
+/* =====================================
+   DOM-ELEMENTE – WICHTIG, FEHLERFREI
+===================================== */
+const boardContainer   = document.getElementById("boardContainer");
+const viewTabs         = document.getElementById("viewTabs");
+const startDateInput   = document.getElementById("startDate");
+const reloadBtn        = document.getElementById("reloadBtn");
+const backupBtn        = document.getElementById("backupBtn");
+const newEntryBtn      = document.getElementById("newEntryBtn");
+const stammBtn         = document.getElementById("stammBtn");
+const prevMonthBtn     = document.getElementById("prevMonthBtn");
+const nextMonthBtn     = document.getElementById("nextMonthBtn");
+
+const entryDialog      = document.getElementById("entryDialog");
+const entryForm        = document.getElementById("entryForm");
+const deleteEntryBtn   = document.getElementById("deleteEntryBtn");
+
+const stammDialog      = document.getElementById("stammDialog");
+const backupDialog     = document.getElementById("backupDialog");
+const pdfDialog        = document.getElementById("pdfDialog");
+
+const exportBackupBtn  = document.getElementById("exportBackupBtn");
+const backupFileInput  = document.getElementById("backupFileInput");
+const importBackupBtn  = document.getElementById("importBackupBtn");
+
+const pdf14Btn         = document.getElementById("pdf14Btn");
+const pdf4wBtn         = document.getElementById("pdf4wBtn");
+
+/* =====================================
+   SUPABASE INITIALISIEREN
+===================================== */
+
 const supa = supabase.createClient(
   "https://mtybmrkyhavxpvwysglo.supabase.co",
   "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im10eWJtcmt5aGF2eHB2d3lzZ2xvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjIxNjQ1OTIsImV4cCI6MjA3Nzc0MDU5Mn0.UToAmJAvACYvnO9hCIeyfm-VYKr5jincXdnEDDtbhvo"
 );
 
+/* =====================================
+   GLOBALE DATEN
+===================================== */
 let mitarbeiter=[];
 let fahrzeuge=[];
 let baustellen=[];
@@ -398,133 +410,94 @@ let eintraege=[];
 let currentView="14d";
 let currentStart=new Date();
 
-// Mitarbeiter-Farbcode
+/* =====================================
+   HILFSFUNKTIONEN
+===================================== */
+
+// Namensfarbe für Mitarbeiter
 function colorFromName(name){
   if(!name)return "#94a3b8";
   let hash=0;
   for(let i=0;i<name.length;i++){
     hash = name.charCodeAt(i) + ((hash<<5)-hash);
   }
-  const h=Math.abs(hash)%360;
-  return `hsl(${h},60%,45%)`;
+  return `hsl(${Math.abs(hash)%360},60%,45%)`;
 }
-
-// LADEN ALLER DATEN
+/* =====================================
+   ALLE DATEN LADEN
+===================================== */
 async function loadAll(){
   const m=await supa.from("mitarbeiter").select().order("name");
   const f=await supa.from("fahrzeuge").select().order("name");
   const b=await supa.from("baustellen").select().order("name");
   const e=await supa.from("plantafel").select().order("tag");
 
-  mitarbeiter=m.data||[];
-  fahrzeuge=f.data||[];
-  baustellen=b.data||[];
-  eintraege=e.data||[];
+  mitarbeiter = m.data || [];
+  fahrzeuge   = f.data || [];
+  baustellen  = b.data || [];
+  eintraege   = e.data || [];
 
   renderBoard();
 }
 
-// BACKUP EXPORT
-exportBackupBtn.onclick=()=>{
-  const data={
-    mitarbeiter,fahrzeuge,baustellen,eintraege
-  };
-  const blob=new Blob([JSON.stringify(data,null,2)],{type:"application/json"});
-  const url=URL.createObjectURL(blob);
-
-  const a=document.createElement("a");
-  a.href=url;
-  a.download="plantafel-backup.json";
+/* =====================================
+   BACKUP EXPORT
+===================================== */
+exportBackupBtn.onclick = ()=>{
+  const data = { mitarbeiter, fahrzeuge, baustellen, eintraege };
+  const blob = new Blob([JSON.stringify(data,null,2)],{type:"application/json"});
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(blob);
+  a.download = "plantafel-backup.json";
   a.click();
 };
 
-// BACKUP IMPORT
-importBackupBtn.onclick=async()=>{
-  const file=backupFileInput.files[0];
-  if(!file){alert("Bitte Datei wählen.");return;}
+/* =====================================
+   BACKUP IMPORT
+===================================== */
+importBackupBtn.onclick = async ()=>{
+  const file = backupFileInput.files[0];
+  if(!file){ alert("Bitte Datei auswählen."); return; }
 
-  const text=await file.text();
-  const b=JSON.parse(text);
+  const text = await file.text();
+  const data = JSON.parse(text);
 
   await supa.from("mitarbeiter").delete().neq("id",0);
   await supa.from("fahrzeuge").delete().neq("id",0);
   await supa.from("baustellen").delete().neq("id",0);
   await supa.from("plantafel").delete().neq("id",0);
 
-  await supa.from("mitarbeiter").insert(b.mitarbeiter);
-  await supa.from("fahrzeuge").insert(b.fahrzeuge);
-  await supa.from("baustellen").insert(b.baustellen);
-  await supa.from("plantafel").insert(b.eintraege);
+  await supa.from("mitarbeiter").insert(data.mitarbeiter);
+  await supa.from("fahrzeuge").insert(data.fahrzeuge);
+  await supa.from("baustellen").insert(data.baustellen);
+  await supa.from("plantafel").insert(data.eintraege);
 
-  alert("Backup importiert.");
+  alert("Backup importiert!");
   backupDialog.close();
   loadAll();
 };
 
-// FEIERTAGE LADEN (DE)
-function getFeiertage(y){
-  return {
-    "Neujahr": `${y}-01-01`,
-    "Karfreitag": calcEaster(y,-2),
-    "Ostermontag": calcEaster(y,1),
-    "Tag der Arbeit": `${y}-05-01`,
-    "Christi Himmelfahrt": calcEaster(y,39),
-    "Pfingstmontag": calcEaster(y,50),
-    "Tag der Deutschen Einheit": `${y}-10-03`,
-    "1. Weihnachtstag": `${y}-12-25`,
-    "2. Weihnachtstag": `${y}-12-26`,
-  };
-}
-// Osterformel
-function calcEaster(Y, offset){
-  var C = Math.floor(Y/100);
-  var N = Y - 19*Math.floor(Y/19);
-  var K = Math.floor((C - 17)/25);
-  var I = C - Math.floor(C/4) - Math.floor((C-K)/3) + 19*N + 15;
-  I = I - 30*Math.floor(I/30) - Math.floor(I/28)*(1 - Math.floor(I/28)*Math.floor(29/(I+1))*Math.floor((21-N)/11));
-  var J = Y + Math.floor(Y/4) + I + 2 - C + Math.floor(C/4);
-  J = J - 7*Math.floor(J/7);
-  var L = I - J;
-  var M = 3 + Math.floor((L+40)/44);
-  var D = L + 28 - 31*Math.floor(M/4);
-  const date=new Date(Y,M-1,D);
-  date.setDate(date.getDate()+offset);
-  return date.toISOString().slice(0,10);
-}
+/* =====================================
+   STAMMDATEN – ANZEIGEN UND LÖSCHEN
+===================================== */
+stammBtn.onclick = ()=>{ renderStamm(); stammDialog.showModal(); };
 
-// MONAT zurück
-prevMonthBtn.onclick=()=>{
-  currentStart.setMonth(currentStart.getMonth()-1);
-  startDateInput.value=currentStart.toISOString().slice(0,10);
-  renderBoard();
-};
-// MONAT vor
-nextMonthBtn.onclick=()=>{
-  currentStart.setMonth(currentStart.getMonth()+1);
-  startDateInput.value=currentStart.toISOString().slice(0,10);
-  renderBoard();
-};
-
-// STAMMDATEN DIALOG ÖFFNEN
-backupBtn.onclick=()=>backupDialog.showModal();
-stammBtn.onclick=()=>{renderStamm();stammDialog.showModal();};
-
-// LISTEN STAMMDATEN
 function renderStamm(){
-  renderList("listMitarbeiter",mitarbeiter,"mitarbeiter");
-  renderList("listFahrzeuge",fahrzeuge,"fahrzeuge");
-  renderList("listBaustellen",baustellen,"baustellen");
+  renderList("listMitarbeiter", mitarbeiter, "mitarbeiter");
+  renderList("listFahrzeuge", fahrzeuge, "fahrzeuge");
+  renderList("listBaustellen", baustellen, "baustellen");
 }
 
-function renderList(boxId,list,type){
-  const box=document.getElementById(boxId);
-  box.innerHTML="";
-  list.forEach(i=>{
-    const row=document.createElement("div");
-    row.style.margin=".25rem 0";
-    row.innerHTML=
-      `<span style="background:#eef;padding:.25rem .4rem;border-radius:5px;">${i.name}</span>
-       <button onclick="delStamm('${type}',${i.id})" style="margin-left:.5rem;">x</button>`;
+function renderList(id,list,type){
+  const box = document.getElementById(id);
+  box.innerHTML = "";
+  list.forEach(item=>{
+    const row = document.createElement("div");
+    row.style.margin = ".25rem 0";
+    row.innerHTML = `
+      <span style="background:#eef;padding:.25rem .5rem;border-radius:5px;">${item.name}</span>
+      <button onclick="delStamm('${type}',${item.id})" style="margin-left:.5rem;">x</button>
+    `;
     box.appendChild(row);
   });
 }
@@ -534,38 +507,58 @@ async function delStamm(type,id){
   loadAll();
 }
 
-// EINTRAG ÖFFNEN
-function openEntry(e){
-  fId.value=e.id||"";
-  fBaustelle.value=e.titel||"";
-  fVon.value=e.tag||startDateInput.value;
-  fBis.value=e.tag||"";
-  fStatus.value=e.status||"";
-  fNotiz.value=e.notiz||"";
+async function addStamm(type){
+  let field = {
+    mitarbeiter:"sMitarbeiter",
+    fahrzeuge:"sFahrzeug",
+    baustellen:"sBaustelle"
+  }[type];
 
-  buildChecklist("fMitarbeiterBox",mitarbeiter,e.mitarbeiter);
-  buildChecklist("fFahrzeugeBox",fahrzeuge,e.fahrzeug);
+  const val = document.getElementById(field).value.trim();
+  if(!val) return;
 
-  deleteEntryBtn.style.display=e.id?"inline-block":"none";
+  await supa.from(type).insert({name:val});
+  loadAll();
+}
+
+/* =====================================
+   EINTRAG DIALOG
+===================================== */
+function openEntry(entry){
+  fId.value = entry.id || "";
+  fBaustelle.value = entry.titel || "";
+  fVon.value = entry.tag || startDateInput.value;
+  fBis.value = entry.tag || "";
+  fStatus.value = entry.status || "";
+  fNotiz.value = entry.notiz || "";
+
+  buildChecklist("fMitarbeiterBox", mitarbeiter, entry.mitarbeiter);
+  buildChecklist("fFahrzeugeBox", fahrzeuge, entry.fahrzeug);
+
+  deleteEntryBtn.style.display = entry.id ? "inline-block" : "none";
+
   entryDialog.showModal();
 }
 
-// CHECKLISTE
 function buildChecklist(id,list,selected){
   const sel=(selected||"").split(",").map(s=>s.trim());
   const box=document.getElementById(id);
   box.innerHTML="";
-  list.forEach(item=>{
+  list.forEach(i=>{
     const lbl=document.createElement("label");
     const cb=document.createElement("input");
-    cb.type="checkbox"; cb.value=item.name;
-    if(sel.includes(item.name))cb.checked=true;
+    cb.type="checkbox"; 
+    cb.value=i.name;
+    if(sel.includes(i.name)) cb.checked=true;
     lbl.appendChild(cb);
-    lbl.append(" "+item.name);
+    lbl.append(" "+i.name);
     box.appendChild(lbl);
   });
 }
-/* SPEICHERN EINTRAG */
+
+/* =====================================
+   EINTRAG SPEICHERN
+===================================== */
 entryForm.addEventListener("submit", async (ev)=>{
   ev.preventDefault();
 
@@ -577,30 +570,31 @@ entryForm.addEventListener("submit", async (ev)=>{
   const notiz = fNotiz.value.trim();
 
   const mit = Array.from(document.querySelectorAll("#fMitarbeiterBox input:checked"))
-      .map(cb=>cb.value).join(", ");
+        .map(cb=>cb.value).join(", ");
   const fahr = Array.from(document.querySelectorAll("#fFahrzeugeBox input:checked"))
-      .map(cb=>cb.value).join(", ");
+        .map(cb=>cb.value).join(", ");
 
   if(!von){ alert("Datum fehlt."); return;}
 
-  const start=new Date(von);
-  const end=new Date(bis);
-
   if(id){
-    // Einzelner Eintrag update
+    // Update
     await supa.from("plantafel").update({
-      titel, tag:von, status, notiz,
-      mitarbeiter:mit, fahrzeug:fahr
+      titel, tag:von, status, notiz, mitarbeiter:mit, fahrzeug:fahr
     }).eq("id",id);
   } else {
-    // Mehrtägiger neuer Eintrag
+    // Neuer Eintrag (ggf. mehrere Tage)
     let rows=[];
-    let cur=new Date(start);
+    let cur=new Date(von);
+    const end=new Date(bis);
+
     while(cur<=end){
       rows.push({
         titel,
         tag:cur.toISOString().slice(0,10),
-        status,notiz,mitarbeiter:mit,fahrzeug:fahr
+        status,
+        notiz,
+        mitarbeiter:mit,
+        fahrzeug:fahr
       });
       cur.setDate(cur.getDate()+1);
     }
@@ -611,30 +605,29 @@ entryForm.addEventListener("submit", async (ev)=>{
   loadAll();
 });
 
-/* LÖSCHEN EINTRAG */
-deleteEntryBtn.onclick=async()=>{
-  const id=fId.value;
+/* =====================================
+   LÖSCHEN EINTRAG
+===================================== */
+deleteEntryBtn.onclick = async ()=>{
+  const id = fId.value;
   await supa.from("plantafel").delete().eq("id",id);
   entryDialog.close();
   loadAll();
 };
 
-
-/* ===========================
-   RENDERING FUNKTIONEN
-=========================== */
-
-// BOARD
+/* =====================================
+   RENDERING – BOARD
+===================================== */
 function renderBoard(){
-  currentStart=new Date(startDateInput.value);
-  boardContainer.innerHTML="";
+  currentStart = new Date(startDateInput.value);
+  boardContainer.innerHTML = "";
 
   if(currentView==="14d") render14days();
   else if(currentView==="4w") render4weeks();
   else render12months();
 }
 
-/* 14 TAGE */
+/* 14 Tage Ansicht */
 function render14days(){
   const wrap=document.createElement("div");
   wrap.style.display="grid";
@@ -652,10 +645,11 @@ function render14days(){
     }
     d.setDate(d.getDate()+1);
   }
+
   boardContainer.appendChild(wrap);
 }
 
-/* 4 WOCHEN */
+/* 4 Wochen Ansicht */
 function render4weeks(){
   const wrap=document.createElement("div");
   wrap.style.display="grid";
@@ -668,16 +662,16 @@ function render4weeks(){
   s.setDate(s.getDate()-diff);
 
   for(let w=0;w<4;w++){
-    for(let d=0;d<5;d++){
-      const cur=new Date(s);
-      cur.setDate(s.getDate()+w*7+d);
-      wrap.appendChild(buildDay(cur));
+    for(let i=0;i<5;i++){
+      const d=new Date(s);
+      d.setDate(s.getDate()+w*7+i);
+      wrap.appendChild(buildDay(d));
     }
   }
   boardContainer.appendChild(wrap);
 }
 
-/* 12 MONATE (3x4) */
+/* 12 Monate Ansicht – 3x4 */
 function render12months(){
   const wrap=document.createElement("div");
   wrap.className="months-grid";
@@ -688,7 +682,6 @@ function render12months(){
 
     const box=document.createElement("div");
     box.className="month-box";
-    box.dataset.monthyear = d.getFullYear()+"-"+(d.getMonth()+1);
 
     const head=document.createElement("div");
     head.className="month-head";
@@ -697,34 +690,35 @@ function render12months(){
     const body=document.createElement("div");
     body.className="month-body";
 
-    const monthEntries = eintraege.filter(e=>{
+    const items=eintraege.filter(e=>{
       const t=new Date(e.tag);
-      return t.getFullYear()===d.getFullYear() &&
-             t.getMonth()===d.getMonth();
+      return t.getFullYear()==d.getFullYear() &&
+             t.getMonth()==d.getMonth();
     });
 
-    monthEntries.forEach(e=>{
+    items.forEach(e=>{
       const card=buildEntryCard(e);
       card.draggable=true;
-      card.ondragstart = dragStart;
+      card.ondragstart=dragStart;
       body.appendChild(card);
     });
 
-    box.ondragover = ev=>ev.preventDefault();
+    box.ondragover=ev=>ev.preventDefault();
     box.ondrop = ev=>{
       ev.preventDefault();
-      dropOnMonthBox(d, ev.dataTransfer.getData("entry-id"));
+      const id=ev.dataTransfer.getData("entry-id");
+      dropOnMonth(d,id);
     };
 
     box.appendChild(head);
     box.appendChild(body);
     wrap.appendChild(box);
   }
+
   boardContainer.appendChild(wrap);
 }
 
-
-/* TAG EASY BOX */
+/* TAG-BOX */
 function buildDay(dateObj){
   const box=document.createElement("div");
   box.className="month-box";
@@ -733,10 +727,8 @@ function buildDay(dateObj){
 
   const head=document.createElement("div");
   head.className="month-head";
-
-  head.innerHTML = 
-    `<span>${dateObj.toLocaleString("de-DE",{weekday:"short"})} 
-    ${dateObj.toLocaleString("de-DE",{day:"2-digit",month:"2-digit"})}</span>`;
+  head.textContent = dateObj.toLocaleString("de-DE",
+    {weekday:"short",day:"2-digit",month:"2-digit"});
 
   const body=document.createElement("div");
   body.className="month-body";
@@ -746,16 +738,17 @@ function buildDay(dateObj){
   items.forEach(e=>{
     const card=buildEntryCard(e);
     card.draggable=true;
-    card.ondragstart = dragStart;
+    card.ondragstart=dragStart;
     body.appendChild(card);
   });
 
   box.dataset.date=dateStr;
 
-  box.ondragover = ev=>ev.preventDefault();
-  box.ondrop = ev=>{
+  box.ondragover=ev=>ev.preventDefault();
+  box.ondrop=ev=>{
     ev.preventDefault();
-    dropOnDay(dateStr, ev.dataTransfer.getData("entry-id"));
+    const id=ev.dataTransfer.getData("entry-id");
+    dropOnDay(dateStr,id);
   };
 
   box.appendChild(head);
@@ -764,26 +757,28 @@ function buildDay(dateObj){
   return box;
 }
 
-
-/* EINTRAG KACHEL */
+/* EINTRAG-KARTE */
 function buildEntryCard(e){
   const div=document.createElement("div");
   div.className="entry";
-  div.dataset.id = e.id;
+  div.dataset.id=e.id;
 
-  div.onclick=()=>openEntry(e);
+  let bg="#f8fafc";
+  let col="#000";
 
-  let bg="#f8fafc", col="#000";
-
-  if(e.status==="Urlaub"){bg="var(--urlaub)";col="#000";}
+  if(e.status==="Urlaub"){bg="var(--urlaub)";}
   else if(e.status==="Krank"){bg="var(--krank)";col="#fff";}
   else if(e.status==="Schule"){bg="var(--schule)";col="#fff";}
   else if(e.mitarbeiter){
     const first=e.mitarbeiter.split(",")[0].trim();
-    bg=colorFromName(first); col="#fff";
+    bg=colorFromName(first);
+    col="#fff";
   }
+
   div.style.background=bg;
   div.style.color=col;
+
+  div.onclick=()=>openEntry(e);
 
   const title=document.createElement("div");
   title.className="entry-title";
@@ -799,86 +794,54 @@ function buildEntryCard(e){
   return div;
 }
 
-
-/* ===========================
-   DRAG & DROP FUNKTIONEN
-=========================== */
-
+/* =====================================
+   DRAG & DROP
+===================================== */
 function dragStart(ev){
   ev.dataTransfer.setData("entry-id", ev.target.dataset.id);
 }
 
-async function dropOnDay(dateStr,id){
-  await supa.from("plantafel").update({tag:dateStr}).eq("id",id);
+async function dropOnDay(date,id){
+  await supa.from("plantafel").update({tag:date}).eq("id",id);
   loadAll();
 }
 
-async function dropOnMonthBox(d,id){
+async function dropOnMonth(d,id){
   const newDate = new Date(d.getFullYear(), d.getMonth(), 1)
-        .toISOString().slice(0,10);
-
+                    .toISOString().slice(0,10);
   await supa.from("plantafel").update({tag:newDate}).eq("id",id);
   loadAll();
 }
 
-
-/* ===========================
+/* =====================================
    PDF EXPORT
-=========================== */
-
-pdf14Btn.onclick=()=>generatePDF("14d");
-pdf4wBtn.onclick=()=>generatePDF("4w");
+===================================== */
+pdf14Btn.onclick = ()=>generatePDF("14d");
+pdf4wBtn.onclick = ()=>generatePDF("4w");
 
 async function generatePDF(view){
   const { jsPDF } = window.jspdf;
   const doc=new jsPDF();
 
-  let text="Plantafel – "+(view==="14d"?"14 Tage":"4 Wochen");
   doc.setFontSize(16);
-  doc.text(text,10,10);
+  doc.text("Plantafel – "+(view==="14d"?"14 Tage":"4 Wochen"),10,10);
 
-  let entriesText="";
-
-  if(view==="14d"){
-    const backupView=currentView;
-    currentView="14d";
-    render14days();
-    entriesText=getEntriesAsText14();
-    currentView=backupView;
-    renderBoard();
-  } else {
-    const backupView=currentView;
-    currentView="4w";
-    render4weeks();
-    entriesText=getEntriesAsText4w();
-    currentView=backupView;
-    renderBoard();
-  }
+  let text="";
+  eintraege.forEach(e=>{
+    text+=`${e.tag}: ${e.titel} – ${e.mitarbeiter} ${e.fahrzeug}\n`;
+  });
 
   doc.setFontSize(10);
-  let lines = doc.splitTextToSize(entriesText,180);
+  let lines = doc.splitTextToSize(text,180);
   doc.text(lines,10,20);
 
   doc.save("plantafel-"+view+".pdf");
 }
 
-function getEntriesAsText14(){
-  let out="";
-  // Nur grob: PDF für Übersicht
-  eintraege.forEach(e=>{
-    out+=`${e.tag}: ${e.titel} | ${e.mitarbeiter} ${e.fahrzeug}\n`;
-  });
-  return out;
-}
-function getEntriesAsText4w(){return getEntriesAsText14();}
-
-
-/* ===========================
-   EVENTS & INIT
-=========================== */
-
-// Tabs
-viewTabs.onclick=(ev)=>{
+/* =====================================
+   EVENTS
+===================================== */
+viewTabs.onclick = ev=>{
   if(ev.target.tagName!=="BUTTON")return;
   viewTabs.querySelectorAll("button").forEach(b=>b.classList.remove("active"));
   ev.target.classList.add("active");
@@ -886,17 +849,25 @@ viewTabs.onclick=(ev)=>{
   renderBoard();
 };
 
-// Datum
-startDateInput.onchange=()=>{
-  currentStart=new Date(startDateInput.value);
+startDateInput.onchange = ()=>renderBoard();
+reloadBtn.onclick = loadAll;
+newEntryBtn.onclick = ()=>openEntry({tag:startDateInput.value});
+backupBtn.onclick = ()=>backupDialog.showModal();
+
+prevMonthBtn.onclick=()=>{
+  currentStart.setMonth(currentStart.getMonth()-1);
+  startDateInput.value=currentStart.toISOString().slice(0,10);
+  renderBoard();
+};
+nextMonthBtn.onclick=()=>{
+  currentStart.setMonth(currentStart.getMonth()+1);
+  startDateInput.value=currentStart.toISOString().slice(0,10);
   renderBoard();
 };
 
-// Buttons
-reloadBtn.onclick=loadAll;
-newEntryBtn.onclick=()=>openEntry({tag:startDateInput.value});
-
-// INIT
+/* =====================================
+   INIT
+===================================== */
 const today=new Date();
 startDateInput.value=today.toISOString().slice(0,10);
 currentStart = new Date(startDateInput.value);
@@ -905,9 +876,7 @@ loadAll();
 
 </script>
 
-<footer>
-  © 2025 Dachdeckerei Frey – Digitale Plantafel V3
-</footer>
+<footer>© 2025 Dachdeckerei Frey – Digitale Plantafel V4</footer>
 
 </body>
 </html>
