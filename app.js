@@ -1,5 +1,6 @@
 import { supabase } from './supabase.js';
 
+
 let eintraege = [];
 let mitarbeiter = [];
 let fahrzeuge = [];
