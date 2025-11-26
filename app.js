@@ -1,120 +1,131 @@
 import { supabase } from './supabase.js';
 
-
 let eintraege = [];
 let mitarbeiter = [];
 let fahrzeuge = [];
 let baustellen = [];
 let aktuellerEintrag = null;
 
-
-// ===============================
+// ==========================================
 // LADEN AUS DB
-// ===============================
+// ==========================================
+
 async function load() {
-    let e = await supabase.from('plantafel').select('*').order('tag', { ascending: true });
-    let ma = await supabase.from('mitarbeiter').select('*');
-    let fz = await supabase.from('fahrzeuge').select('*');
-    let bs = await supabase.from('baustellen').select('*');
 
-    eintraege = e.data || [];
-    mitarbeiter = ma.data || [];
-    fahrzeuge = fz.data || [];
-    baustellen = bs.data || [];
+  // nur Einträge mit gültiger ID laden!
+  let e = await supabase
+    .from('plantafel')
+    .select('*')
+    .not('id', 'is', null)
+    .order('tag', { ascending: true });
 
-    render();
+  let m = await supabase.from('mitarbeiter').select('*');
+  let f = await supabase.from('fahrzeuge').select('*');
+  let b = await supabase.from('baustellen').select('*');
+
+  eintraege = e.data ?? [];
+  mitarbeiter = m.data ?? [];
+  fahrzeuge = f.data ?? [];
+  baustellen = b.data ?? [];
+
+  render();
 }
 
-load();
+// ==========================================
+// EINTRAG HINZUFÜGEN
+// ==========================================
 
-
-// ===============================
-// ANLEGEN / UPDATE / DELETE
-// ===============================
-async function saveEntry(data) {
-    if (aktuellerEintrag) {
-        await supabase.from('plantafel').update(data).eq('id', aktuellerEintrag);
-    } else {
-        await supabase.from('plantafel').insert(data);
-    }
-    aktuellerEintrag = null;
-    document.querySelector('#entryDialog').close();
-    load();
+async function insertEntry(rows) {
+  return await supabase.from('plantafel').insert(rows);
 }
+
+// ==========================================
+// UPDATE
+// ==========================================
+
+async function updateEntry(id, payload) {
+  return await supabase
+    .from('plantafel')
+    .update(payload)
+    .eq('id', id);
+}
+
+// ==========================================
+// DELETE
+// ==========================================
 
 async function deleteEntry(id) {
-    await supabase.from('plantafel').delete().eq('id', id);
-    document.querySelector('#entryDialog').close();
-    load();
+  await supabase.from('plantafel').delete().eq('id', id);
+  await load();
 }
-window.deleteEntry = deleteEntry;
 
+// ==========================================
+// UI RENDER
+// ==========================================
 
-// ===============================
-// UI
-// ===============================
 function render() {
-    const b = document.querySelector('#board');
-    b.innerHTML = "";
+  const cont = document.getElementById('entries');
+  cont.innerHTML = '';
 
-    eintraege.forEach(e => {
-        let div = document.createElement('div');
-        div.classList.add("card");
+  eintraege.forEach(e => {
 
-        div.innerHTML = `
-            <b>${e.titel}</b><br>
-            <span>${e.tag}</span><br>
-            <span>${e.mitarbeiter}</span><br>
-            <span>${e.fahrzeug}</span><br>
+    const card = document.createElement('div');
+    card.className = 'card';
+    card.innerHTML = `
+      <div><b>${e.titel}</b></div>
+      <div>${e.tag}</div>
+      <div>${e.mitarbeiter}</div>
+      <div>${e.fahrzeug}</div>
 
-            <button class="edit">✏️</button>
-            <button onclick="deleteEntry('${e.id}')">🗑️</button>
-        `;
+      <button class="edit">✏️</button>
+      <button class="delete">🗑️</button>
+    `;
 
-        div.querySelector('.edit').onclick = () => openEntryDialog(e);
-        b.appendChild(div);
-    });
+    // DELETE
+    card.querySelector('.delete').onclick = () => {
+      deleteEntry(e.id);
+    };
+
+    cont.appendChild(card);
+  });
 }
 
+// ==========================================
+// DIALOG ÖFFNEN
+// ==========================================
 
-// ===============================
-// EINTRAG DIALOG
-// ===============================
-function openEntryDialog(e = null) {
-    aktuellerEintrag = e?.id || null;
-
-    document.querySelector('#titel').value = e?.titel || "";
-    document.querySelector('#von').value = e?.tag || "";
-    document.querySelector('#bis').value = e?.bis || "";
-    document.querySelector('#status').value = e?.status || "normal";
-    document.querySelector('#notiz').value = e?.notiz || "";
-
-    document.querySelector('#entryDialog').showModal();
-}
-window.openEntryDialog = openEntryDialog;
-
-
-// ===============================
-// FORM SPEICHERN
-// ===============================
-document.querySelector('#entryForm').onsubmit = (ev) => {
-    ev.preventDefault();
-
-    saveEntry({
-        titel: titel.value,
-        tag: von.value,
-        bis: bis.value,
-        status: status.value,
-        notiz: notiz.value,
-        mitarbeiter: "",
-        fahrzeug: ""
-    });
+window.openEntryDialog = function () {
+  aktuellerEintrag = null;
+  document.getElementById('entryDialog').showModal();
 };
 
+// ==========================================
+// SPEICHERN
+// ==========================================
 
-document.querySelector('#closeEntryBtn').onclick =
-    () => document.querySelector('#entryDialog').close();
-document.querySelector('#deleteEntryBtn').onclick =
-    () => deleteEntry(aktuellerEintrag);
+window.saveEntry = async function () {
 
-document.querySelector('#newBtn').onclick = () => openEntryDialog();
+  const titel = document.getElementById('titel').value;
+  const tag = document.getElementById('von').value;
+
+  let payload = {
+    titel,
+    tag,
+    inserted_at: new Date().toISOString()
+  };
+
+  if (aktuellerEintrag) {
+    await updateEntry(aktuellerEintrag.id, payload);
+  } else {
+    await insertEntry(payload);
+  }
+
+  document.getElementById('entryDialog').close();
+  await load();
+};
+
+// ==========================================
+// START
+// ==========================================
+
+load();
