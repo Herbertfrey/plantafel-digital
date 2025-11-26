@@ -1,1 +1,222 @@
+/* ================================================
+   GLOBAL
+=================================================== */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
 
+body {
+  font-family: system-ui, sans-serif;
+  background: #eef0f5;
+  color: #0f172a;
+}
+
+/* ================================================
+   HEADER
+=================================================== */
+header {
+  background: #005bbb;
+  color: #fff;
+  padding: 10px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+header h1 {
+  font-size: 1.4rem;
+}
+
+.btn-primary {
+  background: #fff;
+  color: #005bbb;
+  border: none;
+  padding: 6px 10px;
+  border-radius: 5px;
+  cursor: pointer;
+  font-weight: 600;
+}
+
+.btn-secondary {
+  background: rgba(255,255,255,.2);
+  color: white;
+  border: 1px solid rgba(255,255,255,.4);
+  padding: 6px 10px;
+  border-radius: 5px;
+  cursor: pointer;
+  font-weight: 600;
+}
+
+/* Tabs */
+.btn-tabs button {
+  background: rgba(255,255,255,.15);
+  border:1px solid rgba(255,255,255,.25);
+  padding: 5px 12px;
+  color: white;
+  border-radius: 5px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.btn-tabs button.active {
+  background: #fff;
+  color: #005bbb;
+}
+
+/* ================================================
+   MAIN
+=================================================== */
+main {
+  padding: 15px;
+}
+
+#boardContainer {
+  width: 100%;
+}
+
+/* ================================================
+   DAY BOXES
+=================================================== */
+.day-box {
+  background: white;
+  border: 1px solid #cfd3d9;
+  border-radius: 10px;
+  min-height: 160px;
+  display: flex;
+  flex-direction: column;
+}
+
+.day-head {
+  background: #f1f5f9;
+  padding: 6px 10px;
+  font-weight: bold;
+  border-bottom: 1px solid #d0d4dd;
+}
+
+/* ================================================
+   MONTH VIEW
+=================================================== */
+.month-box {
+  background: white;
+  border: 1px solid #cfd3d9;
+  border-radius: 10px;
+  min-height: 220px;
+  display: flex;
+  flex-direction: column;
+}
+
+.month-head {
+  background: #f1f5f9;
+  padding: 6px 10px;
+  font-weight: bold;
+  border-bottom: 1px solid #d0d4dd;
+}
+
+/* ================================================
+   ENTRY CARDS
+=================================================== */
+.entry {
+  display: grid;
+  grid-template-columns: 6px 1fr auto auto;
+  align-items: center;
+  gap: 6px;
+  margin: 8px;
+  padding: 6px;
+  border-radius: 6px;
+  background: white;
+  border: 1px solid #ddd;
+  box-shadow: 0 1px 2px rgba(0,0,0,.1);
+  font-size: .85rem;
+}
+
+.entry-color {
+  width: 6px;
+  height: 100%;
+  border-radius: 3px;
+}
+
+.entry-title {
+  font-weight: bold;
+}
+
+.entry-meta {
+  font-size: 0.75rem;
+  color: #111;
+  margin-left: 2px;
+}
+
+.entry button {
+  border: none;
+  background: none;
+  font-size: 1rem;
+  cursor: pointer;
+}
+
+/* ================================================
+   DIALOGS
+=================================================== */
+dialog {
+  border: none;
+  border-radius: 10px;
+  padding: 15px;
+  width: min(95vw, 500px);
+  box-shadow: 0 15px 40px rgba(0,0,0,.3);
+}
+
+dialog::backdrop {
+  background: rgba(0,0,0,.4);
+}
+
+label {
+  font-weight: 600;
+  margin-top: 10px;
+  display: block;
+}
+
+input, textarea, select {
+  width: 100%;
+  padding: 6px;
+  border-radius: 6px;
+  border: 1px solid #cbd5e1;
+  margin-top: 4px;
+  font-size: .9rem;
+}
+
+/* Checklists */
+.checklist {
+  border: 1px solid #d1d5db;
+  padding: 6px;
+  border-radius: 6px;
+  max-height: 150px;
+  overflow-y: auto;
+}
+
+.checklist label {
+  font-size: .85rem;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+dialog button {
+  padding: 5px 10px;
+  border-radius: 6px;
+  margin-top: 12px;
+  cursor: pointer;
+}
+
+/* ================================================
+   FOOTER
+=================================================== */
+footer {
+  text-align: center;
+  background: #005bbb;
+  color: white;
+  padding: 6px;
+  margin-top: 20px;
+  font-size: .8rem;
+}
