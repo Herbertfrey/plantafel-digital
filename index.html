@@ -7,28 +7,32 @@
 
     <style>
         body {
-            font-family: Arial, sans-serif;
+            font-family: Arial;
             margin: 0;
-            background: #f3f3f3;
+            background: #e9e9e9;
         }
 
         header {
-            background: #0066cc;
-            padding: 15px;
+            background: #005ec4;
             color: white;
+            padding: 15px;
             font-size: 22px;
         }
 
         #toolbar {
-            background: #005bbb;
+            background: #0072dd;
             padding: 10px;
             display: flex;
             gap: 8px;
-            align-items: center;
             flex-wrap: wrap;
         }
 
-        #entries {
+        button {
+            padding: 6px 12px;
+            cursor: pointer;
+        }
+
+        #calendar {
             padding: 15px;
             display: flex;
             flex-wrap: wrap;
@@ -38,57 +42,47 @@
         .entry {
             background: white;
             width: 200px;
-            border-radius: 6px;
             padding: 10px;
+            border-radius: 6px;
             border-left: 6px solid #444;
-        }
-
-        button {
-            padding: 6px 12px;
-            cursor: pointer;
         }
 
         footer {
             padding: 15px;
-            margin-top: 50px;
+            margin-top: 30px;
+            background: #005ec4;
+            color: white;
             text-align: center;
             font-size: 12px;
-            background: #0066cc;
-            color: white;
         }
     </style>
 </head>
 <body>
 
-<header>
-    Plantafel Dachdeckerei Frey
-</header>
+<header>Plantafel Dachdeckerei Frey</header>
 
 <div id="toolbar">
     <button id="btn14">14 Tage</button>
     <button id="btn28">4 Wochen</button>
-    <button id="btnJahr">12 Monate</button>
+    <button id="btn365">12 Monate</button>
 
-    <input id="startDatum" type="date">
+    <input id="startDate" type="date">
 
     <button id="reload">Neu laden</button>
     <button id="backup">Backup</button>
     <button id="stamm">Stammdaten</button>
     <button id="new">+ Eintrag</button>
 
-    <div style="margin-left:auto;color:white;">
+    <div style="color:white;margin-left:auto">
         Urlaub<br>Krank<br>Schule<br>Fahrzeug
     </div>
 </div>
 
-<!-- HIER WERDEN DIE EINTRÄGE EINGEFÜGT -->
-<div id="entries"></div>
+<!-- WICHTIG: Container ID genau wie in app.js -->
+<div id="calendar"></div>
 
-<footer>
-    © 2025 Dachdeckerei Frey – Digitale Plantafel
-</footer>
+<footer>© 2025 Dachdeckerei Frey – Digitale Plantafel</footer>
 
-<!-- wichtig: Module laden -->
 <script type="module" src="supabase.js"></script>
 <script type="module" src="app.js"></script>
 
