@@ -1,55 +1,45 @@
 <!DOCTYPE html>
 <html lang="de">
 <head>
-    <meta charset="UTF-8">
-    <title>Plantafel Dachdeckerei Frey</title>
-    <link rel="stylesheet" href="style.css">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Plantafel Dachdeckerei Frey</title>
+  <link rel="stylesheet" href="style.css">
 </head>
+
 <body>
+  <header>
+    <h1>Plantafel Dachdeckerei Frey</h1>
+  </header>
 
-<div class="topbar">
-    <h2>Plantafel Dachdeckerei Frey</h2>
-    <button id="v14">14 Tage</button>
-    <button id="v4">4 Wochen</button>
-    <button id="v12">12 Monate</button>
-    <input type="date" id="startDatum">
-    <button id="reloadBtn">Neu laden</button>
-    <button id="backupBtn">Backup</button>
-    <button id="stammBtn">Stammdaten</button>
-    <button id="addBtn">+ Eintrag</button>
+  <!-- Navigation -->
+  <div class="nav">
+    <button id="btn14">14 Tage</button>
+    <button id="btn28">4 Wochen</button>
+    <button id="btn365">12 Monate</button>
 
-    <div class="statusbar">
-        Urlaub<br>
-        Krank<br>
-        Schule<br>
-        Fahrzeug
-    </div>
-</div>
+    <input id="dateStart" type="date">
+    <button id="reload">Neu laden</button>
+    <button id="backup">Backup</button>
+    <button id="stammdaten">Stammdaten</button>
+    <button id="addEntry">+ Eintrag</button>
+  </div>
 
-<div id="kalender"></div>
+  <!-- Kategorien -->
+  <div class="side">
+    <div>Urlaub</div>
+    <div>Krank</div>
+    <div>Schule</div>
+    <div>Fahrzeug</div>
+  </div>
 
-<footer>© 2025 Dachdeckerei Frey – Digitale Plantafel</footer>
+  <!-- Hier erscheinen ALLE Einträge -->
+  <div id="entries"></div>
 
+  <footer>© 2025 Dachdeckerei Frey – Digitale Plantafel</footer>
 
-<!-- ===== DIALOG ===== -->
-<dialog id="entryDialog">
-    <h3>Eintrag bearbeiten</h3>
-
-    <label>Baustelle</label>
-    <input id="titelInput">
-
-    <label>Von</label>
-    <input id="vonInput" type="date">
-
-    <label>Bis</label>
-    <input id="bisInput" type="date">
-
-    <button id="saveEntry">Speichern</button>
-    <button id="deleteEntry">Löschen</button>
-    <button id="closeEntry">Schließen</button>
-</dialog>
-
-<script type="module" src="supabase.js"></script>
-<script type="module" src="app.js"></script>
+  <!-- wichtige JS Dateien -->
+  <script type="module" src="supabase.js"></script>
+  <script type="module" src="app.js"></script>
 </body>
 </html>
