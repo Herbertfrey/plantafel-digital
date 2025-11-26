@@ -1,143 +1,107 @@
 <!DOCTYPE html>
 <html lang="de">
 <head>
-<meta charset="UTF-8">
-<title>Plantafel Dachdeckerei Frey – V7</title>
-<meta name="viewport" content="width=device-width, initial-scale=1">
-
-<link rel="stylesheet" href="style.css">
-
-<style>
-/* --- nur kleiners CSS damit du schönes Layout hast --- */
-body { margin:0; background:#eef0f5; font-family:system-ui;}
-header{background:#0b63c6;color:#fff;padding:.8rem;display:flex;align-items:center;gap:.5rem;flex-wrap:wrap}
-h1{font-size:1.3rem;margin-right:1rem;}
-.btn{padding:.35rem .75rem;background:white;color:#0b63c6;border-radius:6px;border:none;cursor:pointer}
-.btn-tabs button{background:rgba(255,255,255,.2);border:1px solid rgba(255,255,255,.4);padding:.35rem .65rem;color:white;border-radius:6px;font-weight:600}
-.btn-tabs button.active{background:white;color:#0b63c6;}
-.nav-btn{background:rgba(255,255,255,.2);border:none;color:white;padding:6px 10px;border-radius:6px}
-.legend{margin-left:auto;font-size:.8rem}
-.legend-row{display:flex;gap:.4rem;align-items:center}
-.entry-color{width:6px;border-radius:3px}
-.entry-actions button{font-size:.65rem;padding:2px 6px;cursor:pointer}
-</style>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Plantafel Dachdeckerei Frey</title>
+<link rel="stylesheet" href="style.css" />
 </head>
 
 <body>
+
 <header>
-  <h1>Plantafel Dachdeckerei Frey</h1>
+    <h1>Plantafel Dachdeckerei Frey</h1>
 
-  <div class="btn-tabs" id="viewTabs">
-    <button class="active" data-view="14d">14 Tage</button>
-    <button data-view="4w">4 Wochen</button>
-    <button data-view="12m">12 Monate</button>
-  </div>
+    <button id="btn14">14 Tage</button>
+    <button id="btn4W">4 Wochen</button>
+    <button id="btn12M">12 Monate</button>
 
-  Start:
-  <input type="date" id="startDate">
+    <input type="date" id="startDate">
 
-  <button class="nav-btn" id="prevMonthBtn">&#9664;</button>
-  <button class="nav-btn" id="nextMonthBtn">&#9654;</button>
+    <button id="reloadBtn">Neu laden</button>
+    <button id="backupBtn">Backup</button>
+    <button id="stammBtn">Stammdaten</button>
+    <button id="newBtn">+ Eintrag</button>
 
-  <button class="btn" id="reloadBtn">Neu laden</button>
-  <button class="btn" id="backupBtn">Backup</button>
-  <button class="btn" id="stammBtn">Stammdaten</button>
-  <button class="btn" id="newEntryBtn">+ Eintrag</button>
-
-  <div class="legend">
-      <div class="legend-row">Urlaub</div>
-      <div class="legend-row">Krank</div>
-      <div class="legend-row">Schule</div>
-      <div class="legend-row">Fahrzeug</div>
-  </div>
+    <nav>
+        <div>Urlaub</div>
+        <div>Krank</div>
+        <div>Schule</div>
+        <div>Fahrzeug</div>
+    </nav>
 </header>
 
-<main>
-  <div id="boardContainer"></div>
-</main>
-
-<!-- DIALOGE -->
-<dialog id="entryDialog">
-  <form id="entryForm">
-    <h2>Eintrag bearbeiten / neu</h2>
-
-    <label>Baustelle / Auftrag
-      <input type="text" id="eTitel" required>
-    </label>
-
-    <label>Von
-      <input type="date" id="eVon" required>
-    </label>
-
-    <label>Bis
-      <input type="date" id="eBis">
-    </label>
-
-    <label>Mitarbeiter</label>
-    <div id="eMitarbeiter"></div>
-
-    <label>Fahrzeuge</label>
-    <div id="eFahrzeuge"></div>
-
-    <label>Status</label>
-    <select id="eStatus">
-      <option value="">normal</option>
-      <option value="Urlaub">Urlaub</option>
-      <option value="Krank">Krank</option>
-      <option value="Schule">Schule</option>
-    </select>
-
-    <label>Notiz</label>
-    <textarea id="eNotiz"></textarea>
-
-    <input type="hidden" id="eId">
-
-    <button type="button" id="entryDeleteBtn">Löschen</button>
-    <button type="button" id="entryCancelBtn">Abbrechen</button>
-    <button type="submit">Speichern</button>
-  </form>
-</dialog>
-
-<dialog id="moveDialog">
-  <form id="moveForm">
-    <h2>Verschieben</h2>
-    <input type="date" id="moveDate">
-    <input type="hidden" id="moveId">
-    <button type="button" id="moveCancelBtn">Abbrechen</button>
-    <button type="submit">Verschieben</button>
-  </form>
-</dialog>
-
-<dialog id="stammDialog">
-  <form id="stammForm">
-    <h2>Stammdaten</h2>
-
-    <label>Neuer Mitarbeiter
-      <input type="text" id="sMitarbeiter">
-    </label>
-    <button type="button" id="addMitarbeiter">+ hinzufügen</button>
-    <div id="listMitarbeiter"></div>
-
-    <label>Neues Fahrzeug
-      <input type="text" id="sFahrzeug">
-    </label>
-    <button type="button" id="addFahrzeug">+ hinzufügen</button>
-    <div id="listFahrzeuge"></div>
-
-    <label>Neue Baustelle
-      <input type="text" id="sBaustelle">
-    </label>
-    <button type="button" id="addBaustelle">+ hinzufügen</button>
-    <div id="listBaustellen"></div>
-
-    <button type="button" id="stammCloseBtn">Schließen</button>
-  </form>
-</dialog>
-
+<main id="board"></main>
 
 <footer>© 2025 Dachdeckerei Frey – Digitale Plantafel</footer>
 
-<!-- ⚠️ ganz wichtig! Jetzt als Modules -->
+
+<!-- ---------- Eintrags-Dialog ----------- -->
+<dialog id="entryDialog">
+    <form id="entryForm">
+
+        <h2>Eintrag bearbeiten / neu</h2>
+
+        <label>Baustelle / Auftrag</label>
+        <input type="text" id="titel"/>
+
+        <label>Von</label>
+        <input type="date" id="von"/>
+
+        <label>Bis (optional)</label>
+        <input type="date" id="bis"/>
+
+        <label>Mitarbeiter</label>
+        <div id="maList"></div>
+
+        <label>Fahrzeuge</label>
+        <div id="fzList"></div>
+
+        <label>Status</label>
+        <select id="status">
+            <option value="normal">normal</option>
+            <option value="urlaub">Urlaub</option>
+            <option value="krank">Krank</option>
+            <option value="schule">Schule</option>
+        </select>
+
+        <label>Notiz</label>
+        <textarea id="notiz"></textarea>
+
+        <button type="button" id="deleteEntryBtn">Löschen</button>
+        <button type="button" id="closeEntryBtn">Abbrechen</button>
+        <button type="submit">Speichern</button>
+    </form>
+</dialog>
+
+
+<!-- ---------- Stammdaten ---------- -->
+<dialog id="stammDialog">
+    <form id="stammForm">
+        <h2>Stammdaten</h2>
+
+        <label>Neuer Mitarbeiter</label>
+        <input type="text" id="stammMA">
+        <button type="button" id="addMA">hinzufügen</button>
+        <div id="maContainer"></div>
+
+        <label>Neues Fahrzeug</label>
+        <input type="text" id="stammFZ">
+        <button type="button" id="addFZ">hinzufügen</button>
+        <div id="fzContainer"></div>
+
+        <label>Neue Baustelle</label>
+        <input type="text" id="stammBS">
+        <button type="button" id="addBS">hinzufügen</button>
+        <div id="bsContainer"></div>
+
+        <br>
+        <button id="closeStammBtn">Schließen</button>
+    </form>
+</dialog>
+
+
+<!-- MODULE!! -->
 <script type="module" src="supabase.js"></script>
 <script type="module" src="app.js"></script>
 
