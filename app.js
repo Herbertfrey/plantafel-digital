@@ -1,59 +1,43 @@
 import { supabase } from "./supabase.js";
 
-let eintraege = [];
-let aktuellerEintrag = null;
+const entriesDiv = document.getElementById("entries");
+const dateStart = document.getElementById("dateStart");
+
+// Start immer heute
+dateStart.valueAsDate = new Date();
 
 async function load() {
-    const e = await supabase.from("plantafel").select("*").order("von", { ascending: true });
-    eintraege = e.data || [];
-    render();
+    entriesDiv.innerHTML = "Lade...";
+
+    let { data, error } = await supabase
+        .from("plantafel")
+        .select("*")
+        .order("von", { ascending: true });
+
+    if (error) {
+        entriesDiv.innerHTML = "Fehler beim Laden 😟";
+        console.log(error);
+        return;
+    }
+
+    show(data);
 }
 
-function render() {
-    const k = document.getElementById("kalender");
-    k.innerHTML = "";
+function show(data) {
+    entriesDiv.innerHTML = "";
 
-    eintraege.forEach(e => {
-        const div = document.createElement("div");
-        div.className = "entryCard";
-        div.dataset.id = e.id;
+    data.forEach(e => {
+        let div = document.createElement("div");
+        div.classList.add("entry");
         div.innerHTML = `
-            <strong>${e.titel}</strong><br>
-            ${e.von}${e.bis ? (" – " + e.bis) : ""}
+          <b>${e.titel}</b><br>
+          ${e.von}<br>
+          ${e.mitarbeiter}<br>
         `;
-        k.appendChild(div);
-    });
-
-    registerClickHandlers();
-}
-
-function registerClickHandlers() {
-    document.querySelectorAll(".entryCard").forEach(c => {
-        c.addEventListener("click", () => {
-            openEntryDialog(c.dataset.id);
-        });
+        entriesDiv.appendChild(div);
     });
 }
 
-function openEntryDialog(id) {
-    aktuellerEintrag = eintraege.find(e => e.id == id);
-    document.getElementById("titelInput").value = aktuellerEintrag.titel;
-    document.getElementById("vonInput").value = aktuellerEintrag.von;
-    document.getElementById("bisInput").value = aktuellerEintrag.bis;
-
-    document.getElementById("entryDialog").showModal();
-}
-
-document.getElementById("closeEntry").onclick = () => {
-    document.getElementById("entryDialog").close();
-};
-
-document.getElementById("addBtn").onclick = () => {
-    aktuellerEintrag = null;
-    document.getElementById("titelInput").value = "";
-    document.getElementById("vonInput").value = "";
-    document.getElementById("bisInput").value = "";
-    document.getElementById("entryDialog").showModal();
-};
+document.getElementById("reload").onclick = load;
 
 load();
