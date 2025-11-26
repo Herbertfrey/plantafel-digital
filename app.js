@@ -1,59 +1,59 @@
-import { supabase } from './supabase.js';
+import { supabase } from "./supabase.js";
 
 let eintraege = [];
-let mitarbeiter = [];
-let fahrzeuge = [];
-let baustellen = [];
+let aktuellerEintrag = null;
 
-
-// ======================
-// Laden aus DB
-// ======================
 async function load() {
-
-    let e = await supabase.from('plantafel').select('*').order('tag', { ascending: true });
-    let m = await supabase.from('mitarbeiter').select('*');
-    let f = await supabase.from('fahrzeuge').select('*');
-    let b = await supabase.from('baustellen').select('*');
-
+    const e = await supabase.from("plantafel").select("*").order("von", { ascending: true });
     eintraege = e.data || [];
-    mitarbeiter = m.data || [];
-    fahrzeuge = f.data || [];
-    baustellen = b.data || [];
-
     render();
 }
 
-// ======================
-// Rendern der Einträge
-// ======================
 function render() {
-
-    const cal = document.getElementById("calendar");
-    cal.innerHTML = "";
+    const k = document.getElementById("kalender");
+    k.innerHTML = "";
 
     eintraege.forEach(e => {
-
         const div = document.createElement("div");
-        div.classList.add("entry");
-
+        div.className = "entryCard";
+        div.dataset.id = e.id;
         div.innerHTML = `
-            <b>${e.titel}</b><br>
-            ${e.tag}<br>
-            ${e.mitarbeiter}<br>
-            ${e.fahrzeug}<br>
+            <strong>${e.titel}</strong><br>
+            ${e.von}${e.bis ? (" – " + e.bis) : ""}
         `;
+        k.appendChild(div);
+    });
 
-        cal.appendChild(div);
+    registerClickHandlers();
+}
+
+function registerClickHandlers() {
+    document.querySelectorAll(".entryCard").forEach(c => {
+        c.addEventListener("click", () => {
+            openEntryDialog(c.dataset.id);
+        });
     });
 }
 
+function openEntryDialog(id) {
+    aktuellerEintrag = eintraege.find(e => e.id == id);
+    document.getElementById("titelInput").value = aktuellerEintrag.titel;
+    document.getElementById("vonInput").value = aktuellerEintrag.von;
+    document.getElementById("bisInput").value = aktuellerEintrag.bis;
 
-// ======================
-// Event Buttons
-// ======================
-document.getElementById("reload").addEventListener("click", load);
+    document.getElementById("entryDialog").showModal();
+}
 
+document.getElementById("closeEntry").onclick = () => {
+    document.getElementById("entryDialog").close();
+};
 
-// Beim Start laden
+document.getElementById("addBtn").onclick = () => {
+    aktuellerEintrag = null;
+    document.getElementById("titelInput").value = "";
+    document.getElementById("vonInput").value = "";
+    document.getElementById("bisInput").value = "";
+    document.getElementById("entryDialog").showModal();
+};
+
 load();
