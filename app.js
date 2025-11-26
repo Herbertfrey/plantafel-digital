@@ -1,41 +1,48 @@
 import { supabase } from "./supabase.js";
 
-const entriesDiv = document.getElementById("entries");
+const board = document.getElementById("boardContainer");
 const dateStart = document.getElementById("dateStart");
 
-// Start immer heute
+// Immer HEUTE
 dateStart.valueAsDate = new Date();
 
 async function load() {
-    entriesDiv.innerHTML = "Lade...";
+  board.innerHTML = "<p>Lade...</p>";
 
-    let { data, error } = await supabase
-        .from("plantafel")
-        .select("*")
-        .order("von", { ascending: true });
+  const { data, error } = await supabase
+    .from("plantafel")
+    .select("*")
+    .order("von", { ascending: true });
 
-    if (error) {
-        entriesDiv.innerHTML = "Fehler beim Laden 😟";
-        console.log(error);
-        return;
-    }
+  if (error) {
+    console.error(error);
+    board.innerHTML = "<p>Fehler beim Laden!</p>";
+    return;
+  }
 
-    show(data);
+  render(data);
 }
 
-function show(data) {
-    entriesDiv.innerHTML = "";
+function render(data) {
+  board.innerHTML = "";
 
-    data.forEach(e => {
-        let div = document.createElement("div");
-        div.classList.add("entry");
-        div.innerHTML = `
-          <b>${e.titel}</b><br>
-          ${e.von}<br>
-          ${e.mitarbeiter}<br>
-        `;
-        entriesDiv.appendChild(div);
-    });
+  data.forEach(e => {
+    const div = document.createElement("div");
+    div.className = "entry";
+
+    div.innerHTML = `
+      <div class="entry-color" style="background:#005bbb;"></div>
+      <div>
+        <div class="entry-title">${e.titel}</div>
+        <div class="entry-meta">${e.von}</div>
+        <div class="entry-meta">${e.mitarbeiter || ""}</div>
+      </div>
+      <button>✏️</button>
+      <button>🗑️</button>
+    `;
+
+    board.appendChild(div);
+  });
 }
 
 document.getElementById("reload").onclick = load;
