@@ -1,107 +1,94 @@
 <!DOCTYPE html>
 <html lang="de">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Plantafel Dachdeckerei Frey</title>
-<link rel="stylesheet" href="style.css" />
-</head>
+    <meta charset="UTF-8">
+    <title>Plantafel Dachdeckerei Frey</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
 
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            background: #f3f3f3;
+        }
+
+        header {
+            background: #0066cc;
+            padding: 15px;
+            color: white;
+            font-size: 22px;
+        }
+
+        #toolbar {
+            background: #005bbb;
+            padding: 10px;
+            display: flex;
+            gap: 8px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        #entries {
+            padding: 15px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+
+        .entry {
+            background: white;
+            width: 200px;
+            border-radius: 6px;
+            padding: 10px;
+            border-left: 6px solid #444;
+        }
+
+        button {
+            padding: 6px 12px;
+            cursor: pointer;
+        }
+
+        footer {
+            padding: 15px;
+            margin-top: 50px;
+            text-align: center;
+            font-size: 12px;
+            background: #0066cc;
+            color: white;
+        }
+    </style>
+</head>
 <body>
 
 <header>
-    <h1>Plantafel Dachdeckerei Frey</h1>
-
-    <button id="btn14">14 Tage</button>
-    <button id="btn4W">4 Wochen</button>
-    <button id="btn12M">12 Monate</button>
-
-    <input type="date" id="startDate">
-
-    <button id="reloadBtn">Neu laden</button>
-    <button id="backupBtn">Backup</button>
-    <button id="stammBtn">Stammdaten</button>
-    <button id="newBtn">+ Eintrag</button>
-
-    <nav>
-        <div>Urlaub</div>
-        <div>Krank</div>
-        <div>Schule</div>
-        <div>Fahrzeug</div>
-    </nav>
+    Plantafel Dachdeckerei Frey
 </header>
 
-<main id="board"></main>
+<div id="toolbar">
+    <button id="btn14">14 Tage</button>
+    <button id="btn28">4 Wochen</button>
+    <button id="btnJahr">12 Monate</button>
 
-<footer>© 2025 Dachdeckerei Frey – Digitale Plantafel</footer>
+    <input id="startDatum" type="date">
 
+    <button id="reload">Neu laden</button>
+    <button id="backup">Backup</button>
+    <button id="stamm">Stammdaten</button>
+    <button id="new">+ Eintrag</button>
 
-<!-- ---------- Eintrags-Dialog ----------- -->
-<dialog id="entryDialog">
-    <form id="entryForm">
+    <div style="margin-left:auto;color:white;">
+        Urlaub<br>Krank<br>Schule<br>Fahrzeug
+    </div>
+</div>
 
-        <h2>Eintrag bearbeiten / neu</h2>
+<!-- HIER WERDEN DIE EINTRÄGE EINGEFÜGT -->
+<div id="entries"></div>
 
-        <label>Baustelle / Auftrag</label>
-        <input type="text" id="titel"/>
+<footer>
+    © 2025 Dachdeckerei Frey – Digitale Plantafel
+</footer>
 
-        <label>Von</label>
-        <input type="date" id="von"/>
-
-        <label>Bis (optional)</label>
-        <input type="date" id="bis"/>
-
-        <label>Mitarbeiter</label>
-        <div id="maList"></div>
-
-        <label>Fahrzeuge</label>
-        <div id="fzList"></div>
-
-        <label>Status</label>
-        <select id="status">
-            <option value="normal">normal</option>
-            <option value="urlaub">Urlaub</option>
-            <option value="krank">Krank</option>
-            <option value="schule">Schule</option>
-        </select>
-
-        <label>Notiz</label>
-        <textarea id="notiz"></textarea>
-
-        <button type="button" id="deleteEntryBtn">Löschen</button>
-        <button type="button" id="closeEntryBtn">Abbrechen</button>
-        <button type="submit">Speichern</button>
-    </form>
-</dialog>
-
-
-<!-- ---------- Stammdaten ---------- -->
-<dialog id="stammDialog">
-    <form id="stammForm">
-        <h2>Stammdaten</h2>
-
-        <label>Neuer Mitarbeiter</label>
-        <input type="text" id="stammMA">
-        <button type="button" id="addMA">hinzufügen</button>
-        <div id="maContainer"></div>
-
-        <label>Neues Fahrzeug</label>
-        <input type="text" id="stammFZ">
-        <button type="button" id="addFZ">hinzufügen</button>
-        <div id="fzContainer"></div>
-
-        <label>Neue Baustelle</label>
-        <input type="text" id="stammBS">
-        <button type="button" id="addBS">hinzufügen</button>
-        <div id="bsContainer"></div>
-
-        <br>
-        <button id="closeStammBtn">Schließen</button>
-    </form>
-</dialog>
-
-
-<!-- MODULE!! -->
+<!-- wichtig: Module laden -->
 <script type="module" src="supabase.js"></script>
 <script type="module" src="app.js"></script>
 
