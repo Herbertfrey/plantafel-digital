@@ -1,257 +1,283 @@
-import { supa } from "./supabase.js";
+// ===================================================================
+// SUPABASE INITIALISIERUNG
+// ===================================================================
 
-/* ======================================================
-   Globale Variablen
-======================================================= */
+const SUPA_URL = "https://mtybmrkyhavxpvwysglo.supabase.co";
+const SUPA_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im10eWJtcmt5aGF2eHB2d3lzZ2xvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjIxNjQ1OTIsImV4cCI6MjA3Nzc0MDU5Mn0.UToAmJAvACYvnO9hCIeyfm-VYKr5jincXdnEDDtbhvo";
+
+const supa = supabase.createClient(SUPA_URL, SUPA_KEY);
+
+
+// ===================================================================
+// GLOBALE VARIABLEN
+// ===================================================================
+
+let eintraege = [];
 let mitarbeiter = [];
 let fahrzeuge = [];
 let baustellen = [];
-let eintraege = [];
-
 let currentView = "14d";
 
-/* ======================================================
-   Helper: Farbe aus Name erzeugen
-======================================================= */
+// ===================================================================
+// FARBE FÜR MITARBEITER
+// ===================================================================
+
 function colorFromName(name) {
-  if (!name) return "#005bbb"; // fallback
-  let hash = 0;
-  for (let i=0;i<name.length;i++) {
-    hash = name.charCodeAt(i) + ((hash << 5) - hash);
+  let h = 0;
+  for (let i = 0; i < name.length; i++) {
+    h = name.charCodeAt(i) + ((h << 5) - h);
   }
-  const hue = Math.abs(hash) % 360;
-  return `hsl(${hue}, 70%, 45%)`;
+  return `hsl(${h % 360},70%,45%)`;
 }
 
-/* ======================================================
-   LOAD ALL
-======================================================= */
-export async function loadAll() {
+// ===================================================================
+// DATEN LADEN
+// ===================================================================
+
+async function loadAll() {
 
   const { data: e } = await supa.from("plantafel").select().order("tag");
   const { data: m } = await supa.from("mitarbeiter").select().order("name");
   const { data: f } = await supa.from("fahrzeuge").select().order("name");
   const { data: b } = await supa.from("baustellen").select().order("name");
 
-  eintraege = e || [];
-  mitarbeiter = m || [];
-  fahrzeuge = f || [];
-  baustellen = b || [];
+  eintraege = e ?? [];
+  mitarbeiter = m ?? [];
+  fahrzeuge = f ?? [];
+  baustellen = b ?? [];
 
   renderBoard();
 }
 
-/* ======================================================
-   ENTRY CRUD
-======================================================= */
-export async function insertEntries(rows) {
-  return await supa.from("plantafel").insert(rows);
-}
+// ===================================================================
+// HTML RENDERING
+// ===================================================================
 
-export async function updateEntry(id, payload) {
-  return await supa.from("plantafel").update(payload).eq("id", id);
-}
+function renderBoard() {
+  const box = document.getElementById("boardContainer");
+  box.innerHTML = "";
 
-export async function deleteEntry(id) {
-  return await supa.from("plantafel").delete().eq("id", id);
-}
-
-/* ======================================================
-   Stammdaten
-======================================================= */
-export async function addMitarbeiter(name) {
-  await supa.from("mitarbeiter").insert({ name });
-  loadAll();
-}
-
-export async function addFahrzeug(name) {
-  await supa.from("fahrzeuge").insert({ name });
-  loadAll();
-}
-
-export async function addBaustelle(name) {
-  await supa.from("baustellen").insert({ name });
-  loadAll();
-}
-
-export async function deleteMitarbeiter(id) {
-  await supa.from("mitarbeiter").delete().eq("id", id);
-  loadAll();
-}
-export async function deleteFahrzeug(id) {
-  await supa.from("fahrzeuge").delete().eq("id", id);
-  loadAll();
-}
-export async function deleteBaustelle(id) {
-  await supa.from("baustellen").delete().eq("id", id);
-  loadAll();
-}
-
-/* ======================================================
-   RENDER EVERYTHING
-======================================================= */
-function renderBoard(){
   const start = new Date(startDate.value);
-  const container = document.getElementById("boardContainer");
-  container.innerHTML = "";
 
-  if(currentView=="14d") render14(start);
-  if(currentView=="4w") render4Weeks(start);
-  if(currentView=="12m") render12Months(start);
+  if (currentView === "14d") render14(start);
+  if (currentView === "4w") render4Weeks(start);
+  if (currentView === "12m") render12(start);
 }
 
-/* ======================================================
-   14 Tage
-======================================================= */
-function render14(start){
+// ===================================================================
+// 14 TAGE
+// ===================================================================
+
+function render14(start) {
   const wrap = document.createElement("div");
-  wrap.style.display = "grid";
-  wrap.style.gridTemplateColumns = "repeat(7 ,1fr)";
-  wrap.style.gap = "10px";
+  wrap.className = "view-grid";
 
-  let d=new Date(start);
-  let added=0;
-  while(added<14){
-    const wd = d.getDay();
-    if(wd!==0 && wd!==6){
+  let d = new Date(start);
+  let count = 0;
+
+  while (count < 14) {
+    if (d.getDay() !== 0 && d.getDay() !== 6) {
       wrap.appendChild(renderDayBox(d));
-      added++;
+      count++;
     }
-    d.setDate(d.getDate()+1);
+    d.setDate(d.getDate() + 1);
   }
-  boardContainer.appendChild(wrap)
-}
 
-/* ======================================================
-   4 Wochen
-======================================================= */
-function render4Weeks(start){
-  const wrap=document.createElement("div");
-  wrap.style.display="grid";
-  wrap.style.gridTemplateColumns="repeat(5,1fr)";
-  wrap.style.gap="10px";
-
-  const s=new Date(start);
-  const weekday=s.getDay();
-  const diff=weekday===0?6:weekday-1;
-  s.setDate(s.getDate()-diff);
-
-  for(let w=0;w<4;w++){
-    for(let wd=0;wd<5;wd++){
-      const d=new Date(s);
-      d.setDate(s.getDate()+w*7+wd);
-      wrap.appendChild(renderDayBox(d));
-    }
-  }
   boardContainer.appendChild(wrap);
 }
 
-/* ======================================================
-   12 Monate
-======================================================= */
-function render12Months(start){
-  const wrap=document.createElement("div");
-  wrap.style.display="grid";
-  wrap.style.gridTemplateColumns="repeat(4,1fr)";
-  wrap.style.gap="15px";
+// ===================================================================
+// 4 WOCHEN
+// ===================================================================
 
-  const y=start.getFullYear();
+function render4Weeks(start) {
+  const wrap = document.createElement("div");
+  wrap.className = "view-grid";
 
-  for(let m=0;m<12;m++){
+  // Montag Start
+  let d = new Date(start);
+  d.setDate(d.getDate() - (d.getDay() + 6) % 7);
 
-    const box=document.createElement("div");
-    box.className="month-box";
+  for (let i = 0; i < 20; i++) {
+    wrap.appendChild(renderDayBox(d));
+    d.setDate(d.getDate() + 1);
+  }
 
-    const head=document.createElement("div");
-    head.className="month-head";
-    head.textContent=new Date(y,m,1).toLocaleString("de-DE",{
-      month:"long",
-      year:"numeric"
+  boardContainer.appendChild(wrap);
+}
+
+// ===================================================================
+// 12 MONATE
+// ===================================================================
+
+function render12(start) {
+  const wrap = document.createElement("div");
+  wrap.className = "months-grid";
+
+  let year = start.getFullYear();
+
+  for (let m = 0; m < 12; m++) {
+    const div = document.createElement("div");
+    div.className = "month-box";
+
+    div.innerHTML = `
+      <div class="month-head">
+        ${new Date(year, m, 1).toLocaleString("de-DE", {month:"long",year:"numeric"})}
+      </div>
+    `;
+
+    let inside = document.createElement("div");
+
+    eintraege.filter(x => {
+      let d = new Date(x.tag);
+      return d.getFullYear() === year && d.getMonth() === m;
+    }).forEach(x => {
+      inside.appendChild(renderEntry(x));
     });
-    box.appendChild(head);
 
-    const content=document.createElement("div");
-
-    eintraege
-      .filter(e=>{
-        const d=new Date(e.tag);
-        return d.getFullYear()==y && d.getMonth()==m;
-      })
-      .forEach(e=>content.appendChild(renderEntry(e)));
-
-    box.appendChild(content);
-    wrap.appendChild(box);
+    div.appendChild(inside);
+    wrap.appendChild(div);
   }
+
   boardContainer.appendChild(wrap);
 }
 
-/* ======================================================
-   Tagesbox
-======================================================= */
-function renderDayBox(d){
-  const box=document.createElement("div");
-  box.className="day-box";
+// ===================================================================
+// DAY BOX
+// ===================================================================
 
-  const dateStr=d.toISOString().slice(0,10);
+function renderDayBox(date) {
+  const box = document.createElement("div");
+  const ds = date.toISOString().slice(0, 10);
 
-  const head=document.createElement("div");
-  head.className="day-head";
-  head.textContent=d.toLocaleDateString("de-DE",{
-    weekday:"short",day:"2-digit",month:"2-digit",year:"numeric"
+  box.className = "day-box";
+  box.innerHTML = `
+    <div class="day-head">
+      ${date.toLocaleDateString("de-DE",{weekday:"short",day:"2-digit",month:"2-digit"})}
+    </div>
+  `;
+
+  const list = document.createElement("div");
+
+  eintraege.filter(e => e.tag === ds).forEach(e => {
+    list.appendChild(renderEntry(e));
   });
-  box.appendChild(head);
 
-  const body=document.createElement("div");
-  eintraege.filter(e=>e.tag===dateStr)
-           .forEach(e=>body.appendChild(renderEntry(e)));
+  box.appendChild(list);
 
-  box.onclick=(evt)=>{
-    if(evt.target===box || evt.target===head || evt.target===body){
-      openEntryDialog({tag:dateStr});
-    }
-  };
+  box.onclick = () => openEntryDialog({tag:ds});
 
-  box.appendChild(body);
   return box;
 }
 
-/* ======================================================
-   Entry Card
-======================================================= */
-function renderEntry(e){
-  const div=document.createElement("div");
-  div.className="entry";
-  div.draggable=true;
+// ===================================================================
+// ENTRY CARD
+// ===================================================================
 
-  const bar=document.createElement("div");
-  bar.className="entry-color";
-  bar.style.background=e.status ? "#005bbb" : colorFromName(e.mitarbeiter?.split(",")[0]);
+function renderEntry(e) {
+  let div = document.createElement("div");
+  div.className = "entry";
 
-  const title=document.createElement("div");
-  title.className="entry-title";
-  title.textContent=e.titel;
+  let c = e.mitarbeiter?.split(",")[0]?.trim() || "";
+  div.style.borderLeft = `6px solid ${colorFromName(c)}`;
 
-  const info=document.createElement("div");
-  info.className="entry-meta";
-  info.textContent=e.mitarbeiter || "";
+  div.innerHTML = `
+    <div class="entry-title">${e.titel}</div>
+    <div class="entry-people">${e.mitarbeiter}</div>
+    <div class="entry-btns">
+      <span class="edit-btn">✏️</span>
+      <span class="del-btn">🗑️</span>
+    </div>
+  `;
 
-  const btn=document.createElement("button");
-  btn.textContent="✏️";
-  btn.onclick = ()=> openEntryDialog(e);
+  div.querySelector(".edit-btn").onclick = ev => {
+    ev.stopPropagation();
+    openEntryDialog(e);
+  };
 
-  const del=document.createElement("button");
-  del.textContent="🗑️";
-  del.onclick = ()=> deleteEntry(e.id).then(loadAll);
+  div.querySelector(".del-btn").onclick = ev => {
+    ev.stopPropagation();
+    deleteEntry(e.id);
+  };
 
-  div.append(bar,title,info,btn,del);
   return div;
 }
 
-/* ======================================================
-   Init
-======================================================= */
-window.onload=()=>{
-  const t=new Date();
-  startDate.value=t.toISOString().slice(0,10);
-  loadAll();
+// ===================================================================
+// DIALOG FUNKTIONEN
+// ===================================================================
+
+window.openEntryDialog = function(data={}) {
+
+  entryDialog.showModal();
+
+  eId.value = data.id ?? "";
+  eVon.value = data.tag ?? startDate.value;
+  eTitel.value = data.titel ?? "";
+  eNotiz.value = data.notiz ?? "";
+
+  renderCheckboxes("#eMitarbeiter", mitarbeiter, data.mitarbeiter);
+  renderCheckboxes("#eFahrzeuge", fahrzeuge, data.fahrzeug);
 }
+
+function renderCheckboxes(sel, arr, current) {
+  const div = document.querySelector(sel);
+  div.innerHTML = "";
+
+  arr.forEach(x=>{
+    let lbl = document.createElement("label");
+    lbl.innerHTML = `<input type="checkbox" value="${x.name}">${x.name}`;
+    if (current?.includes(x.name)) lbl.querySelector("input").checked = true;
+    div.appendChild(lbl);
+  });
+}
+
+// ===================================================================
+// SPEICHERN
+// ===================================================================
+
+entryForm.onsubmit = async evt => {
+  evt.preventDefault();
+
+  const id = eId.value;
+
+  const payload = {
+    titel:eTitel.value,
+    tag:eVon.value,
+    mitarbeiter: getChecked("#eMitarbeiter"),
+    fahrzeug:getChecked("#eFahrzeuge"),
+    notiz:eNotiz.value
+  };
+
+  if (!id) {
+    await supa.from("plantafel").insert(payload);
+  } else {
+    await supa.from("plantafel").update(payload).eq("id", id);
+  }
+
+  entryDialog.close();
+  loadAll();
+};
+
+function getChecked(sel){
+  return [...document.querySelectorAll(sel+" input:checked")]
+         .map(x=>x.value).join(", ");
+}
+
+// ===================================================================
+// LÖSCHEN
+// ===================================================================
+
+window.deleteEntry = async function(id){
+  await supa.from("plantafel").delete().eq("id", id);
+  loadAll();
+};
+
+// ===================================================================
+// INIT
+// ===================================================================
+
+window.onload = () => {
+  startDate.value = new Date().toISOString().slice(0,10);
+  loadAll();
+};
