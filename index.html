@@ -1,45 +1,38 @@
 <!DOCTYPE html>
 <html lang="de">
 <head>
-  <meta charset="UTF-8" />
+  <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Plantafel Dachdeckerei Frey</title>
   <link rel="stylesheet" href="style.css">
 </head>
 
 <body>
-  <header>
-    <h1>Plantafel Dachdeckerei Frey</h1>
-  </header>
 
-  <!-- Navigation -->
-  <div class="nav">
+<header>
+  <h1>Plantafel Dachdeckerei Frey</h1>
+
+  <div class="btn-tabs">
     <button id="btn14">14 Tage</button>
     <button id="btn28">4 Wochen</button>
     <button id="btn365">12 Monate</button>
-
-    <input id="dateStart" type="date">
-    <button id="reload">Neu laden</button>
-    <button id="backup">Backup</button>
-    <button id="stammdaten">Stammdaten</button>
-    <button id="addEntry">+ Eintrag</button>
   </div>
 
-  <!-- Kategorien -->
-  <div class="side">
-    <div>Urlaub</div>
-    <div>Krank</div>
-    <div>Schule</div>
-    <div>Fahrzeug</div>
-  </div>
+  <input id="dateStart" type="date">
+  <button id="reload" class="btn-primary">Neu laden</button>
+  <button id="backup" class="btn-secondary">Backup</button>
+  <button id="stammdaten" class="btn-secondary">Stammdaten</button>
+  <button id="addEntry" class="btn-primary">+ Eintrag</button>
+</header>
 
-  <!-- Hier erscheinen ALLE Einträge -->
-  <div id="entries"></div>
+<main>
+  <div id="boardContainer"></div>
+</main>
 
-  <footer>© 2025 Dachdeckerei Frey – Digitale Plantafel</footer>
+<footer>© 2025 Dachdeckerei Frey – Digitale Plantafel</footer>
 
-  <!-- wichtige JS Dateien -->
-  <script type="module" src="supabase.js"></script>
-  <script type="module" src="app.js"></script>
+<script type="module" src="supabase.js"></script>
+<script type="module" src="app.js"></script>
+
 </body>
 </html>
