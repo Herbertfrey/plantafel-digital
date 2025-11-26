@@ -4,128 +4,56 @@ let eintraege = [];
 let mitarbeiter = [];
 let fahrzeuge = [];
 let baustellen = [];
-let aktuellerEintrag = null;
 
-// ==========================================
-// LADEN AUS DB
-// ==========================================
 
+// ======================
+// Laden aus DB
+// ======================
 async function load() {
 
-  // nur Einträge mit gültiger ID laden!
-  let e = await supabase
-    .from('plantafel')
-    .select('*')
-    .not('id', 'is', null)
-    .order('tag', { ascending: true });
+    let e = await supabase.from('plantafel').select('*').order('tag', { ascending: true });
+    let m = await supabase.from('mitarbeiter').select('*');
+    let f = await supabase.from('fahrzeuge').select('*');
+    let b = await supabase.from('baustellen').select('*');
 
-  let m = await supabase.from('mitarbeiter').select('*');
-  let f = await supabase.from('fahrzeuge').select('*');
-  let b = await supabase.from('baustellen').select('*');
+    eintraege = e.data || [];
+    mitarbeiter = m.data || [];
+    fahrzeuge = f.data || [];
+    baustellen = b.data || [];
 
-  eintraege = e.data ?? [];
-  mitarbeiter = m.data ?? [];
-  fahrzeuge = f.data ?? [];
-  baustellen = b.data ?? [];
-
-  render();
+    render();
 }
 
-// ==========================================
-// EINTRAG HINZUFÜGEN
-// ==========================================
-
-async function insertEntry(rows) {
-  return await supabase.from('plantafel').insert(rows);
-}
-
-// ==========================================
-// UPDATE
-// ==========================================
-
-async function updateEntry(id, payload) {
-  return await supabase
-    .from('plantafel')
-    .update(payload)
-    .eq('id', id);
-}
-
-// ==========================================
-// DELETE
-// ==========================================
-
-async function deleteEntry(id) {
-  await supabase.from('plantafel').delete().eq('id', id);
-  await load();
-}
-
-// ==========================================
-// UI RENDER
-// ==========================================
-
+// ======================
+// Rendern der Einträge
+// ======================
 function render() {
-  const cont = document.getElementById('entries');
-  cont.innerHTML = '';
 
-  eintraege.forEach(e => {
+    const cal = document.getElementById("calendar");
+    cal.innerHTML = "";
 
-    const card = document.createElement('div');
-    card.className = 'card';
-    card.innerHTML = `
-      <div><b>${e.titel}</b></div>
-      <div>${e.tag}</div>
-      <div>${e.mitarbeiter}</div>
-      <div>${e.fahrzeug}</div>
+    eintraege.forEach(e => {
 
-      <button class="edit">✏️</button>
-      <button class="delete">🗑️</button>
-    `;
+        const div = document.createElement("div");
+        div.classList.add("entry");
 
-    // DELETE
-    card.querySelector('.delete').onclick = () => {
-      deleteEntry(e.id);
-    };
+        div.innerHTML = `
+            <b>${e.titel}</b><br>
+            ${e.tag}<br>
+            ${e.mitarbeiter}<br>
+            ${e.fahrzeug}<br>
+        `;
 
-    cont.appendChild(card);
-  });
+        cal.appendChild(div);
+    });
 }
 
-// ==========================================
-// DIALOG ÖFFNEN
-// ==========================================
 
-window.openEntryDialog = function () {
-  aktuellerEintrag = null;
-  document.getElementById('entryDialog').showModal();
-};
+// ======================
+// Event Buttons
+// ======================
+document.getElementById("reload").addEventListener("click", load);
 
-// ==========================================
-// SPEICHERN
-// ==========================================
 
-window.saveEntry = async function () {
-
-  const titel = document.getElementById('titel').value;
-  const tag = document.getElementById('von').value;
-
-  let payload = {
-    titel,
-    tag,
-    inserted_at: new Date().toISOString()
-  };
-
-  if (aktuellerEintrag) {
-    await updateEntry(aktuellerEintrag.id, payload);
-  } else {
-    await insertEntry(payload);
-  }
-
-  document.getElementById('entryDialog').close();
-  await load();
-};
-
-// ==========================================
-// START
-// ==========================================
-
+// Beim Start laden
 load();
