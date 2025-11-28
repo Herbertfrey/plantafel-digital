@@ -1,108 +1,101 @@
-// --- Supabase Client ---
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { supabase } from "./supabase.js";
 
-const supabaseUrl = "https://mtvbmkhyhavxpvwysqlo.supabase.co";
-const supabaseKey = "sb_publishable_0w8pZSpEAxxlv9Ke6dcurg_OuAl4q7r"; 
-
-export const supabase = createClient(supabaseUrl, supabaseKey);
-
-// --- Elemente ---
-const board = document.getElementById("boardContainer");
-const datePicker = document.getElementById("startDate");
-
+// =========================================================================
+// Globale Variablen
+// =========================================================================
 let start = new Date();
-let viewMode = "14";
+const datePicker = document.getElementById("datePicker");
 
-// --- Buttons ---
-document.getElementById("btn14").onclick = () => { viewMode = "14"; load(); };
-document.getElementById("btn4W").onclick = () => { viewMode = "28"; load(); };
-document.getElementById("btn12M").onclick = () => { viewMode = "365"; load(); };
+// =========================================================================
+// Buttons
+// =========================================================================
+document.getElementById("next14").onclick = () => { start.setDate(start.getDate() + 14); load(); };
+document.getElementById("next30").onclick = () => { start.setDate(start.getDate() + 30); load(); };
+document.getElementById("next365").onclick = () => { start.setDate(start.getDate() + 365); load(); };
 
-document.getElementById("btnPrev").onclick = () => {
-    start.setDate(start.getDate() - parseInt(viewMode));
-    load();
-};
+document.getElementById("prev14").onclick = () => { start.setDate(start.getDate() - 14); load(); };
+document.getElementById("prev30").onclick = () => { start.setDate(start.getDate() - 30); load(); };
+document.getElementById("prev365").onclick = () => { start.setDate(start.getDate() - 365); load(); };
 
-document.getElementById("btnNext").onclick = () => {
-    start.setDate(start.getDate() + parseInt(viewMode));
-    load();
-};
-
-document.getElementById("btnReload").onclick = load;
+document.getElementById("btnreload").onclick = load;
 
 datePicker.value = start.toISOString().substring(0, 10);
 
-// --- Daten laden ---
+// =========================================================================
+// Daten aus Supabase laden
+// =========================================================================
 async function load() {
-
     const startDate = datePicker.value;
     start = new Date(startDate);
 
-    const end = new Date(start);
-    end.setDate(start.getDate() + parseInt(viewMode));
+    document.getElementById("startOutput").innerText =
+        start.toLocaleDateString("de-DE");
 
-    board.innerHTML = "";
+    await Promise.all([
+        loadPlanTafel(),
+        loadMitarbeiter(),
+        loadFahrzeuge(),
+        loadBaustellen()
+    ]);
+}
 
+// =========================================================================
+// Tabellen laden
+// =========================================================================
+
+async function loadPlanTafel() {
     const { data, error } = await supabase
-        .from("plantafel")
-        .select("*")
-        .gte("von", start.toISOString().substring(0, 10))
-        .lte("von", end.toISOString().substring(0, 10))
-        .order("von", { ascending: true });
+        .from('plantafel')
+        .select('*')
+        .order('datum', { ascending: true });
 
     if (error) {
-        console.error("Supabase Fehler:", error);
-        board.innerHTML = "<p>Fehler beim Laden ❌ (Supabase Zugriff)</p>";
+        console.error("Plantafel Fehler:", error);
         return;
     }
-
-    renderCalendar(data);
+    console.log("Plantafel", data);
 }
 
-// --- Kalender anzeigen ---
-function renderCalendar(data) {
+async function loadMitarbeiter() {
+    const { data, error } = await supabase
+        .from('mitarbeiter')
+        .select('*')
+        .order('name', { ascending: true });
 
-    let dayCount = parseInt(viewMode);
-    let d = new Date(start);
-
-    for (let i = 0; i < dayCount; i++) {
-
-        const fieldDate = d.toISOString().substring(0, 10);
-
-        const items = data.filter(e => e.von === fieldDate);
-
-        let title = d.toLocaleDateString("de-DE", {
-            weekday: "short",
-            day: "2-digit",
-            month: "2-digit",
-            year: "numeric",
-        });
-
-        let html = `<div class="day"><div class="day-header">${title}</div>`;
-
-        items.forEach(e => {
-
-            let farbe = "";
-            if (e.status === "urlaub") farbe = "blue";
-            if (e.status === "krank") farbe = "red";
-            if (e.status === "schule") farbe = "green";
-            if (e.status === "fahrzeug") farbe = "orange";
-
-            html += `
-                <div class="entry ${farbe}">
-                    <strong>${e.titel}</strong><br>
-                    ${e.mitarbeiter ?? ""}<br>
-                    ${e.fahrzeug ?? ""}<br>
-                    ${e.baustelle ?? ""}
-                </div>
-            `;
-        });
-
-        html += "</div>";
-        board.innerHTML += html;
-
-        d.setDate(d.getDate() + 1);
+    if (error) {
+        console.error("Mitarbeiter Fehler:", error);
+        return;
     }
+    console.log("Mitarbeiter", data);
 }
 
+async function loadFahrzeuge() {
+    const { data, error } = await supabase
+        .from('fahrzeuge')
+        .select('*')
+        .order('name', { ascending: true });
+
+    if (error) {
+        console.error("Fahrzeuge Fehler:", error);
+        return;
+    }
+    console.log("Fahrzeuge", data);
+}
+
+async function loadBaustellen() {
+    const { data, error } = await supabase
+        .from('baustellen')
+        .select('*')
+        .order('name', { ascending: true });
+
+    if (error) {
+        console.error("Baustellen Fehler:", error);
+        return;
+    }
+    console.log("Baustellen", data);
+}
+
+// =========================================================================
+// initial laden
+// =========================================================================
 load();
