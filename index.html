@@ -1,38 +1,912 @@
 <!DOCTYPE html>
 <html lang="de">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Plantafel Dachdeckerei Frey</title>
-  <link rel="stylesheet" href="style.css">
-</head>
+  <meta charset="UTF-8" />
+  <title>Plantafel Dachdeckerei Frey – V7 Reset</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
 
+  <style>
+    /* --------------------------------------------------------
+       FARBEN & DESIGN-VARIABLEN
+    ---------------------------------------------------------*/
+    :root {
+      --blue: #0b63c6;
+      --bg: #eef0f5;
+      --white: #ffffff;
+      --line: #d0d4dd;
+      --text: #0f172a;
+
+      --urlaub: #2563eb;  /* alles Status = blau */
+      --krank: #2563eb;
+      --schule: #2563eb;
+
+      --vehicle: #cc0000;
+    }
+
+    * { margin:0; padding:0; box-sizing:border-box; }
+
+    body {
+      font-family: system-ui, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+    }
+
+    /* --------------------------------------------------------
+       HEADER
+    ---------------------------------------------------------*/
+    header {
+      background: var(--blue);
+      padding: .7rem 1rem;
+      color:#fff;
+      display:flex;
+      flex-wrap: wrap;
+      align-items:center;
+      gap:.8rem;
+    }
+
+    header h1 {
+      font-size:1.3rem;
+      font-weight:700;
+      margin-right:1rem;
+    }
+
+    .btn-tabs { display:flex; gap:.4rem; }
+    .btn-tabs button {
+      background: rgba(255,255,255,.15);
+      color:#fff;
+      border:1px solid rgba(255,255,255,.25);
+      padding:.35rem .65rem;
+      border-radius:6px;
+      cursor:pointer;
+      font-weight:600;
+    }
+    .btn-tabs button.active {
+      background:#fff;
+      color:var(--blue);
+    }
+
+    input[type="date"] {
+      background: rgba(255,255,255,.25);
+      border:1px solid rgba(255,255,255,.35);
+      padding:.25rem .45rem;
+      border-radius:6px;
+      color:#fff;
+    }
+
+    .btn {
+      background: #fff;
+      color: var(--blue);
+      padding:.35rem .75rem;
+      border:none;
+      border-radius:6px;
+      cursor:pointer;
+      font-weight:600;
+    }
+    .btn.secondary {
+      background:rgba(255,255,255,.25);
+      color:#fff;
+    }
+
+    .nav-btn {
+      background:rgba(255,255,255,.25);
+      color:#fff;
+      border:none;
+      padding:.3rem .5rem;
+      border-radius:6px;
+      font-size:1rem;
+      cursor:pointer;
+    }
+
+    .legend {
+      margin-left:auto;
+      background:rgba(255,255,255,.25);
+      padding:.3rem .7rem;
+      border-radius:6px;
+      font-size:.75rem;
+      display:flex;
+      flex-direction:column;
+      gap:.25rem;
+    }
+    .legend-row {
+      display:flex;
+      align-items:center;
+      gap:.35rem;
+    }
+    .legend-color {
+      width:12px;
+      height:12px;
+      border-radius:3px;
+    }
+
+    /* --------------------------------------------------------
+       MAIN
+    ---------------------------------------------------------*/
+    main {
+      padding:1rem;
+    }
+
+    #boardContainer {
+      width:100%;
+    }
+
+    .day-box {
+      background:#fff;
+      border:1px solid var(--line);
+      border-radius:10px;
+      min-height:180px;
+      display:flex;
+      flex-direction:column;
+    }
+    .day-head {
+      background:#f1f5f9;
+      padding:.45rem .6rem;
+      font-weight:600;
+      border-bottom:1px solid var(--line);
+      display:flex;
+      justify-content:space-between;
+    }
+
+    .months-grid {
+      display:grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap:1rem;
+    }
+    .month-box {
+      background:#fff;
+      border:1px solid var(--line);
+      border-radius:10px;
+      min-height:200px;
+      display:flex;
+      flex-direction:column;
+    }
+    .month-head {
+      background:#f1f5f9;
+      padding:.45rem .6rem;
+      font-weight:600;
+      border-bottom:1px solid var(--line);
+    }
+
+    /* --------------------------------------------------------
+       EINTRÄGE
+    ---------------------------------------------------------*/
+    .entry {
+      background:#fff;
+      border-radius:6px;
+      border:1px solid rgba(0,0,0,.1);
+      padding:.3rem .45rem;
+      margin:.35rem;
+      font-size:.75rem;
+      display:flex;
+      gap:.5rem;
+      cursor:pointer;
+      box-shadow:0 1px 2px rgba(0,0,0,.15);
+    }
+
+    .entry-color {
+      width:6px;
+      border-radius:3px;
+    }
+
+    .entry-content { flex:1; }
+    .entry-title {
+      font-weight:700;
+      font-size:.8rem;
+    }
+    .entry-meta {
+      font-size:.68rem;
+      line-height:1.25;
+    }
+    .entry-vehicle {
+      color:var(--vehicle);
+      font-size:.68rem;
+      margin-top:.2rem;
+    }
+
+    .entry-actions {
+      display:flex;
+      flex-direction:column;
+      gap:.25rem;
+    }
+    .entry-actions button {
+      font-size:.6rem;
+      border:1px solid #ccc;
+      padding:.2rem .35rem;
+      border-radius:4px;
+      background:#fafafa;
+      cursor:pointer;
+    }
+
+    /* --------------------------------------------------------
+       DIALOGE
+    ---------------------------------------------------------*/
+    dialog {
+      border:none;
+      border-radius:12px;
+      padding:1rem 1.2rem;
+      width:min(95vw, 500px);
+      box-shadow:0 18px 50px rgba(0,0,0,.25);
+    }
+    dialog::backdrop {
+      background:rgba(0,0,0,.45);
+    }
+
+    label {
+      display:block;
+      margin-top:.7rem;
+      font-weight:600;
+      font-size:.85rem;
+    }
+
+    input, textarea, select {
+      width:100%;
+      padding:.35rem .45rem;
+      border:1px solid #cdd3dd;
+      border-radius:6px;
+      background:#fff;
+    }
+
+    textarea { min-height:60px; }
+
+    .checklist {
+      border:1px solid #ccd;
+      padding:.4rem;
+      border-radius:6px;
+      max-height:150px;
+      overflow-y:auto;
+    }
+    .checklist label {
+      font-size:.8rem;
+      font-weight:500;
+      display:flex;
+      align-items:center;
+      gap:.5rem;
+    }
+
+    footer {
+      background:var(--blue);
+      color:#fff;
+      text-align:center;
+      padding:.5rem;
+      margin-top:1rem;
+      font-size:.75rem;
+    }
+  </style>
+</head>
 <body>
 
 <header>
   <h1>Plantafel Dachdeckerei Frey</h1>
 
-  <div class="btn-tabs">
-    <button id="btn14">14 Tage</button>
-    <button id="btn28">4 Wochen</button>
-    <button id="btn365">12 Monate</button>
+  <div class="btn-tabs" id="viewTabs">
+    <button class="active" data-view="14d">14 Tage</button>
+    <button data-view="4w">4 Wochen</button>
+    <button data-view="12m">12 Monate</button>
   </div>
 
-  <input id="dateStart" type="date">
-  <button id="reload" class="btn-primary">Neu laden</button>
-  <button id="backup" class="btn-secondary">Backup</button>
-  <button id="stammdaten" class="btn-secondary">Stammdaten</button>
-  <button id="addEntry" class="btn-primary">+ Eintrag</button>
+  <div>
+    Start:
+    <input type="date" id="startDate">
+  </div>
+
+  <button class="nav-btn" id="prevMonthBtn">&#9664;</button>
+  <button class="nav-btn" id="nextMonthBtn">&#9654;</button>
+
+  <button class="btn secondary" id="reloadBtn">Neu laden</button>
+  <button class="btn secondary" id="backupBtn">Backup</button>
+  <button class="btn secondary" id="stammBtn">Stammdaten</button>
+  <button class="btn" id="newEntryBtn">+ Eintrag</button>
+
+  <div class="legend">
+    <div class="legend-row"><div class="legend-color" style="background:var(--urlaub)"></div> Urlaub</div>
+    <div class="legend-row"><div class="legend-color" style="background:var(--krank)"></div> Krank</div>
+    <div class="legend-row"><div class="legend-color" style="background:var(--schule)"></div> Schule</div>
+    <div class="legend-row"><div class="legend-color" style="background:var(--vehicle)"></div> Fahrzeug</div>
+  </div>
 </header>
 
 <main>
   <div id="boardContainer"></div>
 </main>
 
+<!-- EINTRAG DIALOG -->
+<dialog id="entryDialog">
+  <form id="entryForm">
+    <h2>Eintrag bearbeiten / neu</h2>
+
+    <label>Baustelle / Auftrag
+      <input type="text" id="eTitel" required>
+    </label>
+
+    <label>Von
+      <input type="date" id="eVon" required>
+    </label>
+
+    <label>Bis (optional)
+      <input type="date" id="eBis">
+    </label>
+
+    <label>Mitarbeiter</label>
+    <div class="checklist" id="eMitarbeiter"></div>
+
+    <label>Fahrzeuge</label>
+    <div class="checklist" id="eFahrzeuge"></div>
+
+    <label>Status</label>
+    <select id="eStatus">
+      <option value="">normal</option>
+      <option value="Urlaub">Urlaub</option>
+      <option value="Krank">Krank</option>
+      <option value="Schule">Schule</option>
+    </select>
+
+    <label>Notiz</label>
+    <textarea id="eNotiz"></textarea>
+
+    <input type="hidden" id="eId">
+
+    <div style="margin-top:1rem; display:flex; justify-content:space-between;">
+      <button type="button" id="entryDeleteBtn">Löschen</button>
+      <div>
+        <button type="button" id="entryCancelBtn">Abbrechen</button>
+        <button type="submit" class="btn">Speichern</button>
+      </div>
+    </div>
+  </form>
+</dialog>
+
+<!-- VERSCHIEBEN DIALOG -->
+<dialog id="moveDialog">
+  <form id="moveForm">
+    <h2>Verschieben auf neues Datum</h2>
+
+    <label>Datum wählen
+      <input type="date" id="moveDate" required>
+    </label>
+
+    <input type="hidden" id="moveId">
+
+    <div style="margin-top:1rem; display:flex; justify-content:space-between;">
+      <button type="button" id="moveCancelBtn">Abbrechen</button>
+      <button type="submit" class="btn">Verschieben</button>
+    </div>
+  </form>
+</dialog>
+
+<!-- STAMMDATEN -->
+<dialog id="stammDialog">
+  <form id="stammForm">
+    <h2>Stammdaten</h2>
+
+    <label>Neuer Mitarbeiter
+      <input type="text" id="sMitarbeiter">
+    </label>
+    <button type="button" id="addMitarbeiter" class="btn">+ hinzufügen</button>
+    <div id="listMitarbeiter" style="margin: .6rem 0;"></div>
+
+    <label>Neues Fahrzeug
+      <input type="text" id="sFahrzeug">
+    </label>
+    <button type="button" id="addFahrzeug" class="btn">+ hinzufügen</button>
+    <div id="listFahrzeuge" style="margin: .6rem 0;"></div>
+
+    <label>Neue Baustelle
+      <input type="text" id="sBaustelle">
+    </label>
+    <button type="button" id="addBaustelle" class="btn">+ hinzufügen</button>
+    <div id="listBaustellen" style="margin: .6rem 0;"></div>
+
+    <div style="text-align:right; margin-top:1rem;">
+      <button type="button" id="stammCloseBtn">Schließen</button>
+    </div>
+  </form>
+</dialog>
+
 <footer>© 2025 Dachdeckerei Frey – Digitale Plantafel</footer>
 
-<script type="module" src="supabase.js"></script>
-<script type="module" src="app.js"></script>
+<!-- ALLES IN EINEM SCRIPT -->
+<script type="module">
+  import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
+  const SUPA_URL = "https://mtybmrkyhavxpvwysglo.supabase.co";
+  const SUPA_KEY = "sb_publishable_0w8pZ5pEAxxlv9Ke6dcurc_0uAl4q7m";
+
+  const supa = createClient(SUPA_URL, SUPA_KEY);
+
+  // DOM-Elemente
+  const boardContainer  = document.getElementById("boardContainer");
+  const startDateInput  = document.getElementById("startDate");
+  const viewTabs        = document.getElementById("viewTabs");
+  const prevMonthBtn    = document.getElementById("prevMonthBtn");
+  const nextMonthBtn    = document.getElementById("nextMonthBtn");
+  const reloadBtn       = document.getElementById("reloadBtn");
+  const backupBtn       = document.getElementById("backupBtn");
+  const stammBtn        = document.getElementById("stammBtn");
+  const newEntryBtn     = document.getElementById("newEntryBtn");
+
+  const entryDialog     = document.getElementById("entryDialog");
+  const entryForm       = document.getElementById("entryForm");
+  const entryCancelBtn  = document.getElementById("entryCancelBtn");
+  const entryDeleteBtn  = document.getElementById("entryDeleteBtn");
+
+  const moveDialog      = document.getElementById("moveDialog");
+  const moveForm        = document.getElementById("moveForm");
+  const moveCancelBtn   = document.getElementById("moveCancelBtn");
+
+  const stammDialog     = document.getElementById("stammDialog");
+  const stammCloseBtn   = document.getElementById("stammCloseBtn");
+
+  const eTitel          = document.getElementById("eTitel");
+  const eVon            = document.getElementById("eVon");
+  const eBis            = document.getElementById("eBis");
+  const eMitarbeiterDiv = document.getElementById("eMitarbeiter");
+  const eFahrzeugeDiv   = document.getElementById("eFahrzeuge");
+  const eStatus         = document.getElementById("eStatus");
+  const eNotiz          = document.getElementById("eNotiz");
+  const eId             = document.getElementById("eId");
+
+  const moveDate        = document.getElementById("moveDate");
+  const moveId          = document.getElementById("moveId");
+
+  const sMitarbeiter    = document.getElementById("sMitarbeiter");
+  const sFahrzeug       = document.getElementById("sFahrzeug");
+  const sBaustelle      = document.getElementById("sBaustelle");
+  const listMitarbeiter = document.getElementById("listMitarbeiter");
+  const listFahrzeuge   = document.getElementById("listFahrzeuge");
+  const listBaustellen  = document.getElementById("listBaustellen");
+  const addMitarbeiter  = document.getElementById("addMitarbeiter");
+  const addFahrzeugBtn  = document.getElementById("addFahrzeug");
+  const addBaustelleBtn = document.getElementById("addBaustelle");
+
+  let mitarbeiter = [];
+  let fahrzeuge   = [];
+  let baustellen  = [];
+  let eintraege   = [];
+  let currentView = "14d";
+
+  function colorFromName(name) {
+    if (!name) return "#888";
+    let hash = 0;
+    for (let i = 0; i < name.length; i++) {
+      hash = name.charCodeAt(i) + ((hash << 5) - hash);
+    }
+    const hue = Math.abs(hash) % 360;
+    return `hsl(${hue}, 65%, 45%)`;
+  }
+
+  async function loadAll() {
+    try {
+      const { data: e } = await supa.from("plantafel").select("*").order("tag", { ascending:true });
+      const { data: m } = await supa.from("mitarbeiter").select("*").order("name");
+      const { data: f } = await supa.from("fahrzeuge").select("*").order("name");
+      const { data: b } = await supa.from("baustellen").select("*").order("name");
+
+      eintraege  = e || [];
+      mitarbeiter = m || [];
+      fahrzeuge   = f || [];
+      baustellen  = b || [];
+
+      renderBoard();
+    } catch (err) {
+      console.error(err);
+      boardContainer.innerHTML = "<p>Fehler beim Laden 😢</p>";
+    }
+  }
+
+  function renderBoard() {
+    const start = new Date(startDateInput.value);
+    boardContainer.innerHTML = "";
+
+    if (currentView === "14d") render14(start);
+    if (currentView === "4w") render4Weeks(start);
+    if (currentView === "12m") render12Months(start);
+  }
+
+  function render14(start) {
+    const wrap = document.createElement("div");
+    wrap.style.display = "grid";
+    wrap.style.gridTemplateColumns = "repeat(auto-fit, minmax(180px,1fr))";
+    wrap.style.gap = "1rem";
+
+    let d = new Date(start);
+    let added = 0;
+    while (added < 14) {
+      const wd = d.getDay();
+      if (wd !== 0 && wd !== 6) {
+        wrap.appendChild(renderDayBox(d));
+        added++;
+      }
+      d.setDate(d.getDate() + 1);
+    }
+
+    boardContainer.appendChild(wrap);
+  }
+
+  function render4Weeks(start) {
+    const wrap = document.createElement("div");
+    wrap.style.display = "grid";
+    wrap.style.gridTemplateColumns = "repeat(5, 1fr)";
+    wrap.style.gap = "1rem";
+
+    const s = new Date(start);
+    const weekday = s.getDay();
+    const diff = weekday === 0 ? 6 : weekday - 1;
+    s.setDate(s.getDate() - diff);
+
+    for (let w = 0; w < 4; w++) {
+      for (let wd = 0; wd < 5; wd++) {
+        const d = new Date(s);
+        d.setDate(s.getDate() + w * 7 + wd);
+        wrap.appendChild(renderDayBox(d));
+      }
+    }
+    boardContainer.appendChild(wrap);
+  }
+
+  function render12Months(start) {
+    const wrap = document.createElement("div");
+    wrap.className = "months-grid";
+
+    const y = start.getFullYear();
+
+    for (let m = 0; m < 12; m++) {
+      const box = document.createElement("div");
+      box.className = "month-box";
+
+      const head = document.createElement("div");
+      head.className = "month-head";
+      head.textContent = new Date(y, m, 1).toLocaleString("de-DE", {
+        month: "long",
+        year: "numeric"
+      });
+      box.appendChild(head);
+
+      const body = document.createElement("div");
+      body.style.flex = "1";
+
+      const list = eintraege.filter(e => {
+        const d = new Date(e.tag);
+        return d.getFullYear() === y && d.getMonth() === m;
+      });
+
+      list.forEach(e => body.appendChild(renderEntryCard(e)));
+
+      box.appendChild(body);
+
+      box.ondragover = evt => evt.preventDefault();
+      box.ondrop = evt => {
+        evt.preventDefault();
+        const id = evt.dataTransfer.getData("id");
+        openMoveDialog(id);
+      };
+
+      wrap.appendChild(box);
+    }
+
+    boardContainer.appendChild(wrap);
+  }
+
+  function renderDayBox(d) {
+    const box = document.createElement("div");
+    box.className = "day-box";
+
+    const dateStr = d.toISOString().slice(0, 10);
+
+    const head = document.createElement("div");
+    head.className = "day-head";
+    head.textContent = d.toLocaleDateString("de-DE", {
+      weekday:"short",
+      day:"2-digit",
+      month:"2-digit",
+      year:"numeric"
+    });
+    box.appendChild(head);
+
+    const list = eintraege.filter(e => e.tag === dateStr);
+
+    const body = document.createElement("div");
+    body.style.flex = "1";
+
+    list.forEach(e => body.appendChild(renderEntryCard(e)));
+    box.appendChild(body);
+
+    box.onclick = evt => {
+      if (evt.target === box || evt.target === head || evt.target === body) {
+        openEntryDialog({ tag: dateStr });
+      }
+    };
+
+    box.ondragover = evt => evt.preventDefault();
+    box.ondrop = evt => {
+      evt.preventDefault();
+      const id = evt.dataTransfer.getData("id");
+      openMoveDialog(id);
+    };
+
+    return box;
+  }
+
+  function renderEntryCard(e) {
+    const div = document.createElement("div");
+    div.className = "entry";
+    div.draggable = true;
+
+    div.ondragstart = evt => evt.dataTransfer.setData("id", e.id);
+
+    const bar = document.createElement("div");
+    bar.className = "entry-color";
+
+    if (e.status === "Urlaub")      bar.style.background = "var(--urlaub)";
+    else if (e.status === "Krank")  bar.style.background = "var(--krank)";
+    else if (e.status === "Schule") bar.style.background = "var(--schule)";
+    else {
+      const m = e.mitarbeiter?.split(",")[0]?.trim();
+      bar.style.background = colorFromName(m);
+    }
+
+    div.appendChild(bar);
+
+    const cont = document.createElement("div");
+    cont.className = "entry-content";
+
+    const t = document.createElement("div");
+    t.className = "entry-title";
+    t.textContent = e.titel;
+    cont.appendChild(t);
+
+    if (e.mitarbeiter) {
+      const m = document.createElement("div");
+      m.className = "entry-meta";
+      m.textContent = e.mitarbeiter;
+      cont.appendChild(m);
+    }
+
+    if (e.fahrzeug) {
+      const f = document.createElement("div");
+      f.className = "entry-vehicle";
+      f.textContent = e.fahrzeug;
+      cont.appendChild(f);
+    }
+
+    div.appendChild(cont);
+
+    const actions = document.createElement("div");
+    actions.className = "entry-actions";
+
+    const editBtn = document.createElement("button");
+    editBtn.textContent = "Bearbeiten";
+    editBtn.onclick = evt => {
+      evt.stopPropagation();
+      openEntryDialog(e);
+    };
+
+    const moveBtn = document.createElement("button");
+    moveBtn.textContent = "Verschieben";
+    moveBtn.onclick = evt => {
+      evt.stopPropagation();
+      openMoveDialog(e.id);
+    };
+
+    const delBtn = document.createElement("button");
+    delBtn.textContent = "Löschen";
+    delBtn.onclick = evt => {
+      evt.stopPropagation();
+      deleteEntry(e.id);
+    };
+
+    actions.appendChild(editBtn);
+    actions.appendChild(moveBtn);
+    actions.appendChild(delBtn);
+
+    div.appendChild(actions);
+
+    return div;
+  }
+
+  function openEntryDialog(data = {}) {
+    eId.value    = data.id || "";
+    eTitel.value = data.titel || "";
+    eVon.value   = data.tag || startDateInput.value;
+    eBis.value   = data.tag || "";
+
+    eStatus.value = data.status || "";
+    eNotiz.value  = data.notiz || "";
+
+    eMitarbeiterDiv.innerHTML = "";
+    mitarbeiter.forEach(m => {
+      const lbl = document.createElement("label");
+      const cb = document.createElement("input");
+      cb.type = "checkbox";
+      cb.value = m.name;
+      if (data.mitarbeiter?.includes(m.name)) cb.checked = true;
+      lbl.appendChild(cb);
+      lbl.append(" " + m.name);
+      eMitarbeiterDiv.appendChild(lbl);
+    });
+
+    eFahrzeugeDiv.innerHTML = "";
+    fahrzeuge.forEach(f => {
+      const lbl = document.createElement("label");
+      const cb = document.createElement("input");
+      cb.type = "checkbox";
+      cb.value = f.name;
+      if (data.fahrzeug?.includes(f.name)) cb.checked = true;
+      lbl.appendChild(cb);
+      lbl.append(" " + f.name);
+      eFahrzeugeDiv.appendChild(lbl);
+    });
+
+    entryDialog.showModal();
+  }
+
+  entryForm.onsubmit = async evt => {
+    evt.preventDefault();
+
+    const id = eId.value;
+
+    const payload = {
+      titel: eTitel.value.trim(),
+      tag: eVon.value,
+      mitarbeiter: Array.from(eMitarbeiterDiv.querySelectorAll("input:checked")).map(i=>i.value).join(", "),
+      fahrzeug:   Array.from(eFahrzeugeDiv.querySelectorAll("input:checked")).map(i=>i.value).join(", "),
+      status: eStatus.value,
+      notiz:  eNotiz.value.trim()
+    };
+
+    if (!id) {
+      const start = new Date(eVon.value);
+      const end   = eBis.value ? new Date(eBis.value) : new Date(eVon.value);
+
+      let rows = [];
+      let d = new Date(start);
+      while (d <= end) {
+        rows.push({ ...payload, tag: d.toISOString().slice(0,10) });
+        d.setDate(d.getDate()+1);
+      }
+      await supa.from("plantafel").insert(rows);
+    } else {
+      await supa.from("plantafel").update(payload).eq("id", id);
+    }
+
+    entryDialog.close();
+    loadAll();
+  };
+
+  async function deleteEntry(id) {
+    await supa.from("plantafel").delete().eq("id", id);
+    loadAll();
+  }
+
+  function openMoveDialog(id) {
+    moveId.value = id;
+    moveDate.value = "";
+    moveDialog.showModal();
+  }
+
+  moveForm.onsubmit = async evt => {
+    evt.preventDefault();
+    const id = moveId.value;
+    const newDate = moveDate.value;
+
+    await supa.from("plantafel").update({ tag:newDate }).eq("id", id);
+
+    moveDialog.close();
+    loadAll();
+  };
+
+  function renderStammdaten() {
+    listMitarbeiter.innerHTML = "";
+    mitarbeiter.forEach(m => {
+      const row = document.createElement("div");
+      row.textContent = m.name + " ";
+      const x = document.createElement("button");
+      x.textContent = "X";
+      x.onclick = async () => {
+        await supa.from("mitarbeiter").delete().eq("id", m.id);
+        loadAll();
+      };
+      row.appendChild(x);
+      listMitarbeiter.appendChild(row);
+    });
+
+    listFahrzeuge.innerHTML = "";
+    fahrzeuge.forEach(f => {
+      const row = document.createElement("div");
+      row.textContent = f.name + " ";
+      const x = document.createElement("button");
+      x.textContent = "X";
+      x.onclick = async () => {
+        await supa.from("fahrzeuge").delete().eq("id", f.id);
+        loadAll();
+      };
+      row.appendChild(x);
+      listFahrzeuge.appendChild(row);
+    });
+
+    listBaustellen.innerHTML = "";
+    baustellen.forEach(b => {
+      const row = document.createElement("div");
+      row.textContent = b.name + " ";
+      const x = document.createElement("button");
+      x.textContent = "X";
+      x.onclick = async () => {
+        await supa.from("baustellen").delete().eq("id", b.id);
+        loadAll();
+      };
+      row.appendChild(x);
+      listBaustellen.appendChild(row);
+    });
+  }
+
+  backupBtn.onclick = () => {
+    const blob = new Blob([JSON.stringify(eintraege,null,2)], {type:"application/json"});
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "plantafel_backup.json";
+    a.click();
+    URL.revokeObjectURL(url);
+  };
+
+  viewTabs.onclick = evt => {
+    if (evt.target.tagName === "BUTTON") {
+      viewTabs.querySelectorAll("button").forEach(b => b.classList.remove("active"));
+      evt.target.classList.add("active");
+      currentView = evt.target.dataset.view;
+      renderBoard();
+    }
+  };
+
+  prevMonthBtn.onclick = () => {
+    const d = new Date(startDateInput.value);
+    d.setMonth(d.getMonth() - 1);
+    startDateInput.value = d.toISOString().slice(0,10);
+    renderBoard();
+  };
+  nextMonthBtn.onclick = () => {
+    const d = new Date(startDateInput.value);
+    d.setMonth(d.getMonth() + 1);
+    startDateInput.value = d.toISOString().slice(0,10);
+    renderBoard();
+  };
+
+  newEntryBtn.onclick    = () => openEntryDialog();
+  entryCancelBtn.onclick = () => entryDialog.close();
+  moveCancelBtn.onclick  = () => moveDialog.close();
+
+  stammBtn.onclick = () => {
+    renderStammdaten();
+    stammDialog.showModal();
+  };
+  stammCloseBtn.onclick = () => stammDialog.close();
+
+  addMitarbeiter.onclick = async () => {
+    const name = sMitarbeiter.value.trim();
+    if (!name) return;
+    await supa.from("mitarbeiter").insert({ name });
+    sMitarbeiter.value = "";
+    loadAll();
+  };
+  addFahrzeugBtn.onclick = async () => {
+    const name = sFahrzeug.value.trim();
+    if (!name) return;
+    await supa.from("fahrzeuge").insert({ name });
+    sFahrzeug.value = "";
+    loadAll();
+  };
+  addBaustelleBtn.onclick = async () => {
+    const name = sBaustelle.value.trim();
+    if (!name) return;
+    await supa.from("baustellen").insert({ name });
+    sBaustelle.value = "";
+    loadAll();
+  };
+
+  reloadBtn.onclick = () => loadAll();
+
+  // Start
+  const t = new Date();
+  startDateInput.value = t.toISOString().slice(0,10);
+  loadAll();
+</script>
 </body>
 </html>
