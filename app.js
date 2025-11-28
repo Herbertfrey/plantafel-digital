@@ -1,97 +1,106 @@
-import { supabase } from './supabase.js';
+import { supabase } from "./supabase.js";
 
+// Elemente
 const board = document.getElementById("boardContainer");
-const startInput = document.getElementById("start");
-const defaultStartDate = new Date();
+const datePicker = document.getElementById("startDate");
 
+// Standard Datum
+let start = new Date();
+
+// Optionen
+let viewMode = "14"; // 14 / 28 / 365
+
+// Buttons
+document.getElementById("btn14").onclick = () => { viewMode = "14"; load(); };
+document.getElementById("btn4W").onclick = () => { viewMode = "28"; load(); };
+document.getElementById("btn12M").onclick = () => { viewMode = "365"; load(); };
+
+document.getElementById("btnPrev").onclick = () => {
+    start.setDate(start.getDate() - parseInt(viewMode));
+    load();
+};
+document.getElementById("btnNext").onclick = () => {
+    start.setDate(start.getDate() + parseInt(viewMode));
+    load();
+};
+document.getElementById("btnReload").onclick = load;
+
+// Beim Start aktuelles Datum in Eingabe setzen
+datePicker.value = start.toISOString().substring(0, 10);
+
+// Laden der Daten
 async function load() {
 
-    const start = new Date(startInput.value);
+    const startDate = datePicker.value;
+    start = new Date(startDate);
+
     const end = new Date(start);
-    end.setDate(start.getDate() + 13);
+    end.setDate(start.getDate() + parseInt(viewMode));
 
-    const fromDate = start.toISOString().substring(0, 10);
-    const toDate = end.toISOString().substring(0, 10);
+    board.innerHTML = "";
 
+    // Supabase Query
     const { data, error } = await supabase
-        .from('plantafel')
-        .select('*')
-        .gte('von', fromDate)
-        .lte('bis', toDate)
-        .order('von', { ascending: true });
+        .from("plantafel")
+        .select("*")
+        .gte("von", start.toISOString().substring(0, 10))
+        .lte("von", end.toISOString().substring(0, 10))
+        .order("von", { ascending: true });
 
     if (error) {
         console.error(error);
-        board.innerHTML = "<p>Fehler beim Laden 😢</p>";
+        board.innerHTML = "<p>Fehler beim Laden ❌</p>";
         return;
     }
 
-    render(data);
+    renderCalendar(data);
 }
 
-function render(data) {
-    board.innerHTML = "";
+// Kalender rendern
+function renderCalendar(data) {
 
-    let days = {};
+    let dayCount = parseInt(viewMode);
+    let d = new Date(start);
 
-    // 14 Tage vorbereiten
-    const start = new Date(startInput.value);
+    for (let i = 0; i < dayCount; i++) {
 
-    for (let i = 0; i < 14; i++) {
-        const date = new Date(start);
-        date.setDate(start.getDate() + i);
+        const fieldDate = d.toISOString().substring(0, 10);
 
-        const key = date.toISOString().substring(0, 10);
-        days[key] = [];
-    }
+        const items = data.filter(e => e.von === fieldDate);
 
-    // Daten pro Tag verteilen (mehrtägige Buchung!)
-    for (const item of data) {
-        const start = new Date(item.von);
-        const end = new Date(item.bis);
-
-        for (let d = new Date(start); d <= end; d.setDate(d.getDate() + 1)) {
-            const key = d.toISOString().substring(0, 10);
-            if (days[key]) days[key].push(item);
-        }
-    }
-
-    // Ausgabe erzeugen
-    for (const day in days) {
-        const div = document.createElement("div");
-        div.className = "day";
-
-        // Formatierter Tag
-        const d = new Date(day);
-        const label = d.toLocaleDateString("de-DE", {
+        // Wochentag + Datum
+        let title = d.toLocaleDateString("de-DE", {
             weekday: "short",
             day: "2-digit",
             month: "2-digit",
-            year: "numeric"
+            year: "numeric",
         });
 
-        div.innerHTML = `<h3>${label}</h3>`;
+        let html = `<div class="day"><div class="day-header">${title}</div>`;
 
-        for (const item of days[day]) {
+        items.forEach(e => {
 
-            const e = document.createElement("div");
-            e.className = "entry";
+            let farbe = "";
+            if (e.status === "urlaub") farbe = "blue";
+            if (e.status === "krank") farbe = "red";
+            if (e.status === "schule") farbe = "green";
+            if (e.status === "fahrzeug") farbe = "orange";
 
-            e.innerHTML = `
-                <b>${item.titel}</b><br>
-                ${item.baustelle || ""}<br>
-                ${item.mitarbeiter || ""}<br>
-                ${item.fahrzeug || ""}<br>
-                <span>${item.status || ""}</span>
+            html += `
+                <div class="entry ${farbe}">
+                    <strong>${e.titel}</strong><br>
+                    ${e.mitarbeiter ?? ""}<br>
+                    ${e.fahrzeug ?? ""}<br>
+                    ${e.baustelle ?? ""}
+                </div>
             `;
+        });
 
-            div.appendChild(e);
-        }
+        html += "</div>";
+        board.innerHTML += html;
 
-        board.appendChild(div);
+        d.setDate(d.getDate() + 1);
     }
 }
 
-startInput.value = defaultStartDate.toISOString().substring(0, 10);
 load();
-startInput.addEventListener("change", load);
