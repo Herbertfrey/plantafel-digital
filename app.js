@@ -1,16 +1,19 @@
-import { supabase } from "./supabase.js";
+// --- Supabase Client ---
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
-// Elemente
+const supabaseUrl = "https://mtvbmkhyhavxpvwysqlo.supabase.co";
+const supabaseKey = "sb_publishable_0w8pZSpEAxxlv9Ke6dcurg_OuAl4q7r"; 
+
+export const supabase = createClient(supabaseUrl, supabaseKey);
+
+// --- Elemente ---
 const board = document.getElementById("boardContainer");
 const datePicker = document.getElementById("startDate");
 
-// Standard Datum
 let start = new Date();
+let viewMode = "14";
 
-// Optionen
-let viewMode = "14"; // 14 / 28 / 365
-
-// Buttons
+// --- Buttons ---
 document.getElementById("btn14").onclick = () => { viewMode = "14"; load(); };
 document.getElementById("btn4W").onclick = () => { viewMode = "28"; load(); };
 document.getElementById("btn12M").onclick = () => { viewMode = "365"; load(); };
@@ -19,16 +22,17 @@ document.getElementById("btnPrev").onclick = () => {
     start.setDate(start.getDate() - parseInt(viewMode));
     load();
 };
+
 document.getElementById("btnNext").onclick = () => {
     start.setDate(start.getDate() + parseInt(viewMode));
     load();
 };
+
 document.getElementById("btnReload").onclick = load;
 
-// Beim Start aktuelles Datum in Eingabe setzen
 datePicker.value = start.toISOString().substring(0, 10);
 
-// Laden der Daten
+// --- Daten laden ---
 async function load() {
 
     const startDate = datePicker.value;
@@ -39,7 +43,6 @@ async function load() {
 
     board.innerHTML = "";
 
-    // Supabase Query
     const { data, error } = await supabase
         .from("plantafel")
         .select("*")
@@ -48,15 +51,15 @@ async function load() {
         .order("von", { ascending: true });
 
     if (error) {
-        console.error(error);
-        board.innerHTML = "<p>Fehler beim Laden ❌</p>";
+        console.error("Supabase Fehler:", error);
+        board.innerHTML = "<p>Fehler beim Laden ❌ (Supabase Zugriff)</p>";
         return;
     }
 
     renderCalendar(data);
 }
 
-// Kalender rendern
+// --- Kalender anzeigen ---
 function renderCalendar(data) {
 
     let dayCount = parseInt(viewMode);
@@ -68,7 +71,6 @@ function renderCalendar(data) {
 
         const items = data.filter(e => e.von === fieldDate);
 
-        // Wochentag + Datum
         let title = d.toLocaleDateString("de-DE", {
             weekday: "short",
             day: "2-digit",
