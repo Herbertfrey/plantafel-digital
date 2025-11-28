@@ -1,101 +1,61 @@
-import { supabase } from "./supabase.js";
+import { SUPA_URL, SUPA_KEY } from "./supabase.js";
 
-// =========================================================================
-// Globale Variablen
-// =========================================================================
-let start = new Date();
-const datePicker = document.getElementById("datePicker");
+// kleine Hilfe-Funktion
+async function db(table) {
+    const url = `${SUPA_URL}/rest/v1/${table}?select=*`;
 
-// =========================================================================
-// Buttons
-// =========================================================================
-document.getElementById("next14").onclick = () => { start.setDate(start.getDate() + 14); load(); };
-document.getElementById("next30").onclick = () => { start.setDate(start.getDate() + 30); load(); };
-document.getElementById("next365").onclick = () => { start.setDate(start.getDate() + 365); load(); };
+    const res = await fetch(url, {
+        headers: {
+            apikey: SUPA_KEY,
+            Authorization: `Bearer ${SUPA_KEY}`,
+            "Content-Type": "application/json",
+            Prefer: "return=representation"
+        }
+    });
 
-document.getElementById("prev14").onclick = () => { start.setDate(start.getDate() - 14); load(); };
-document.getElementById("prev30").onclick = () => { start.setDate(start.getDate() - 30); load(); };
-document.getElementById("prev365").onclick = () => { start.setDate(start.getDate() - 365); load(); };
+    if (!res.ok) {
+        console.error(table, res.status, await res.text());
+        return [];
+    }
 
-document.getElementById("btnreload").onclick = load;
+    return await res.json();
+}
 
-datePicker.value = start.toISOString().substring(0, 10);
-
-// =========================================================================
-// Daten aus Supabase laden
-// =========================================================================
+// **************************************
+//         Daten laden
+// **************************************
 async function load() {
-    const startDate = datePicker.value;
-    start = new Date(startDate);
+    const baustellen  = await db("baustellen");
+    const fahrzeuge   = await db("fahrzeuge");
+    const mitarbeiter = await db("mitarbeiter");
+    const plantafel   = await db("plantafel");
 
-    document.getElementById("startOutput").innerText =
-        start.toLocaleDateString("de-DE");
+    console.log("BAUSTELLEN:", baustellen);
+    console.log("FAHRZEUGE:", fahrzeuge);
+    console.log("MITARBEITER:", mitarbeiter);
+    console.log("PLANTAFEL:", plantafel);
 
-    await Promise.all([
-        loadPlanTafel(),
-        loadMitarbeiter(),
-        loadFahrzeuge(),
-        loadBaustellen()
-    ]);
+    render(plantafel);
 }
 
-// =========================================================================
-// Tabellen laden
-// =========================================================================
+// **************************************
+//         Render Funktion
+// **************************************
+function render(data) {
+    const container = document.querySelector("#main");
+    container.innerHTML = "";
 
-async function loadPlanTafel() {
-    const { data, error } = await supabase
-        .from('plantafel')
-        .select('*')
-        .order('datum', { ascending: true });
-
-    if (error) {
-        console.error("Plantafel Fehler:", error);
-        return;
-    }
-    console.log("Plantafel", data);
+    data.forEach(entry => {
+        const box = document.createElement("div");
+        box.className = "day";
+        box.innerHTML = `
+            <strong>${entry.date}</strong><br>
+            ${entry.name || ""}<br>
+            ${entry.tag || ""}
+        `;
+        container.appendChild(box);
+    });
 }
 
-async function loadMitarbeiter() {
-    const { data, error } = await supabase
-        .from('mitarbeiter')
-        .select('*')
-        .order('name', { ascending: true });
-
-    if (error) {
-        console.error("Mitarbeiter Fehler:", error);
-        return;
-    }
-    console.log("Mitarbeiter", data);
-}
-
-async function loadFahrzeuge() {
-    const { data, error } = await supabase
-        .from('fahrzeuge')
-        .select('*')
-        .order('name', { ascending: true });
-
-    if (error) {
-        console.error("Fahrzeuge Fehler:", error);
-        return;
-    }
-    console.log("Fahrzeuge", data);
-}
-
-async function loadBaustellen() {
-    const { data, error } = await supabase
-        .from('baustellen')
-        .select('*')
-        .order('name', { ascending: true });
-
-    if (error) {
-        console.error("Baustellen Fehler:", error);
-        return;
-    }
-    console.log("Baustellen", data);
-}
-
-// =========================================================================
-// initial laden
-// =========================================================================
-load();
+// App starten
+window.addEventListener("load", load);
