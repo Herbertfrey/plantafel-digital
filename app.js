@@ -1,52 +1,47 @@
-import supabase from "./supabase.js";
+import { supabase } from "./supabase.js";
 
-// --- Tabelle laden ---
+// Tabelle aus Supabase laden
 async function loadTable(table) {
-  const { data, error } = await supabase
-    .from(table)
-    .select("*")
-    .order("id", { ascending: true });
+    const { data, error } = await supabase
+        .from(table)
+        .select("*")
+        .order("id", { ascending: true });
 
-  if (error) {
-    console.error("Supabase Error:", table, error);
-    return [];
-  }
+    if (error) {
+        console.error("Supabase Fehler:", table, error);
+        return [];
+    }
 
-  return data;
+    return data;
 }
 
-// --- Seite laden ---
-async function load() {
-  const baustellen = await loadTable("baustellen");
-  const fahrzeuge = await loadTable("fahrzeuge");
-  const mitarbeiter = await loadTable("mitarbeiter");
-  const plantafel = await loadTable("plantafel");
-
-  render({ baustellen, fahrzeuge, mitarbeiter, plantafel });
-}
-
-// --- Darstellung der 4 Tabellen ---
+// Rendern der Daten auf der Seite
 function render(data) {
+    const div = document.getElementById("plantafel");
+    div.innerHTML = ""; // alte Inhalte entfernen
 
-  const div = document.getElementById("plantafel");
-  div.innerHTML = ""; // vorher löschen
-
-  div.innerHTML += `
-    <h2>Baustellen</h2>
-    <pre>${JSON.stringify(data.baustellen, null, 2)}</pre>
-
-    <h2>Fahrzeuge</h2>
-    <pre>${JSON.stringify(data.fahrzeuge, null, 2)}</pre>
-
-    <h2>Mitarbeiter</h2>
-    <pre>${JSON.stringify(data.mitarbeiter, null, 2)}</pre>
-
-    <h2>Plantafel</h2>
-    <pre>${JSON.stringify(data.plantafel, null, 2)}</pre>
-  `;
+    const pre = document.createElement("pre");
+    pre.textContent = JSON.stringify(data, null, 2);
+    div.appendChild(pre);
 }
 
-// --- Button neu laden ---
-document.getElementById("reload").addEventListener("click", load);
+// Hauptfunktion
+async function load() {
+    const baustellen = await loadTable("baustellen");
+    const fahrzeuge = await loadTable("fahrzeuge");
+    const mitarbeiter = await loadTable("mitarbeiter");
+    const plantafel = await loadTable("plantafel");
 
+    console.log("BAUSTELLEN:", baustellen);
+    console.log("FAHRZEUGE:", fahrzeuge);
+    console.log("MITARBEITER:", mitarbeiter);
+    console.log("PLANTAFEL:", plantafel);
+
+    render(plantafel);
+}
+
+// Event für Button
+document.getElementById("loadBtn").addEventListener("click", load);
+
+// Beim Start direkt laden
 load();
