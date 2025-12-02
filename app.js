@@ -1,35 +1,51 @@
-import { supabase } from "./supabase.js";
+import { supabase } from './supabase.js';
 
-// Lädt beliebige Tabelle
+// Daten aus einer Tabelle laden
 async function loadTable(table) {
-  const { data, error } = await supabase
-    .from(table)
-    .select("*")
-    .order("id", { ascending: true });
+    const { data, error } = await supabase
+        .from(table)
+        .select('*')
+        .order('id', { ascending: true });
 
-  if (error) {
-    console.error(`Fehler beim Laden der Tabelle ${table}`, error);
-    return [];
-  }
-
-  return data;
+    if (error) {
+        console.error("Fehler Supabase:", table, error);
+        return [];
+    }
+    return data;
 }
 
+// Darstellung bauen
+function renderList(title, items) {
+    let html = `<h2>${title}</h2>`;
+
+    if (items.length === 0) {
+        html += "<div class='empty'>Keine Daten vorhanden</div>";
+        return html;
+    }
+
+    html += "<ul>";
+    for (const row of items) {
+        html += `<li>${row.title ?? row.name ?? ''}</li>`;
+    }
+    html += "</ul>";
+
+    return html;
+}
+
+// Hauptfunktion
 async function load() {
-  const baustellen = await loadTable("BAUSTELLEN");
-  const fahrzeuge = await loadTable("FAHRZEUGE");
-  const mitarbeiter = await loadTable("MITARBEITER");
-  const plantafel = await loadTable("PLANTAFEL");
+    let container = document.getElementById("plantafel");
+    container.innerHTML = "Lade Daten...";
 
-  console.log("Daten geladen:", { baustellen, fahrzeuge, mitarbeiter, plantafel });
+    const BAU = await loadTable("baustellen");
+    const MA  = await loadTable("mitarbeiter");
+    const FZG = await loadTable("fahrzeuge");
 
-  // Ausgabe zur Kontrolle
-  const box = document.getElementById("plantafel");
-  box.textContent = JSON.stringify(
-    { baustellen, fahrzeuge, mitarbeiter, plantafel },
-    null,
-    2
-  );
+    container.innerHTML = `
+        ${renderList("Baustellen", BAU)}
+        ${renderList("Mitarbeiter", MA)}
+        ${renderList("Fahrzeuge", FZG)}
+    `;
 }
 
 document.getElementById("reload").addEventListener("click", load);
