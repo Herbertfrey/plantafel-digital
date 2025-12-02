@@ -1,51 +1,34 @@
 <!DOCTYPE html>
 <html lang="de">
 <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>PflantaFel Dachdeckerei Frey</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Digitale Plantafel Frey</title>
 
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            margin: 0;
-            padding: 0;
-            background: #f9f9f9;
-        }
-        header {
-            background: #0074d9;
-            padding: 15px;
-            color: white;
-            font-size: 24px;
-        }
-        .container {
-            padding: 15px;
-        }
-        .output {
-            margin-top: 1rem;
-            padding: 10px;
-            background: #fff;
-            border: 1px solid #ddd;
-        }
-    </style>
+    <link rel="stylesheet" href="./style.css">
+
+    <!-- wichtig: module laden -->
+    <script type="module" src="./app.js"></script>
 </head>
+
 <body>
 
-<header>
-    Plantafel Dachdeckerei Frey
-</header>
+    <header>
+        <h1>Plantafel Dachdeckerei Frey</h1>
+    </header>
 
-<div class="container">
-    <button id="reload">Neu laden</button>
+    <main>
+        <div class="toolbar">
+            <button onclick="location.reload()">Neu laden</button>
+        </div>
 
-    <div class="output">
-        <pre id="dataOutput">Lade Daten…</pre>
-    </div>
-</div>
+        <!-- Hier zeigt die App die geladenen Daten an -->
+        <pre id="dataOutput">lade Daten…</pre>
+    </main>
 
-<!-- WICHTIG: v=8 erzwingt Aktualisierung -->
-<script type="module" src="supabase.js?v=8"></script>
-<script type="module" src="app.js?v=8"></script>
+    <footer>
+        © 2025 Dachdeckerei Frey – Digitale Plantafel
+    </footer>
 
 </body>
 </html>
