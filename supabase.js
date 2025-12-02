@@ -1,6 +1,6 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
-export const supabase = createClient(
-    "https://mybmrkyhavxpvwysglo.supabase.co",
-    "sb-publishable-_0w8PzSpEAxxLv9Ke6dcurg_0uA1Aq7r"
-);
+const SUPA_URL = "https://mtybmrkyhavxpwvysglo.supabase.co";
+const SUPA_KEY = "sb-publishable-<dein kompletter Key>";
+
+export const supabase = createClient(SUPA_URL, SUPA_KEY);
