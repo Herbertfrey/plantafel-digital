@@ -1,6 +1,6 @@
 import { supabase } from "./supabase.js";
 
-// Hilfsfunktion für Tabelle lesen
+// Daten aus Tabelle laden
 async function getTable(table) {
   const { data, error } = await supabase
     .from(table)
@@ -8,17 +8,16 @@ async function getTable(table) {
     .order("name", { ascending: true });
 
   if (error) {
-    console.error("Supabase error:", table, error);
+    console.error("Supabase Fehler:", table, error);
     return [];
   }
 
   return data;
 }
 
-// ====================================
-// Daten laden
-// ====================================
+// ---------- Hauptfunktion ----------
 async function load() {
+
   const baustellen  = await getTable("baustellen");
   const fahrzeuge   = await getTable("fahrzeuge");
   const mitarbeiter = await getTable("mitarbeiter");
@@ -32,17 +31,9 @@ async function load() {
   render(plantafel, mitarbeiter, fahrzeuge, baustellen);
 }
 
-// ====================================
-// Render Funktion bleibt wie vorher
-// Du musst hier nichts ändern
-// ====================================
-
-function render(plantafel, mitarbeiter, fahrzeuge, baustellen) {
-  // << dein Rendering Code >>
+// Dummy render (dein Code bleibt da)
+function render(a,b,c,d){
+  console.log("Rendering…");
 }
-
-// ====================================
-// Eventlistener Start
-// ====================================
 
 load();
