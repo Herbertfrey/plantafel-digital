@@ -1,39 +1,37 @@
 import { supabase } from "./supabase.js";
 
-// Daten aus Tabelle laden
+// Daten aus einer Tabelle holen
 async function getTable(table) {
-  const { data, error } = await supabase
-    .from(table)
-    .select("*")
-    .order("name", { ascending: true });
+    const { data, error } = await supabase
+        .from(table)
+        .select("*")
+        .order("id", { ascending: true });
 
-  if (error) {
-    console.error("Supabase Fehler:", table, error);
-    return [];
-  }
-
-  return data;
+    if (error) {
+        console.error("Supabase Fehler:", table, error);
+        return [];
+    }
+    return data;
 }
 
-// ---------- Hauptfunktion ----------
 async function load() {
+    const BAUSTELLEN = await getTable("baustellen");
+    const FAHRZEUGE = await getTable("fahrzeuge");
+    const MITARBEITER = await getTable("mitarbeiter");
+    const PLANTAFEL = await getTable("plantafel");
 
-  const baustellen  = await getTable("baustellen");
-  const fahrzeuge   = await getTable("fahrzeuge");
-  const mitarbeiter = await getTable("mitarbeiter");
-  const plantafel   = await getTable("plantafel");
+    console.log("BAUSTELLEN:", BAUSTELLEN);
+    console.log("FAHRZEUGE:", FAHRZEUGE);
+    console.log("MITARBEITER:", MITARBEITER);
+    console.log("PLANTAFEL:", PLANTAFEL);
 
-  console.log("BAUSTELLEN:", baustellen);
-  console.log("FAHRZEUGE:", fahrzeuge);
-  console.log("MITARBEITER:", mitarbeiter);
-  console.log("PLANTAFEL:", plantafel);
-
-  render(plantafel, mitarbeiter, fahrzeuge, baustellen);
+    render(BAUSTELLEN, FAHRZEUGE, MITARBEITER, PLANTAFEL);
 }
 
-// Dummy render (dein Code bleibt da)
-function render(a,b,c,d){
-  console.log("Rendering…");
+// Einfache Anzeige auf der Webseite
+function render(...tables) {
+    const output = document.getElementById("dataOutput");
+    output.textContent = JSON.stringify(tables, null, 2);
 }
 
 load();
