@@ -1,47 +1,37 @@
 import { supabase } from "./supabase.js";
 
-// Tabelle aus Supabase laden
+// Lädt beliebige Tabelle
 async function loadTable(table) {
-    const { data, error } = await supabase
-        .from(table)
-        .select("*")
-        .order("id", { ascending: true });
+  const { data, error } = await supabase
+    .from(table)
+    .select("*")
+    .order("id", { ascending: true });
 
-    if (error) {
-        console.error("Supabase Fehler:", table, error);
-        return [];
-    }
+  if (error) {
+    console.error(`Fehler beim Laden der Tabelle ${table}`, error);
+    return [];
+  }
 
-    return data;
+  return data;
 }
 
-// Rendern der Daten auf der Seite
-function render(data) {
-    const div = document.getElementById("plantafel");
-    div.innerHTML = ""; // alte Inhalte entfernen
-
-    const pre = document.createElement("pre");
-    pre.textContent = JSON.stringify(data, null, 2);
-    div.appendChild(pre);
-}
-
-// Hauptfunktion
 async function load() {
-    const baustellen = await loadTable("baustellen");
-    const fahrzeuge = await loadTable("fahrzeuge");
-    const mitarbeiter = await loadTable("mitarbeiter");
-    const plantafel = await loadTable("plantafel");
+  const baustellen = await loadTable("BAUSTELLEN");
+  const fahrzeuge = await loadTable("FAHRZEUGE");
+  const mitarbeiter = await loadTable("MITARBEITER");
+  const plantafel = await loadTable("PLANTAFEL");
 
-    console.log("BAUSTELLEN:", baustellen);
-    console.log("FAHRZEUGE:", fahrzeuge);
-    console.log("MITARBEITER:", mitarbeiter);
-    console.log("PLANTAFEL:", plantafel);
+  console.log("Daten geladen:", { baustellen, fahrzeuge, mitarbeiter, plantafel });
 
-    render(plantafel);
+  // Ausgabe zur Kontrolle
+  const box = document.getElementById("plantafel");
+  box.textContent = JSON.stringify(
+    { baustellen, fahrzeuge, mitarbeiter, plantafel },
+    null,
+    2
+  );
 }
 
-// Event für Button
-document.getElementById("loadBtn").addEventListener("click", load);
+document.getElementById("reload").addEventListener("click", load);
 
-// Beim Start direkt laden
 load();
