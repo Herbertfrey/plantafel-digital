@@ -1,33 +1,61 @@
 body {
-  font-family: Arial, sans-serif;
+    margin: 0;
+    font-family: Arial;
+    background: #f2f2f2;
 }
 
 header {
-  padding: 15px;
-  font-size: 24px;
-  background: #0077cc;
-  color: white;
+    background: #0072c6;
+    color: white;
+    padding: 15px;
+}
+
+h1 {
+    margin: 0;
 }
 
 .controls {
-  margin: 10px;
-}
-
-#plantafel {
-  padding: 10px;
-  white-space: pre;
-  font-size: 15px;
-  font-family: monospace;
+    padding: 15px;
 }
 
 button {
-  padding: 5px 10px;
-  cursor: pointer;
+    padding: 8px 15px;
+    background: black;
+    color: white;
+    border: none;
+    cursor: pointer;
+    border-radius: 4px;
+}
+
+#plantafel {
+    padding: 15px;
+}
+
+h2 {
+    margin-top: 25px;
+}
+
+ul {
+    background: white;
+    padding: 10px;
+    border-radius: 6px;
+    list-style: none;
+}
+
+ul li {
+    padding: 6px 0;
+    border-bottom: 1px solid #ddd;
+}
+
+ul li:last-child {
+    border-bottom: none;
+}
+
+.empty {
+    color: gray;
 }
 
 footer {
-  margin-top: 30px;
-  padding: 10px;
-  font-size: 12px;
-  color: #444;
+    padding: 20px;
+    font-size: 12px;
 }
