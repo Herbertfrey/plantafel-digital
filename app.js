@@ -35,3 +35,10 @@ function render(...tables) {
 }
 
 load();
+document.getElementById("dataOutput").textContent =
+  JSON.stringify({
+    BAUSTELLEN,
+    FAHRZEUGE,
+    MITARBEITER,
+    PLANTAFEL
+  }, null, 2);
