@@ -1,46 +1,51 @@
 <!DOCTYPE html>
 <html lang="de">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Digitale Plantafel Frey</title>
-    <link rel="stylesheet" href="./style.css">
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>PflantaFel Dachdeckerei Frey</title>
+
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background: #f9f9f9;
+        }
+        header {
+            background: #0074d9;
+            padding: 15px;
+            color: white;
+            font-size: 24px;
+        }
+        .container {
+            padding: 15px;
+        }
+        .output {
+            margin-top: 1rem;
+            padding: 10px;
+            background: #fff;
+            border: 1px solid #ddd;
+        }
+    </style>
 </head>
 <body>
 
-    <header>
-        <h1>Plantafel Dachdeckerei Frey</h1>
-    </header>
+<header>
+    Plantafel Dachdeckerei Frey
+</header>
 
-    <div id="toolbar">
-        <button id="btn14">14 Tage</button>
-        <button id="btn28">4 Wochen</button>
-        <button id="btn365">12 Monate</button>
+<div class="container">
+    <button id="reload">Neu laden</button>
 
-        <span>Start:</span>
-        <input type="date" id="datePicker">
-
-        <button id="reloadBtn">Neu laden</button>
-        <button id="backupBtn">Backup</button>
-        <button id="masterBtn">Stammdaten</button>
-        <button id="addBtn">+ Eintrag</button>
-
-        <div id="legend">
-            <span style="color:#3887ff">Urlaub</span>
-            <span style="color:#00b16a">Krank</span>
-            <span style="color:#9056ff">Schule</span>
-            <span style="color:red">Fahrzeug</span>
-        </div>
+    <div class="output">
+        <pre id="dataOutput">Lade Daten…</pre>
     </div>
+</div>
 
-    <div id="boardContainer"></div>
-
-    <footer>
-        © 2025 Dachdeckerei Frey – Digitale Plantafel
-    </footer>
-
-    <!-- Nur noch EIN Script! -->
-    <script type="module" src="./app.js"></script>
+<!-- WICHTIG: v=8 erzwingt Aktualisierung -->
+<script type="module" src="supabase.js?v=8"></script>
+<script type="module" src="app.js?v=8"></script>
 
 </body>
 </html>
