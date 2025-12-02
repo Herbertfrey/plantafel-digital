@@ -1,10 +1,10 @@
-import supabase from "./supabase.js";
+import supabase from './supabase.js';
 
 async function fetchTable(table) {
   const { data, error } = await supabase
     .from(table)
-    .select("*")
-    .order("id", { ascending: true });
+    .select('*')
+    .order('id', { ascending: true });
 
   if (error) {
     console.error("Supabase Fehler:", table, error);
@@ -15,14 +15,16 @@ async function fetchTable(table) {
 }
 
 async function load() {
-  const BAUSTELLEN  = await fetchTable("baustellen");
-  const FAHRZEUGE   = await fetchTable("fahrzeuge");
+
+  const BAUSTELLEN = await fetchTable("baustellen");
+  const FAHRZEUGE = await fetchTable("fahrzeuge");
   const MITARBEITER = await fetchTable("mitarbeiter");
-  const PLANTAFEL   = await fetchTable("plantafel");
+  const PLANTAFEL = await fetchTable("plantafel");
 
   render(PLANTAFEL);
 }
 
+// Diese Funktion zeigt die Daten auf der Seite an
 function render(data) {
   const container = document.getElementById("plantafel");
   container.innerHTML = "";
@@ -30,7 +32,7 @@ function render(data) {
   data.forEach(row => {
     const div = document.createElement("div");
     div.className = "entry";
-    div.textContent = `${row.name || row.titel || ""}`;
+    div.textContent = row.name || row.titel || "Eintrag";
     container.appendChild(div);
   });
 }
