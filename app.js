@@ -1,51 +1,37 @@
-import { supabase } from './supabase.js';
+import { supabase } from "./supabase.js";
 
-// Daten aus einer Tabelle laden
-async function loadTable(table) {
-    const { data, error } = await supabase
-        .from(table)
-        .select('*')
-        .order('id', { ascending: true });
+async function loadPlantafel() {
+  const { data, error } = await supabase
+    .from("plantafel")
+    .select("*")
+    .order("datum", { ascending: true });
 
-    if (error) {
-        console.error("Fehler Supabase:", table, error);
-        return [];
-    }
-    return data;
+  if (error) {
+    console.error("Fehler beim Laden:", error);
+    return [];
+  }
+
+  return data;
 }
 
-// Darstellung bauen
-function renderList(title, items) {
-    let html = `<h2>${title}</h2>`;
+function render(data) {
+  const div = document.getElementById("plantafel");
+  div.innerHTML = "";
 
-    if (items.length === 0) {
-        html += "<div class='empty'>Keine Daten vorhanden</div>";
-        return html;
-    }
+  if (!data.length) {
+    div.innerHTML = "<p>Keine Daten vorhanden.</p>";
+    return;
+  }
 
-    html += "<ul>";
-    for (const row of items) {
-        html += `<li>${row.title ?? row.name ?? ''}</li>`;
-    }
-    html += "</ul>";
-
-    return html;
+  const pre = document.createElement("pre");
+  pre.textContent = JSON.stringify(data, null, 2);
+  div.appendChild(pre);
 }
 
-// Hauptfunktion
 async function load() {
-    let container = document.getElementById("plantafel");
-    container.innerHTML = "Lade Daten...";
-
-    const BAU = await loadTable("baustellen");
-    const MA  = await loadTable("mitarbeiter");
-    const FZG = await loadTable("fahrzeuge");
-
-    container.innerHTML = `
-        ${renderList("Baustellen", BAU)}
-        ${renderList("Mitarbeiter", MA)}
-        ${renderList("Fahrzeuge", FZG)}
-    `;
+  const plantafel = await loadPlantafel();
+  console.log("PLANTAFEL:", plantafel);
+  render(plantafel);
 }
 
 document.getElementById("reload").addEventListener("click", load);
