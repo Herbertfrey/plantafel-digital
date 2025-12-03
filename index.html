@@ -1,50 +1,225 @@
 <!DOCTYPE html>
 <html lang="de">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0"
+    />
     <title>Plantafel Dachdeckerei Frey</title>
+    <link rel="stylesheet" href="style.css" />
 
-    <link rel="stylesheet" href="style.css">
-</head>
+    <!-- Kleine Zusatz-Styles, falls style.css leer/anders ist -->
+    <style>
+      body {
+        margin: 0;
+        font-family: Arial, sans-serif;
+      }
 
-<body>
-<header>
-    <h1>Plantafel Dachdeckerei Frey</h1>
+      header {
+        background-color: #0075c9;
+        color: #fff;
+        padding: 10px 16px;
+      }
 
-    <div class="view-buttons">
-        <button data-view="14">14 Tage</button>
-        <button data-view="28">4 Wochen</button>
-        <button data-view="365">12 Monate</button>
+      header h1 {
+        margin: 0;
+        font-size: 20px;
+      }
+
+      #toolbar {
+        background: #0a88e0;
+        color: #fff;
+        padding: 6px 16px;
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: 8px;
+        font-size: 13px;
+      }
+
+      #toolbar button,
+      #toolbar input[type="date"] {
+        font-size: 12px;
+        padding: 3px 6px;
+      }
+
+      #toolbar .spacer {
+        flex: 1;
+      }
+
+      main {
+        padding: 12px 16px;
+        font-size: 14px;
+      }
+
+      #plantafel {
+        margin-bottom: 20px;
+      }
+
+      .day-group {
+        margin-bottom: 12px;
+        border-bottom: 1px solid #ddd;
+        padding-bottom: 8px;
+      }
+
+      .day-group h2 {
+        font-size: 14px;
+        margin: 0 0 4px;
+      }
+
+      .plantafel-entry {
+        padding: 4px 6px;
+        margin: 2px 0;
+        border-radius: 3px;
+        background: #f3f7fb;
+        border: 1px solid #d0e1f3;
+      }
+
+      .plantafel-entry strong {
+        display: inline-block;
+        min-width: 90px;
+      }
+
+      #stammdaten-section {
+        margin-top: 24px;
+        border-top: 1px solid #ccc;
+        padding-top: 12px;
+      }
+
+      #stammdaten-columns {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 16px;
+      }
+
+      .stammdaten-column {
+        flex: 1 1 180px;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+        padding: 8px;
+        background: #fafafa;
+      }
+
+      .stammdaten-column h2 {
+        margin: 0 0 6px;
+        font-size: 14px;
+      }
+
+      .stammdaten-column button {
+        font-size: 12px;
+        padding: 3px 6px;
+        margin-bottom: 6px;
+      }
+
+      .stammdaten-column ul {
+        list-style: none;
+        padding-left: 0;
+        margin: 0;
+        max-height: 240px;
+        overflow-y: auto;
+      }
+
+      .stammdaten-column li {
+        padding: 2px 0;
+        border-bottom: 1px solid #eee;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 4px;
+      }
+
+      .stammdaten-column li span.name {
+        flex: 1;
+      }
+
+      .stammdaten-column li button {
+        font-size: 11px;
+        padding: 1px 4px;
+      }
+
+      .hidden {
+        display: none;
+      }
+
+      footer {
+        padding: 8px 16px 16px;
+        font-size: 11px;
+        color: #555;
+      }
+    </style>
+  </head>
+  <body>
+    <header>
+      <h1>Plantafel Dachdeckerei Frey</h1>
+    </header>
+
+    <!-- Werkzeug-Leiste / Navigation -->
+    <div id="toolbar">
+      <!-- Ansicht -->
+      <div>
+        <button id="btn-view-14">14 Tage</button>
+        <button id="btn-view-28">4 Wochen</button>
+        <button id="btn-view-365">12 Monate</button>
+      </div>
+
+      <!-- Start-Datum -->
+      <div>
+        Start:
+        <input type="date" id="start-date" />
+        <button id="btn-prev">&lt;</button>
+        <button id="btn-next">&gt;</button>
+      </div>
+
+      <div class="spacer"></div>
+
+      <!-- Aktionen rechts -->
+      <div>
+        <button id="btn-reload">Neu laden</button>
+        <button id="btn-backup">Backup</button>
+        <button id="btn-stammdaten-toggle">Stammdaten</button>
+        <button id="btn-eintrag">+ Eintrag</button>
+      </div>
     </div>
 
-    <div class="date-controls">
-        <input type="date" id="startDate">
-        <button id="prev">&lt;</button>
-        <button id="next">&gt;</button>
-        <button id="reload">Neu laden</button>
-        <button id="backup">Backup</button>
-        <button id="stammdaten">Stammdaten</button>
-        <button id="newEntry">+ Eintrag</button>
-    </div>
+    <main>
+      <!-- Hauptbereich Plantafel -->
+      <section id="plantafel-section">
+        <div id="plantafel">Lade Daten…</div>
+      </section>
 
-    <div class="legend">
-        <span class="legend-color urlaub"></span> Urlaub
-        <span class="legend-color krank"></span> Krank
-        <span class="legend-color schule"></span> Schule
-        <span class="legend-color fahrzeug"></span> Fahrzeug
-        <span class="legend-color baustelle"></span> Baustelle
-    </div>
-</header>
+      <!-- Stammdaten-Bereich (Variante A: 3 Listen mit + Neu) -->
+      <section id="stammdaten-section" class="hidden">
+        <h2>Stammdaten</h2>
+        <div id="stammdaten-columns">
+          <!-- Mitarbeiter -->
+          <div class="stammdaten-column">
+            <h2>Mitarbeiter</h2>
+            <button id="btn-add-mitarbeiter">+ Neu</button>
+            <ul id="list-mitarbeiter"></ul>
+          </div>
 
-<main>
-    <div id="plantafel"></div>
-</main>
+          <!-- Fahrzeuge -->
+          <div class="stammdaten-column">
+            <h2>Fahrzeuge</h2>
+            <button id="btn-add-fahrzeug">+ Neu</button>
+            <ul id="list-fahrzeuge"></ul>
+          </div>
 
-<footer>
-    © 2025 Dachdeckerei Frey – Digitale Plantafel
-</footer>
+          <!-- Baustellen -->
+          <div class="stammdaten-column">
+            <h2>Baustellen</h2>
+            <button id="btn-add-baustelle">+ Neu</button>
+            <ul id="list-baustellen"></ul>
+          </div>
+        </div>
+      </section>
+    </main>
 
-<script type="module" src="app.js"></script>
-</body>
+    <footer>
+      © 2025 Dachdeckerei Frey – Digitale Plantafel
+    </footer>
+
+    <script type="module" src="app.js"></script>
+  </body>
 </html>
