@@ -18,6 +18,11 @@
     .status-urlaub, .status-krank, .status-schule { background:#cc0000; color:white; }
     .status-fahrzeug { background:#777; color:white; }
     .status-aussendarstellung { background:#009900; color:white; }
+    /* Wochen-Kachel-Layout */
+    .week-controls { display:flex; gap:10px; margin-bottom:20px; }
+    .day-grid { display:grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap:15px; }
+    .day-box { background:white; padding:10px; border-radius:8px; border:1px solid #ccc; }
+    .day-title { font-weight:bold; margin-bottom:10px; font-size:16px; }
   </style>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
@@ -55,21 +60,32 @@
       <button class="btn" id="saveBtn">Speichern</button>
     </div>
 
+    <div class="section">
+      <h2>Wochenansicht</h2>
+      <div class="week-controls">
+        <button class="btn" id="btnToday">Heute</button>
+        <button class="btn" id="btnPrev">&lt; Zurück</button>
+        <button class="btn" id="btnNext">Weiter &gt;</button>
+        <button class="btn" id="btn7">1 Woche</button>
+        <button class="btn" id="btn14">14 Tage</button>
+        <button class="btn" id="btn28">4 Wochen</button>
+      </div>
+      <div id="weekView"></div>
+    </div>
+
   </div>
 
 <script>
-const supabase = window.supabase.createClient(
-  "https://mtbymnkayhvapwvpsgho.supabase.co",
-  "sb_publishable_0w8pZ5pEAxxlv9Ke6dcurg_OuA14q7r"
-);
+// Supabase Verbindung
+const SUPABASE_URL = "https://mtbmrkyhavxpwysglo.supabase.co";
+const SUPABASE_ANON_KEY = "sb_publishable_0w8pZ5pEAxxlv9Ke6dcurg_OuA14q7r";
+const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
 async function loadEntries() {
   const { data, error } = await supabase.from("plantafel").select("*").order("von", { ascending: true });
   if (error) { console.error(error); return; }
-
   const tbody = document.querySelector("#entriesTable tbody");
   tbody.innerHTML = "";
-
   data.forEach(row => {
     const tr = document.createElement("tr");
     tr.classList.add(`status-${row.status || 'normal'}`);
@@ -80,8 +96,7 @@ async function loadEntries() {
       <td>${row.baustelle || ''}</td>
       <td>${row.mitarbeiter || ''}</td>
       <td>${row.fahrzeug || ''}</td>
-      <td>${row.status || ''}</td>
-    `;
+      <td>${row.status || ''}</td>`;
     tbody.appendChild(tr);
   });
 }
@@ -95,89 +110,44 @@ async function saveEntry() {
   const fahrzeug = document.getElementById("fahrzeug").value;
   const status = document.getElementById("status").value;
 
-  const { error } = await supabase.from("plantafel").insert({
-    von, bis, titel, baustelle, mitarbeiter, fahrzeug, status
-  });
-
-  if (error) {
-    alert("Fehler beim Speichern: " + error.message);
-    console.error(error);
-  } else {
-    alert("Eintrag gespeichert!");
-    await loadEntries();
-  }
+  const { error } = await supabase.from("plantafel").insert({ von, bis, titel, baustelle, mitarbeiter, fahrzeug, status });
+  if (error) { alert("Fehler beim Speichern: " + error.message); console.error(error); }
+  else { alert("Eintrag gespeichert!"); loadEntries(); renderWeek(); }
 }
 
 document.getElementById("saveBtn").addEventListener("click", saveEntry);
-loadEntries();
-</script>
 
-
-<!-- Wochenansicht im Kachel-Layout (Option B) -->
-<style>
-  .week-controls { display:flex; gap:10px; margin-bottom:20px; }
-  .day-grid { display:grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap:15px; }
-  .day-box { background:white; padding:10px; border-radius:8px; border:1px solid #ccc; }
-  .day-title { font-weight:bold; margin-bottom:10px; font-size:16px; }
-</style>
-
-<script>
+// Wochenansicht
 let anchorDate = new Date();
 let rangeDays = 7;
-
 function format(d){ return d.toISOString().split('T')[0]; }
-
 function shiftDays(base, days){ let d=new Date(base); d.setDate(d.getDate()+days); return d; }
 
 async function renderWeek(){
   const from = format(anchorDate);
   const to = format(shiftDays(anchorDate, rangeDays));
   const { data } = await supabase.from("plantafel").select("*").gte("von", from).lte("bis", to).order("von");
-  const grid = document.createElement("div"); grid.className="day-grid";
 
+  const grid = document.createElement("div"); grid.className="day-grid";
   for(let i=0;i<rangeDays;i++){
     const day = shiftDays(anchorDate,i);
     const box = document.createElement("div"); box.className="day-box";
     box.innerHTML = `<div class='day-title'>${day.toLocaleDateString('de-DE',{weekday:'short',day:'2-digit',month:'2-digit'})}</div>`;
-    const list = data.filter(e=> e.von<=format(day) && e.bis>=format(day));
+    const list = data.filter(e=> e.von <= format(day) && e.bis >= format(day));
     list.forEach(e=>{
-      const div=document.createElement('div'); div.className=`status-${e.status}`;
+      const div=document.createElement('div');
+      div.className=`status-${e.status}`;
       div.style.padding='5px'; div.style.marginBottom='5px'; div.style.borderRadius='4px';
       div.textContent = `${e.mitarbeiter || ''} – ${e.titel || ''}`;
       box.appendChild(div);
     });
     grid.appendChild(box);
   }
-
   const container = document.querySelector('#weekView');
   container.innerHTML = '';
   container.appendChild(grid);
 }
 
-document.addEventListener('DOMContentLoaded', ()=>{
-  document.getElementById('btnToday').onclick = ()=>{ anchorDate = new Date(); renderWeek(); };
-  document.getElementById('btnPrev').onclick = ()=>{ anchorDate = shiftDays(anchorDate, -rangeDays); renderWeek(); };
-  document.getElementById('btnNext').onclick = ()=>{ anchorDate = shiftDays(anchorDate, rangeDays); renderWeek(); };
-  document.getElementById('btn7').onclick = ()=>{ rangeDays = 7; renderWeek(); };
-  document.getElementById('btn14').onclick = ()=>{ rangeDays = 14; renderWeek(); };
-  document.getElementById('btn28').onclick = ()=>{ rangeDays = 28; renderWeek(); };
-});
-</script>
-
-<div class="section">
-  <h2>Wochenansicht</h2>
-  <div class="week-controls">
-    <button class="btn" id="btnToday">Heute</button>
-    <button class="btn" id="btnPrev">&lt; Zurück</button>
-    <button class="btn" id="btnNext">Weiter &gt;</button>
-    <button class="btn" id="btn7">1 Woche</button>
-    <button class="btn" id="btn14">14 Tage</button>
-    <button class="btn" id="btn28">4 Wochen</button>
-  </div>
-  <div id="weekView"></div>
-</div>
-
-<script> renderWeek(); </script>
-
-</body>
-</html>
+document.getElementById('btnToday').onclick = ()=>{ anchorDate = new Date(); renderWeek(); };
+document.getElementById('btnPrev').onclick = ()=>{ anchorDate = shiftDays(anchorDate, -rangeDays); renderWeek(); };
+document.getElementById
