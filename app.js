@@ -1,7 +1,5 @@
 // app.js
-// ------------------------
 // Zentrale Logik für die Plantafel
-// ------------------------
 
 import { supabase } from "./supabase.js";
 
@@ -38,6 +36,8 @@ const entryDialogTitle = document.getElementById("entryDialogTitle");
 const entryForm = document.getElementById("entryForm");
 const entryIdInput = document.getElementById("entryId");
 const entryDateInput = document.getElementById("entryDate");
+const entryVonInput = document.getElementById("entryVon");
+const entryBisInput = document.getElementById("entryBis");
 const entryTitelInput = document.getElementById("entryTitel");
 const entryBaustelleSelect = document.getElementById("entryBaustelle");
 const entryMitarbeiterSelect = document.getElementById("entryMitarbeiter");
@@ -96,7 +96,10 @@ function formatDateDotted(date) {
 // --- SUPABASE CALLS ---------------------------------------------
 
 async function loadTable(table) {
-  const { data, error } = await supabase.from(table).select("*").order("id", { ascending: true });
+  const { data, error } = await supabase
+    .from(table)
+    .select("*")
+    .order("id", { ascending: true });
 
   if (error) {
     console.error("Supabase Fehler:", table, error);
@@ -167,12 +170,12 @@ function renderBoard() {
     const body = document.createElement("div");
     body.className = "day-column-body";
 
-    // Klick auf Tag -> neuer Eintrag für diesen Tag
+    // Doppelklick auf Tag -> neuer Eintrag für diesen Tag
     body.addEventListener("dblclick", () => openEntryDialogForNew(iso));
 
-    // Einträge filtern
+    // Einträge für diesen Tag
     const entriesForDay = state.plantafel
-      .filter((e) => e.tag === iso)
+      .filter((e) => entryIsOnDate(e, iso))
       .sort((a, b) => (a.sort || 0) - (b.sort || 0));
 
     if (entriesForDay.length === 0) {
@@ -191,6 +194,23 @@ function renderBoard() {
     column.appendChild(body);
     boardGrid.appendChild(column);
   }
+}
+
+// Prüft, ob ein Eintrag an einem bestimmten Datum angezeigt werden soll
+function entryIsOnDate(entry, dateISO) {
+  // 1. falls tag gesetzt ist -> nur an diesem Tag
+  if (entry.tag) {
+    return entry.tag === dateISO;
+  }
+
+  const von = entry.von || null;
+  const bis = entry.bis || null;
+
+  if (von && bis) return dateISO >= von && dateISO <= bis;
+  if (von && !bis) return dateISO >= von;
+  if (!von && bis) return dateISO <= bis;
+
+  return false;
 }
 
 function renderEntryCard(entry) {
@@ -217,7 +237,11 @@ function renderEntryCard(entry) {
     <div class="entry-row"><span class="label">Mitarbeiter:</span> ${mitarbeiter}</div>
     <div class="entry-row"><span class="label">Fahrzeug:</span> ${fahrzeug}</div>
     <div class="entry-row"><span class="label">Status:</span> ${status}</div>
-    ${notiz ? `<div class="entry-row"><span class="label">Notiz:</span> ${notiz}</div>` : ""}
+    ${
+      notiz
+        ? `<div class="entry-row"><span class="label">Notiz:</span> ${notiz}</div>`
+        : ""
+    }
   `;
 
   div.addEventListener("click", () => openEntryDialogForEdit(entry));
@@ -257,9 +281,13 @@ function fillEntryDialogStammdaten() {
 }
 
 function openEntryDialogForNew(dateISO) {
+  const d = dateISO || toISODate(new Date());
+
   entryDialogTitle.textContent = "Neuer Eintrag";
   entryIdInput.value = "";
-  entryDateInput.value = dateISO || toISODate(new Date());
+  entryDateInput.value = d;
+  entryVonInput.value = d;
+  entryBisInput.value = d;
   entryTitelInput.value = "";
   entryBaustelleSelect.value = "";
   entryMitarbeiterSelect.selectedIndex = -1;
@@ -275,7 +303,10 @@ function openEntryDialogForNew(dateISO) {
 function openEntryDialogForEdit(entry) {
   entryDialogTitle.textContent = "Eintrag bearbeiten";
   entryIdInput.value = entry.id;
-  entryDateInput.value = entry.tag;
+  entryDateInput.value = entry.tag || entry.von || toISODate(new Date());
+  entryVonInput.value = entry.von || entry.tag || "";
+  entryBisInput.value = entry.bis || entry.tag || "";
+
   entryTitelInput.value = entry.titel || "";
   entryBaustelleSelect.value = entry.baustelle || "";
 
@@ -328,6 +359,12 @@ entryForm.addEventListener("submit", async (ev) => {
 
   const id = entryIdInput.value || null;
   const tag = entryDateInput.value;
+  let von = entryVonInput.value;
+  let bis = entryBisInput.value;
+
+  if (!von) von = tag;
+  if (!bis) bis = tag;
+
   const titel = entryTitelInput.value.trim();
   const baustelle = entryBaustelleSelect.value || null;
 
@@ -344,6 +381,8 @@ entryForm.addEventListener("submit", async (ev) => {
 
   const payload = {
     tag,
+    von,
+    bis,
     titel,
     baustelle,
     mitarbeiter,
@@ -424,7 +463,11 @@ function renderStammdatenLists() {
 async function addSimpleRow(table, name) {
   if (!name.trim()) return;
 
-  const { data, error } = await supabase.from(table).insert({ name }).select().single();
+  const { data, error } = await supabase
+    .from(table)
+    .insert({ name })
+    .select()
+    .single();
   if (error) {
     alert(`Fehler beim Anlegen in ${table}: ` + error.message);
     return;
@@ -509,8 +552,7 @@ stammdatenBtn.addEventListener("click", openStammdatenDialog);
 
 newEntryBtn.addEventListener("click", () => openEntryDialogForNew());
 
-// Wechsel der Ansicht (rangeDays wird aktuell nur für Status-Anzeige verwendet,
-// kannst du später für weitere Ansichten nutzen)
+// Ansicht-Schalter
 viewButtons.forEach((btn) => {
   btn.addEventListener("click", () => {
     viewButtons.forEach((b) => b.classList.remove("active"));
@@ -523,7 +565,7 @@ viewButtons.forEach((btn) => {
 // --- START ------------------------------------------------------
 
 (async function init() {
-  // Standard: 1 Woche aktiv markieren
+  // Standard: 1 Woche aktiv
   viewButtons.forEach((b) => {
     if (Number(b.dataset.range) === 7) b.classList.add("active");
   });
