@@ -1,25 +1,45 @@
 <!DOCTYPE html>
 <html lang="de">
 <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Plantafel Dachdeckerei Frey</title>
 
-    <link rel="stylesheet" href="style.css" />
+    <link rel="stylesheet" href="style.css">
 </head>
 
 <body>
-
 <header>
     <h1>Plantafel Dachdeckerei Frey</h1>
+
+    <div class="view-buttons">
+        <button data-view="14">14 Tage</button>
+        <button data-view="28">4 Wochen</button>
+        <button data-view="365">12 Monate</button>
+    </div>
+
+    <div class="date-controls">
+        <input type="date" id="startDate">
+        <button id="prev">&lt;</button>
+        <button id="next">&gt;</button>
+        <button id="reload">Neu laden</button>
+        <button id="backup">Backup</button>
+        <button id="stammdaten">Stammdaten</button>
+        <button id="newEntry">+ Eintrag</button>
+    </div>
+
+    <div class="legend">
+        <span class="legend-color urlaub"></span> Urlaub
+        <span class="legend-color krank"></span> Krank
+        <span class="legend-color schule"></span> Schule
+        <span class="legend-color fahrzeug"></span> Fahrzeug
+        <span class="legend-color baustelle"></span> Baustelle
+    </div>
 </header>
 
-<div class="controls">
-    <button id="reload">Neu laden</button>
-</div>
-
-<!-- HIER WERDEN DIE TAGE UND EINTRÄGE ANGEZEIGT -->
-<div id="plantafel">Lade Daten…</div>
+<main>
+    <div id="plantafel"></div>
+</main>
 
 <footer>
     © 2025 Dachdeckerei Frey – Digitale Plantafel
