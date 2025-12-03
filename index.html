@@ -90,13 +90,27 @@
           <input type="hidden" id="entryId" />
 
           <div class="form-row">
-            <label for="entryDate">Tag</label>
+            <label for="entryDate">Tag (Anker)</label>
             <input type="date" id="entryDate" required />
           </div>
 
           <div class="form-row">
+            <label for="entryVon">Von</label>
+            <input type="date" id="entryVon" />
+          </div>
+
+          <div class="form-row">
+            <label for="entryBis">Bis</label>
+            <input type="date" id="entryBis" />
+          </div>
+
+          <div class="form-row">
             <label for="entryTitel">Auftrag / Titel</label>
-            <input type="text" id="entryTitel" placeholder="z.B. Dachsanierung Musterstraße" />
+            <input
+              type="text"
+              id="entryTitel"
+              placeholder="z.B. Dachsanierung Musterstraße"
+            />
           </div>
 
           <div class="form-row">
@@ -134,12 +148,18 @@
           <div class="form-row checkbox-row">
             <label>
               <input type="checkbox" id="entryIsDetailed" />
-              Detailierter Eintrag (is_detailed)
+              Detaillierter Eintrag (is_detailed)
             </label>
           </div>
 
           <div class="dialog-footer">
-            <button type="button" id="entryDeleteBtn" class="danger">Löschen</button>
+            <button
+              type="button"
+              id="entryDeleteBtn"
+              class="danger"
+            >
+              Löschen
+            </button>
             <div class="spacer"></div>
             <button type="button" id="entryCancelBtn">Abbrechen</button>
             <button type="submit" class="primary">Speichern</button>
@@ -161,7 +181,11 @@
             <h3>Baustellen</h3>
             <ul id="baustellenList" class="simple-list"></ul>
             <div class="form-row inline">
-              <input type="text" id="newBaustelleName" placeholder="Neue Baustelle" />
+              <input
+                type="text"
+                id="newBaustelleName"
+                placeholder="Neue Baustelle"
+              />
               <button id="addBaustelleBtn">+</button>
             </div>
           </div>
@@ -170,7 +194,11 @@
             <h3>Mitarbeiter</h3>
             <ul id="mitarbeiterList" class="simple-list"></ul>
             <div class="form-row inline">
-              <input type="text" id="newMitarbeiterName" placeholder="Neuer Mitarbeiter" />
+              <input
+                type="text"
+                id="newMitarbeiterName"
+                placeholder="Neuer Mitarbeiter"
+              />
               <button id="addMitarbeiterBtn">+</button>
             </div>
           </div>
@@ -179,7 +207,11 @@
             <h3>Fahrzeuge</h3>
             <ul id="fahrzeugeList" class="simple-list"></ul>
             <div class="form-row inline">
-              <input type="text" id="newFahrzeugName" placeholder="Neues Fahrzeug" />
+              <input
+                type="text"
+                id="newFahrzeugName"
+                placeholder="Neues Fahrzeug"
+              />
               <button id="addFahrzeugBtn">+</button>
             </div>
           </div>
@@ -187,7 +219,12 @@
 
         <div class="dialog-footer">
           <div class="spacer"></div>
-          <button id="stammdatenCloseBtn" class="primary">Schließen</button>
+          <button
+            id="stammdatenCloseBtn"
+            class="primary"
+          >
+            Schließen
+          </button>
         </div>
       </div>
     </div>
