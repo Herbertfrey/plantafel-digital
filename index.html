@@ -8,218 +8,191 @@
     />
     <title>Plantafel Dachdeckerei Frey</title>
     <link rel="stylesheet" href="style.css" />
-
-    <!-- Kleine Zusatz-Styles, falls style.css leer/anders ist -->
-    <style>
-      body {
-        margin: 0;
-        font-family: Arial, sans-serif;
-      }
-
-      header {
-        background-color: #0075c9;
-        color: #fff;
-        padding: 10px 16px;
-      }
-
-      header h1 {
-        margin: 0;
-        font-size: 20px;
-      }
-
-      #toolbar {
-        background: #0a88e0;
-        color: #fff;
-        padding: 6px 16px;
-        display: flex;
-        flex-wrap: wrap;
-        align-items: center;
-        gap: 8px;
-        font-size: 13px;
-      }
-
-      #toolbar button,
-      #toolbar input[type="date"] {
-        font-size: 12px;
-        padding: 3px 6px;
-      }
-
-      #toolbar .spacer {
-        flex: 1;
-      }
-
-      main {
-        padding: 12px 16px;
-        font-size: 14px;
-      }
-
-      #plantafel {
-        margin-bottom: 20px;
-      }
-
-      .day-group {
-        margin-bottom: 12px;
-        border-bottom: 1px solid #ddd;
-        padding-bottom: 8px;
-      }
-
-      .day-group h2 {
-        font-size: 14px;
-        margin: 0 0 4px;
-      }
-
-      .plantafel-entry {
-        padding: 4px 6px;
-        margin: 2px 0;
-        border-radius: 3px;
-        background: #f3f7fb;
-        border: 1px solid #d0e1f3;
-      }
-
-      .plantafel-entry strong {
-        display: inline-block;
-        min-width: 90px;
-      }
-
-      #stammdaten-section {
-        margin-top: 24px;
-        border-top: 1px solid #ccc;
-        padding-top: 12px;
-      }
-
-      #stammdaten-columns {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 16px;
-      }
-
-      .stammdaten-column {
-        flex: 1 1 180px;
-        border: 1px solid #ddd;
-        border-radius: 4px;
-        padding: 8px;
-        background: #fafafa;
-      }
-
-      .stammdaten-column h2 {
-        margin: 0 0 6px;
-        font-size: 14px;
-      }
-
-      .stammdaten-column button {
-        font-size: 12px;
-        padding: 3px 6px;
-        margin-bottom: 6px;
-      }
-
-      .stammdaten-column ul {
-        list-style: none;
-        padding-left: 0;
-        margin: 0;
-        max-height: 240px;
-        overflow-y: auto;
-      }
-
-      .stammdaten-column li {
-        padding: 2px 0;
-        border-bottom: 1px solid #eee;
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        gap: 4px;
-      }
-
-      .stammdaten-column li span.name {
-        flex: 1;
-      }
-
-      .stammdaten-column li button {
-        font-size: 11px;
-        padding: 1px 4px;
-      }
-
-      .hidden {
-        display: none;
-      }
-
-      footer {
-        padding: 8px 16px 16px;
-        font-size: 11px;
-        color: #555;
-      }
-    </style>
   </head>
+
   <body>
-    <header>
+    <header class="topbar">
       <h1>Plantafel Dachdeckerei Frey</h1>
     </header>
 
-    <!-- Werkzeug-Leiste / Navigation -->
-    <div id="toolbar">
-      <!-- Ansicht -->
-      <div>
-        <button id="btn-view-14">14 Tage</button>
-        <button id="btn-view-28">4 Wochen</button>
-        <button id="btn-view-365">12 Monate</button>
-      </div>
-
-      <!-- Start-Datum -->
-      <div>
-        Start:
-        <input type="date" id="start-date" />
-        <button id="btn-prev">&lt;</button>
-        <button id="btn-next">&gt;</button>
-      </div>
-
-      <div class="spacer"></div>
-
-      <!-- Aktionen rechts -->
-      <div>
-        <button id="btn-reload">Neu laden</button>
-        <button id="btn-backup">Backup</button>
-        <button id="btn-stammdaten-toggle">Stammdaten</button>
-        <button id="btn-eintrag">+ Eintrag</button>
-      </div>
-    </div>
-
-    <main>
-      <!-- Hauptbereich Plantafel -->
-      <section id="plantafel-section">
-        <div id="plantafel">Lade Daten…</div>
-      </section>
-
-      <!-- Stammdaten-Bereich (Variante A: 3 Listen mit + Neu) -->
-      <section id="stammdaten-section" class="hidden">
-        <h2>Stammdaten</h2>
-        <div id="stammdaten-columns">
-          <!-- Mitarbeiter -->
-          <div class="stammdaten-column">
-            <h2>Mitarbeiter</h2>
-            <button id="btn-add-mitarbeiter">+ Neu</button>
-            <ul id="list-mitarbeiter"></ul>
+    <main class="page">
+      <!-- TOOLBAR -->
+      <section class="toolbar">
+        <div class="toolbar-left">
+          <div class="view-buttons">
+            <button class="view-btn" data-range="7">1 Woche</button>
+            <button class="view-btn" data-range="14">14 Tage</button>
+            <button class="view-btn" data-range="28">4 Wochen</button>
           </div>
 
-          <!-- Fahrzeuge -->
-          <div class="stammdaten-column">
-            <h2>Fahrzeuge</h2>
-            <button id="btn-add-fahrzeug">+ Neu</button>
-            <ul id="list-fahrzeuge"></ul>
-          </div>
-
-          <!-- Baustellen -->
-          <div class="stammdaten-column">
-            <h2>Baustellen</h2>
-            <button id="btn-add-baustelle">+ Neu</button>
-            <ul id="list-baustellen"></ul>
+          <div class="date-nav">
+            <label>
+              Start:
+              <input type="date" id="startDate" />
+            </label>
+            <button id="prevWeekBtn">&lt;</button>
+            <button id="todayBtn">Heute</button>
+            <button id="nextWeekBtn">&gt;</button>
           </div>
         </div>
+
+        <div class="toolbar-right">
+          <button id="reloadBtn">Neu laden</button>
+          <button id="backupBtn">Backup</button>
+          <button id="stammdatenBtn">Stammdaten</button>
+          <button id="newEntryBtn" class="primary">+ Eintrag</button>
+        </div>
+      </section>
+
+      <!-- STATUS / FEHLERMELDUNGEN -->
+      <section id="statusBar" class="status-bar">
+        Lade Daten...
+      </section>
+
+      <!-- PLANTAFEL -->
+      <section class="board">
+        <div class="board-header">
+          <div class="day-header">Montag</div>
+          <div class="day-header">Dienstag</div>
+          <div class="day-header">Mittwoch</div>
+          <div class="day-header">Donnerstag</div>
+          <div class="day-header">Freitag</div>
+        </div>
+
+        <div id="boardGrid" class="board-grid">
+          <!-- Wird von app.js gefüllt -->
+        </div>
+      </section>
+
+      <!-- LEGENDE -->
+      <section class="legend">
+        <span class="legend-item status-normal">Normal</span>
+        <span class="legend-item status-urlaub">Urlaub</span>
+        <span class="legend-item status-krank">Krank</span>
+        <span class="legend-item status-schule">Schule</span>
+        <span class="legend-item status-fahrzeug">Fahrzeug</span>
       </section>
     </main>
 
-    <footer>
+    <footer class="footer">
       © 2025 Dachdeckerei Frey – Digitale Plantafel
     </footer>
 
+    <!-- EINTRAGS-DIALOG -->
+    <div id="entryDialog" class="dialog hidden">
+      <div class="dialog-backdrop"></div>
+      <div class="dialog-content">
+        <header class="dialog-header">
+          <h2 id="entryDialogTitle">Eintrag</h2>
+        </header>
+
+        <form id="entryForm" class="dialog-body">
+          <input type="hidden" id="entryId" />
+
+          <div class="form-row">
+            <label for="entryDate">Tag</label>
+            <input type="date" id="entryDate" required />
+          </div>
+
+          <div class="form-row">
+            <label for="entryTitel">Auftrag / Titel</label>
+            <input type="text" id="entryTitel" placeholder="z.B. Dachsanierung Musterstraße" />
+          </div>
+
+          <div class="form-row">
+            <label for="entryBaustelle">Baustelle</label>
+            <select id="entryBaustelle"></select>
+          </div>
+
+          <div class="form-row">
+            <label for="entryMitarbeiter">Mitarbeiter</label>
+            <select id="entryMitarbeiter" multiple size="4"></select>
+            <small>Mehrere mit Strg/⌘ klicken</small>
+          </div>
+
+          <div class="form-row">
+            <label for="entryFahrzeug">Fahrzeug</label>
+            <select id="entryFahrzeug"></select>
+          </div>
+
+          <div class="form-row">
+            <label for="entryStatus">Status</label>
+            <select id="entryStatus">
+              <option value="normal">Normal</option>
+              <option value="urlaub">Urlaub</option>
+              <option value="krank">Krank</option>
+              <option value="schule">Schule</option>
+              <option value="fahrzeug">Fahrzeug</option>
+            </select>
+          </div>
+
+          <div class="form-row">
+            <label for="entryNotiz">Notiz</label>
+            <textarea id="entryNotiz" rows="3"></textarea>
+          </div>
+
+          <div class="form-row checkbox-row">
+            <label>
+              <input type="checkbox" id="entryIsDetailed" />
+              Detailierter Eintrag (is_detailed)
+            </label>
+          </div>
+
+          <div class="dialog-footer">
+            <button type="button" id="entryDeleteBtn" class="danger">Löschen</button>
+            <div class="spacer"></div>
+            <button type="button" id="entryCancelBtn">Abbrechen</button>
+            <button type="submit" class="primary">Speichern</button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- STAMMDATEN-DIALOG -->
+    <div id="stammdatenDialog" class="dialog hidden">
+      <div class="dialog-backdrop"></div>
+      <div class="dialog-content large">
+        <header class="dialog-header">
+          <h2>Stammdaten</h2>
+        </header>
+
+        <div class="dialog-body stammdaten-body">
+          <div class="stammdaten-column">
+            <h3>Baustellen</h3>
+            <ul id="baustellenList" class="simple-list"></ul>
+            <div class="form-row inline">
+              <input type="text" id="newBaustelleName" placeholder="Neue Baustelle" />
+              <button id="addBaustelleBtn">+</button>
+            </div>
+          </div>
+
+          <div class="stammdaten-column">
+            <h3>Mitarbeiter</h3>
+            <ul id="mitarbeiterList" class="simple-list"></ul>
+            <div class="form-row inline">
+              <input type="text" id="newMitarbeiterName" placeholder="Neuer Mitarbeiter" />
+              <button id="addMitarbeiterBtn">+</button>
+            </div>
+          </div>
+
+          <div class="stammdaten-column">
+            <h3>Fahrzeuge</h3>
+            <ul id="fahrzeugeList" class="simple-list"></ul>
+            <div class="form-row inline">
+              <input type="text" id="newFahrzeugName" placeholder="Neues Fahrzeug" />
+              <button id="addFahrzeugBtn">+</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="dialog-footer">
+          <div class="spacer"></div>
+          <button id="stammdatenCloseBtn" class="primary">Schließen</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- JAVASCRIPT -->
     <script type="module" src="app.js"></script>
   </body>
 </html>
