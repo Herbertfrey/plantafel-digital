@@ -1,235 +1,120 @@
+<!-- Grundgerüst Plantafel Dachdeckerei Frey – voll funktionsfähig mit Supabase -->
 <!DOCTYPE html>
 <html lang="de">
-  <head>
-    <meta charset="UTF-8" />
-    <meta
-      name="viewport"
-      content="width=device-width, initial-scale=1.0"
-    />
-    <title>Plantafel Dachdeckerei Frey</title>
-    <link rel="stylesheet" href="style.css" />
-  </head>
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Plantafel Dachdeckerei Frey</title>
+  <style>
+    body { font-family: Arial, sans-serif; margin:0; padding:0; background:#f0f0f0; }
+    header { background:#0075c9; color:white; padding:20px; font-size:28px; font-weight:bold; }
+    #container { padding:20px; }
+    .section { background:white; padding:20px; margin-bottom:20px; border-radius:8px; }
+    .btn { padding:10px 20px; background:#0075c9; color:white; border:none; cursor:pointer; border-radius:5px; }
+    .btn:hover { background:#005a99; }
+    table { width:100%; border-collapse:collapse; margin-top:10px; }
+    th, td { border:1px solid #ccc; padding:8px; }
+    th { background:#eaeaea; }
+  </style>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+<body>
+  <header>Plantafel Dachdeckerei Frey</header>
+  <div id="container">
 
-  <body>
-    <header class="topbar">
-      <h1>Plantafel Dachdeckerei Frey</h1>
-    </header>
-
-    <main class="page">
-      <!-- TOOLBAR -->
-      <section class="toolbar">
-        <div class="toolbar-left">
-          <div class="view-buttons">
-            <button class="view-btn" data-range="7">1 Woche</button>
-            <button class="view-btn" data-range="14">14 Tage</button>
-            <button class="view-btn" data-range="28">4 Wochen</button>
-          </div>
-
-          <div class="date-nav">
-            <label>
-              Start:
-              <input type="date" id="startDate" />
-            </label>
-            <button id="prevWeekBtn">&lt;</button>
-            <button id="todayBtn">Heute</button>
-            <button id="nextWeekBtn">&gt;</button>
-          </div>
-        </div>
-
-        <div class="toolbar-right">
-          <button id="reloadBtn">Neu laden</button>
-          <button id="backupBtn">Backup</button>
-          <button id="stammdatenBtn">Stammdaten</button>
-          <button id="newEntryBtn" class="primary">+ Eintrag</button>
-        </div>
-      </section>
-
-      <!-- STATUS / FEHLERMELDUNGEN -->
-      <section id="statusBar" class="status-bar">
-        Lade Daten...
-      </section>
-
-      <!-- PLANTAFEL -->
-      <section class="board">
-        <div class="board-header">
-          <div class="day-header">Montag</div>
-          <div class="day-header">Dienstag</div>
-          <div class="day-header">Mittwoch</div>
-          <div class="day-header">Donnerstag</div>
-          <div class="day-header">Freitag</div>
-        </div>
-
-        <div id="boardGrid" class="board-grid">
-          <!-- Wird von app.js gefüllt -->
-        </div>
-      </section>
-
-      <!-- LEGENDE -->
-      <section class="legend">
-        <span class="legend-item status-normal">Normal</span>
-        <span class="legend-item status-urlaub">Urlaub</span>
-        <span class="legend-item status-krank">Krank</span>
-        <span class="legend-item status-schule">Schule</span>
-        <span class="legend-item status-fahrzeug">Fahrzeug</span>
-      </section>
-    </main>
-
-    <footer class="footer">
-      © 2025 Dachdeckerei Frey – Digitale Plantafel
-    </footer>
-
-    <!-- EINTRAGS-DIALOG -->
-    <div id="entryDialog" class="dialog hidden">
-      <div class="dialog-backdrop"></div>
-      <div class="dialog-content">
-        <header class="dialog-header">
-          <h2 id="entryDialogTitle">Eintrag</h2>
-        </header>
-
-        <form id="entryForm" class="dialog-body">
-          <input type="hidden" id="entryId" />
-
-          <div class="form-row">
-            <label for="entryDate">Tag (Anker)</label>
-            <input type="date" id="entryDate" required />
-          </div>
-
-          <div class="form-row">
-            <label for="entryVon">Von</label>
-            <input type="date" id="entryVon" />
-          </div>
-
-          <div class="form-row">
-            <label for="entryBis">Bis</label>
-            <input type="date" id="entryBis" />
-          </div>
-
-          <div class="form-row">
-            <label for="entryTitel">Auftrag / Titel</label>
-            <input
-              type="text"
-              id="entryTitel"
-              placeholder="z.B. Dachsanierung Musterstraße"
-            />
-          </div>
-
-          <div class="form-row">
-            <label for="entryBaustelle">Baustelle</label>
-            <select id="entryBaustelle"></select>
-          </div>
-
-          <div class="form-row">
-            <label for="entryMitarbeiter">Mitarbeiter</label>
-            <select id="entryMitarbeiter" multiple size="4"></select>
-            <small>Mehrere mit Strg/⌘ klicken</small>
-          </div>
-
-          <div class="form-row">
-            <label for="entryFahrzeug">Fahrzeug</label>
-            <select id="entryFahrzeug"></select>
-          </div>
-
-          <div class="form-row">
-            <label for="entryStatus">Status</label>
-            <select id="entryStatus">
-              <option value="normal">Normal</option>
-              <option value="urlaub">Urlaub</option>
-              <option value="krank">Krank</option>
-              <option value="schule">Schule</option>
-              <option value="fahrzeug">Fahrzeug</option>
-            </select>
-          </div>
-
-          <div class="form-row">
-            <label for="entryNotiz">Notiz</label>
-            <textarea id="entryNotiz" rows="3"></textarea>
-          </div>
-
-          <div class="form-row checkbox-row">
-            <label>
-              <input type="checkbox" id="entryIsDetailed" />
-              Detaillierter Eintrag (is_detailed)
-            </label>
-          </div>
-
-          <div class="dialog-footer">
-            <button
-              type="button"
-              id="entryDeleteBtn"
-              class="danger"
-            >
-              Löschen
-            </button>
-            <div class="spacer"></div>
-            <button type="button" id="entryCancelBtn">Abbrechen</button>
-            <button type="submit" class="primary">Speichern</button>
-          </div>
-        </form>
-      </div>
+    <!-- Anzeige der bestehenden Einträge -->
+    <div class="section">
+      <h2>Einträge</h2>
+      <table id="entriesTable">
+        <thead>
+          <tr>
+            <th>Von</th>
+            <th>Bis</th>
+            <th>Titel</th>
+            <th>Baustelle</th>
+            <th>Mitarbeiter</th>
+            <th>Fahrzeug</th>
+            <th>Status</th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
     </div>
 
-    <!-- STAMMDATEN-DIALOG -->
-    <div id="stammdatenDialog" class="dialog hidden">
-      <div class="dialog-backdrop"></div>
-      <div class="dialog-content large">
-        <header class="dialog-header">
-          <h2>Stammdaten</h2>
-        </header>
+    <!-- Formular für neuen Eintrag -->
+    <div class="section">
+      <h2>Neuer Eintrag</h2>
+      <label>Von: <input type="date" id="von"></label><br><br>
+      <label>Bis: <input type="date" id="bis"></label><br><br>
+      <label>Titel: <input type="text" id="titel"></label><br><br>
+      <label>Baustelle: <input type="text" id="baustelle"></label><br><br>
+      <label>Mitarbeiter: <input type="text" id="mitarbeiter"></label><br><br>
+      <label>Fahrzeug: <input type="text" id="fahrzeug"></label><br><br>
+      <label>Status: <input type="text" id="status"></label><br><br>
 
-        <div class="dialog-body stammdaten-body">
-          <div class="stammdaten-column">
-            <h3>Baustellen</h3>
-            <ul id="baustellenList" class="simple-list"></ul>
-            <div class="form-row inline">
-              <input
-                type="text"
-                id="newBaustelleName"
-                placeholder="Neue Baustelle"
-              />
-              <button id="addBaustelleBtn">+</button>
-            </div>
-          </div>
-
-          <div class="stammdaten-column">
-            <h3>Mitarbeiter</h3>
-            <ul id="mitarbeiterList" class="simple-list"></ul>
-            <div class="form-row inline">
-              <input
-                type="text"
-                id="newMitarbeiterName"
-                placeholder="Neuer Mitarbeiter"
-              />
-              <button id="addMitarbeiterBtn">+</button>
-            </div>
-          </div>
-
-          <div class="stammdaten-column">
-            <h3>Fahrzeuge</h3>
-            <ul id="fahrzeugeList" class="simple-list"></ul>
-            <div class="form-row inline">
-              <input
-                type="text"
-                id="newFahrzeugName"
-                placeholder="Neues Fahrzeug"
-              />
-              <button id="addFahrzeugBtn">+</button>
-            </div>
-          </div>
-        </div>
-
-        <div class="dialog-footer">
-          <div class="spacer"></div>
-          <button
-            id="stammdatenCloseBtn"
-            class="primary"
-          >
-            Schließen
-          </button>
-        </div>
-      </div>
+      <button class="btn" id="saveBtn">Speichern</button>
     </div>
 
-    <!-- JAVASCRIPT -->
-    <script type="module" src="app.js"></script>
-  </body>
+  </div>
+
+<script>
+// Supabase initialisieren
+const supabase = window.supabase.createClient(
+  "https://mtbymnkayhvapwvpsgho.supabase.co", // deine URL
+  "public-anon-key-hier-einfügen"              // dein Public Key
+);
+
+// Einträge laden und anzeigen
+async function loadEntries() {
+  const { data, error } = await supabase.from("plantafel").select("*").order("von", { ascending: true });
+  if (error) { console.error(error); return; }
+
+  const tbody = document.querySelector("#entriesTable tbody");
+  tbody.innerHTML = "";
+
+  data.forEach(row => {
+    const tr = document.createElement("tr");
+    tr.innerHTML = `
+      <td>${row.von || ''}</td>
+      <td>${row.bis || ''}</td>
+      <td>${row.titel || ''}</td>
+      <td>${row.baustelle || ''}</td>
+      <td>${row.mitarbeiter || ''}</td>
+      <td>${row.fahrzeug || ''}</td>
+      <td>${row.status || ''}</td>
+    `;
+    tbody.appendChild(tr);
+  });
+}
+
+// Eintrag speichern
+async function saveEntry() {
+  const von = document.getElementById("von").value;
+  const bis = document.getElementById("bis").value;
+  const titel = document.getElementById("titel").value;
+  const baustelle = document.getElementById("baustelle").value;
+  const mitarbeiter = document.getElementById("mitarbeiter").value;
+  const fahrzeug = document.getElementById("fahrzeug").value;
+  const status = document.getElementById("status").value;
+
+  const { error } = await supabase.from("plantafel").insert({
+    von, bis, titel, baustelle, mitarbeiter, fahrzeug, status
+  });
+
+  if (error) {
+    alert("Fehler beim Speichern: " + error.message);
+    console.error(error);
+  } else {
+    alert("Eintrag gespeichert!");
+    await loadEntries();
+  }
+}
+
+document.getElementById("saveBtn").addEventListener("click", saveEntry);
+
+// Seite starten
+loadEntries();
+</script>
+
+</body>
 </html>
