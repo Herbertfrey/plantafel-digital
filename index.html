@@ -169,10 +169,10 @@
       border: 2px solid var(--card-border);
       background: #ffffff;
       padding: 3px 4px;
-      margin-bottom: 3px;
+      margin-bottom: 4px;
       font-size: 11px;
       line-height: 1.2;
-      min-height: 34px;
+      min-height: 40px;
     }
 
     .card-inner {
@@ -180,7 +180,7 @@
     }
 
     .card-color-strip {
-      width: 4px;
+      width: 5px;
       background: transparent;
       margin-right: 4px;
     }
@@ -243,43 +243,53 @@
     .year-table {
       border-collapse: collapse;
       font-size: 12px;
-      min-width: 700px;
+      min-width: 750px;
     }
 
     .year-table th,
     .year-table td {
-      border: 1px solid #ccc;
-      padding: 4px;
+      border: 2px solid #777;
+      padding: 6px;
       vertical-align: top;
     }
 
     .year-kw-cell {
-      width: 60px;
+      width: 110px;
       text-align: center;
       font-weight: bold;
       background: #f3f3f3;
+      font-size: 11px;
+      line-height: 1.3;
+    }
+
+    .year-kw-main {
+      font-weight: bold;
+    }
+    .year-kw-sub {
+      font-size: 11px;
     }
 
     .year-month-header {
       text-align: center;
       font-weight: bold;
       background: #e7e7e7;
+      font-size: 13px;
     }
 
     .year-month-cell {
-      min-height: 80px;
+      min-height: 130px;
       background: #fff;
     }
 
     .year-month-title {
       font-weight: bold;
-      font-size: 11px;
+      font-size: 12px;
       text-align: center;
-      margin-bottom: 2px;
+      margin-bottom: 4px;
     }
 
     .year-month-drop {
-      min-height: 60px;
+      min-height: 90px;
     }
 
     .year-month-drop.dragover {
@@ -291,10 +301,10 @@
     }
 
     .year-cat-box {
-      border: 1px solid #ccc;
+      border: 2px solid #777;
       border-radius: 4px;
       padding: 4px;
-      margin-bottom: 6px;
+      margin-bottom: 8px;
       background: #fafafa;
     }
 
@@ -306,7 +316,7 @@
     }
 
     .year-cat-drop {
-      min-height: 60px;
+      min-height: 80px;
       background: #fff;
       padding: 2px;
     }
@@ -376,7 +386,7 @@
     <div class="section">
       <div class="section-header">
         <h2>Jahresübersicht (wie großes Board)</h2>
-        <span class="small-text">Karten frei per Drag & Drop verschieben – Datum wird nicht verändert.</span>
+        <span class="small-text">Karten per Drag & Drop verschieben – Datum wird nicht verändert.</span>
       </div>
 
       <div class="year-layout">
@@ -639,6 +649,14 @@
     const dt = (d instanceof Date) ? d : new Date(d);
     if (isNaN(dt)) return "";
     return dt.toLocaleDateString("de-DE");
+  }
+
+  function formatDateShort(d) {
+    const dt = (d instanceof Date) ? d : new Date(d);
+    if (isNaN(dt)) return "";
+    const day = dt.getDate();
+    const month = dt.getMonth() + 1;
+    return `${day}.${month.toString().padStart(2,"0")}.`;
   }
 
   function toISODate(str) {
@@ -1118,8 +1136,12 @@
             card.draggable = true;
             card.dataset.entryId = entry.id;
 
-            card.addEventListener("dragstart", () => { draggedEntryId = entry.id; });
-            card.addEventListener("dragend", () => { draggedEntryId = null; });
+            card.addEventListener("dragstart", () => {
+              draggedEntryId = entry.id;
+            });
+            card.addEventListener("dragend", () => {
+              draggedEntryId = null;
+            });
 
             const title = entry.baustelle || entry.titel || "Ohne Titel";
             const fahr = entry.fahrzeug || "";
@@ -1235,33 +1257,44 @@
 
     yearTable.innerHTML = "";
 
-    // Wir nutzen monthsDef in 4x3 Raster.
-    // Reihen:
-    // 0: Jan, Feb, Mär
-    // 1: Apr, Mai, Jun
-    // 2: Jul, Aug, Sep
-    // 3: Okt, Nov, Dez
+    const year = new Date().getFullYear();
 
-    const rows = [];
-
+    // 4 Reihen, je 3 Monate
     for (let r = 0; r < 4; r++) {
       const headerRow = document.createElement("tr");
       const row = document.createElement("tr");
 
-      headerRow.innerHTML = `<th class="year-kw-cell">${r === 0 ? "KW" : ""}</th>`;
-      row.innerHTML = `<td class="year-kw-cell">KW</td>`;
+      const firstMonthIndex = r * 3;
+      const lastMonthIndex = r * 3 + 2;
 
+      const monthStart = new Date(year, firstMonthIndex, 1);
+      const monthEnd = new Date(year, lastMonthIndex + 1, 0);
+
+      const kwStart = isoWeek(monthStart);
+      const kwEnd = isoWeek(monthEnd);
+
+      const kwCellHeader = document.createElement("th");
+      kwCellHeader.className = "year-kw-cell";
+      kwCellHeader.innerHTML = `
+        <div class="year-kw-main">KW ${kwStart} – ${kwEnd}</div>
+        <div class="year-kw-sub">${formatDateShort(monthStart)} – ${formatDateShort(monthEnd)}</div>
+      `;
+      headerRow.appendChild(kwCellHeader);
+
+      const kwCellRow = document.createElement("td");
+      kwCellRow.className = "year-kw-cell";
+      row.appendChild(kwCellRow);
+
+      // Monatszellen
       for (let c = 0; c < 3; c++) {
         const monthIndex = r * 3 + c;
         const mDef = monthsDef[monthIndex];
 
-        // Kopfzelle
         const th = document.createElement("th");
         th.className = "year-month-header";
         th.textContent = mDef.label;
         headerRow.appendChild(th);
 
-        // Datenzelle
         const td = document.createElement("td");
         td.className = "year-month-cell";
 
@@ -1287,7 +1320,6 @@
 
       yearTable.appendChild(headerRow);
       yearTable.appendChild(row);
-      rows.push(row);
     }
 
     // Rechte Kategorien-Spalten
@@ -1389,7 +1421,7 @@
   //  Grobplanung (Platzhalter)
   // -------------------------------------------------------------------
   function renderGrobView() {
-    // Kann später für zusätzliche Ansichten genutzt werden.
+    // Noch nicht genutzt – könnte später weitere Ansichten bekommen.
   }
 
   // -------------------------------------------------------------------
