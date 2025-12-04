@@ -1,10 +1,10 @@
-<!-- COMPLETE WORKING VERSION WITH NEW SUPABASE PROJECT -->
 <!DOCTYPE html>
 <html lang="de">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Plantafel Dachdeckerei Frey – FINAL VERSION</title>
+  <title>Plantafel Dachdeckerei Frey – FINAL</title>
+
   <style>
     body { font-family: Arial, sans-serif; margin:0; padding:0; background:#f0f0f0; }
     header { background:#0075c9; color:white; padding:20px; font-size:24px; font-weight:bold; }
@@ -12,27 +12,52 @@
     .section { background:white; padding:20px; margin-bottom:20px; border-radius:8px; }
     .btn { padding:6px 12px; background:#0075c9; color:white; border:none; border-radius:4px; cursor:pointer; }
     .btn:hover { background:#005a99; }
+
     table { width:100%; border-collapse:collapse; }
     th, td { border:1px solid #ccc; padding:6px; }
     th { background:#eaeaea; }
-    .fine-entry{border:1px solid #aaa;padding:4px;margin-bottom:4px;border-radius:4px;background:white;}
+
+    .fine-entry{
+      border:1px solid #aaa;
+      padding:4px;
+      margin-bottom:4px;
+      border-radius:4px;
+      background:white;
+    }
     .fine-entry-title{font-weight:bold;}
   </style>
+
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
 <body>
+
 <header>Plantafel Dachdeckerei Frey</header>
+
 <div id="container">
 
+  <!-- LISTE -->
   <div class="section">
     <h2>Einträge (Liste)</h2>
-    <table id="entriesTable"><thead><tr>
-      <th>Tag/Von</th><th>Bis</th><th>Titel</th><th>Baustelle</th><th>Mitarbeiter</th><th>Fahrzeug</th><th>Status</th>
-    </tr></thead><tbody></tbody></table>
+    <table id="entriesTable">
+      <thead>
+        <tr>
+          <th>Tag/Von</th>
+          <th>Bis</th>
+          <th>Titel</th>
+          <th>Baustelle</th>
+          <th>Mitarbeiter</th>
+          <th>Fahrzeug</th>
+          <th>Status</th>
+        </tr>
+      </thead>
+      <tbody></tbody>
+    </table>
   </div>
 
+  <!-- FORMULAR -->
   <div class="section">
     <h2>Eintrag bearbeiten / neu anlegen</h2>
+
     <label>Tag: <input type="date" id="tag"></label><br>
     <label>Von: <input type="date" id="von"></label><br>
     <label>Bis: <input type="date" id="bis"></label><br>
@@ -42,10 +67,12 @@
     <label>Fahrzeug: <input type="text" id="fahrzeug"></label><br>
     <label>Status: <input type="text" id="status"></label><br>
     <label>Notiz: <textarea id="notiz"></textarea></label><br>
+
     <button class="btn" id="saveBtn">Speichern</button>
     <button class="btn" id="deleteBtn">Löschen</button>
   </div>
 
+  <!-- FEINPLANUNG -->
   <div class="section">
     <h2>Feinplanung – 4 Wochen</h2>
     <div id="fineView"></div>
@@ -53,172 +80,207 @@
 
 </div>
 
+
 <script>
-// ----------------------------------------------------------------------
-// *** NEW SUPABASE PROJECT – CORRECT URL + KEY ***
-// ----------------------------------------------------------------------
-const SUPABASE_URL = "https://yzfmviddzhghvcxowbjl.supabase.co";
-const SUPABASE_ANON_KEY = "sb_publishable_dacXIaV9sWHEN0ysSeoFuw_88UaV5tn";
+/* ------------------------------------------------------------------
+   ✔ SUPABASE – KORREKTE URL + API KEY
+   ------------------------------------------------------------------ */
+
+const SUPABASE_URL = "https://yt1r1ddzrjhcwr2owbjl.supabase.co";
+const SUPABASE_ANON_KEY = "sb_publishable_dacXlA9sWHnevySseoFuw_88UaVstrnBr2w";
 
 const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
 let allEntries = [];
 let currentEditId = null;
 
-// ----------------------------------------------------------------------
-// LOAD ENTRIES
-// ----------------------------------------------------------------------
+/* ------------------------------------------------------------------
+   DATEN LADEN
+   ------------------------------------------------------------------ */
 async function loadEntries(){
-  const { data, error } = await supabase.from("plantafel").select("*").order("von",{ascending:true});
-  if(error){ console.error(error); return; }
+  const { data, error } = await supabase
+    .from("plantafel")
+    .select("*")
+    .order("von",{ascending:true});
+
+  if(error){
+    console.error("Supabase Fehler:", error);
+    return;
+  }
+
   allEntries = data;
   renderList();
   renderFinePlan();
 }
 
-// ----------------------------------------------------------------------
+/* ------------------------------------------------------------------
+   LISTE RENDERN
+   ------------------------------------------------------------------ */
 function renderList(){
   const tbody = document.querySelector("#entriesTable tbody");
   tbody.innerHTML = "";
+
   allEntries.forEach(e=>{
     const tr=document.createElement("tr");
-    tr.innerHTML=`
-      <td>${e.von||e.tag||""}</td>
-      <td>${e.bis||e.von||""}</td>
-      <td>${e.titel||""}</td>
-      <td>${e.baustelle||""}</td>
-      <td>${e.mitarbeiter||""}</td>
-      <td>${e.fahrzeug||""}</td>
-      <td>${e.status||""}</td>
+    tr.innerHTML = `
+      <td>${e.von || e.tag || ""}</td>
+      <td>${e.bis || e.von || ""}</td>
+      <td>${e.titel || ""}</td>
+      <td>${e.baustelle || ""}</td>
+      <td>${e.mitarbeiter || ""}</td>
+      <td>${e.fahrzeug || ""}</td>
+      <td>${e.status || ""}</td>
     `;
-    tr.onclick=()=>loadIntoForm(e);
+    tr.onclick = ()=>loadIntoForm(e);
     tbody.appendChild(tr);
   });
 }
 
-// ----------------------------------------------------------------------
+/* ------------------------------------------------------------------
+   FORMULAR FÜLLEN
+   ------------------------------------------------------------------ */
 function loadIntoForm(e){
-  currentEditId=e.id;
-  tag.value=e.tag||"";
-  von.value=e.von||"";
-  bis.value=e.bis||"";
-  titel.value=e.titel||"";
-  baustelle.value=e.baustelle||"";
-  mitarbeiter.value=e.mitarbeiter||"";
-  fahrzeug.value=e.fahrzeug||"";
-  status.value=e.status||"";
-  notiz.value=e.notiz||"";
+  currentEditId = e.id;
+  tag.value = e.tag || "";
+  von.value = e.von || "";
+  bis.value = e.bis || "";
+  titel.value = e.titel || "";
+  baustelle.value = e.baustelle || "";
+  mitarbeiter.value = e.mitarbeiter || "";
+  fahrzeug.value = e.fahrzeug || "";
+  status.value = e.status || "";
+  notiz.value = e.notiz || "";
 }
 
-// ----------------------------------------------------------------------
+/* ------------------------------------------------------------------
+   SPEICHERN
+   ------------------------------------------------------------------ */
 async function saveEntry(){
-  const payload={
-    tag:tag.value||von.value||null,
-    von:von.value||null,
-    bis:bis.value||von.value||null,
-    titel:titel.value,
-    baustelle:baustelle.value,
-    mitarbeiter:mitarbeiter.value,
-    fahrzeug:fahrzeug.value,
-    status:status.value,
-    notiz:notiz.value
+  const payload = {
+    tag: tag.value || von.value || null,
+    von: von.value || null,
+    bis: bis.value || von.value || null,
+    titel: titel.value,
+    baustelle: baustelle.value,
+    mitarbeiter: mitarbeiter.value,
+    fahrzeug: fahrzeug.value,
+    status: status.value,
+    notiz: notiz.value
   };
 
-  let error=null;
+  let error = null;
+
   if(currentEditId){
-    ({error}=await supabase.from("plantafel").update(payload).eq("id",currentEditId));
-  }else{
-    ({error}=await supabase.from("plantafel").insert(payload));
+    ({ error } = await supabase.from("plantafel").update(payload).eq("id", currentEditId));
+  } else {
+    ({ error } = await supabase.from("plantafel").insert(payload));
   }
-  if(error) alert(error.message);
+
+  if(error){
+    alert("Fehler: " + error.message);
+  }
+
   loadEntries();
 }
 
-// ----------------------------------------------------------------------
+/* ------------------------------------------------------------------
+   LÖSCHEN
+   ------------------------------------------------------------------ */
 async function deleteEntry(){
   if(!currentEditId) return;
-  await supabase.from("plantafel").delete().eq("id",currentEditId);
+  await supabase.from("plantafel").delete().eq("id", currentEditId);
   loadEntries();
 }
 
-// ----------------------------------------------------------------------
+/* ------------------------------------------------------------------
+   FEINPLANUNG (4 Wochen)
+   ------------------------------------------------------------------ */
 function renderFinePlan(){
-  const root=document.getElementById("fineView");
-  root.innerHTML="";
+  const root = document.getElementById("fineView");
+  root.innerHTML = "";
 
-  const today=new Date();
-  const monday=new Date(today.setDate(today.getDate()-((today.getDay()+6)%7)));
+  const today = new Date();
+  const monday = new Date(today.setDate(today.getDate() - ((today.getDay()+6)%7)));
 
-  const table=document.createElement("table");
-  table.style.width="100%";
-  table.style.borderCollapse="collapse";
+  const table = document.createElement("table");
+  table.style.width = "100%";
+  table.style.borderCollapse = "collapse";
 
-  // header row (4 KW)
-  const head=document.createElement("tr");
-  head.appendChild(document.createElement("th")); // corner
+  // Kopfzeile
+  const head = document.createElement("tr");
+  head.appendChild(document.createElement("th"));
 
   for(let w=0; w<4; w++){
-    const d=new Date(monday); d.setDate(d.getDate()+w*7);
-    const kw=getKW(d);
-    const th=document.createElement("th");
-    th.innerHTML=`KW ${kw}`;
+    const d=new Date(monday);
+    d.setDate(d.getDate()+w*7);
+    const kw = getKW(d);
+
+    const th = document.createElement("th");
+    th.textContent = "KW " + kw;
     head.appendChild(th);
   }
   table.appendChild(head);
 
-  // rows Mo–Fr
+  // Tage
   const days=["Mo","Di","Mi","Do","Fr"];
   for(let i=0;i<5;i++){
     const tr=document.createElement("tr");
-    const dayTh=document.createElement("th");
-    dayTh.textContent=days[i];
-    tr.appendChild(dayTh);
+
+    const th=document.createElement("th");
+    th.textContent=days[i];
+    tr.appendChild(th);
 
     for(let w=0;w<4;w++){
       const cell=document.createElement("td");
-      const d=new Date(monday); d.setDate(d.getDate()+w*7+i);
+      const d=new Date(monday);
+      d.setDate(d.getDate()+w*7+i);
       const iso=d.toISOString().split("T")[0];
 
-      const entries=allEntries.filter(e=>{
-        const start=e.von||e.tag;
-        const end=e.bis||e.von||e.tag;
+      const entries = allEntries.filter(e=>{
+        const start=e.von || e.tag;
+        const end=e.bis || e.von || e.tag;
         return start<=iso && end>=iso;
       });
 
       entries.forEach(e=>{
         const box=document.createElement("div");
         box.className="fine-entry";
-        box.innerHTML=`<div class='fine-entry-title'>${e.baustelle||e.titel}</div>
-                       <div>Fzg: ${e.fahrzeug||"-"}</div>
-                       <div>MA: ${e.mitarbeiter||"-"}</div>`;
-        box.onclick=()=>loadIntoForm(e);
+        box.innerHTML = `
+          <div class="fine-entry-title">${e.baustelle || e.titel}</div>
+          <div>Fzg: ${e.fahrzeug||"-"}</div>
+          <div>MA: ${e.mitarbeiter||"-"}</div>
+        `;
+        box.onclick = ()=>loadIntoForm(e);
         cell.appendChild(box);
       });
 
       tr.appendChild(cell);
     }
+
     table.appendChild(tr);
   }
 
   root.appendChild(table);
 }
 
-// KW berechnen
+/* ------------------------------------------------------------------
+   KW BERECHNEN
+   ------------------------------------------------------------------ */
 function getKW(d){
-  d=new Date(Date.UTC(d.getFullYear(),d.getMonth(),d.getDate()));
-  const day=d.getUTCDay()||7;
+  d=new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()));
+  const day = d.getUTCDay() || 7;
   d.setUTCDate(d.getUTCDate()+4-day);
-  const yearStart=new Date(Date.UTC(d.getUTCFullYear(),0,1));
-  const week=Math.ceil((((d-yearStart)/86400000)+1)/7);
-  return week;
+  const start=new Date(Date.UTC(d.getUTCFullYear(),0,1));
+  return Math.ceil((((d-start)/86400000)+1)/7);
 }
 
-// Event Listeners
-saveBtn.onclick=saveEntry;
-deleteBtn.onclick=deleteEntry;
+/* ------------------------------------------------------------------ */
+saveBtn.onclick = saveEntry;
+deleteBtn.onclick = deleteEntry;
 
-// Start
+/* ------------------------------------------------------------------ */
 loadEntries();
 </script>
+
 </body>
 </html>
-
