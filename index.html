@@ -87,6 +87,20 @@ async function loadEntries() {
   const tbody = document.querySelector("#entriesTable tbody");
   tbody.innerHTML = "";
   data.forEach(row => {
+    const displayVon = row.von || row.tag || '';
+    const displayBis = row.bis || row.tag || '';
+    const tr = document.createElement("tr");
+    tr.classList.add(`status-${row.status || 'normal'}`);
+    tr.innerHTML = `
+      <td>${displayVon}</td>
+      <td>${displayBis}</td>
+      <td>${row.titel || ''}</td>
+      <td>${row.baustelle || ''}</td>
+      <td>${row.mitarbeiter || ''}</td>
+      <td>${row.fahrzeug || ''}</td>
+      <td>${row.status || ''}</td>`;
+    tbody.appendChild(tr);
+  });(row => {
     const tr = document.createElement("tr");
     tr.classList.add(`status-${row.status || 'normal'}`);
     tr.innerHTML = `
