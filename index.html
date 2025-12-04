@@ -23,7 +23,7 @@
 
     .form-row { margin-bottom:8px; }
     label { display:inline-block; width:120px; font-size:13px; }
-    input[type="text"], input[type="date"], select, textarea {
+    input[type="text"], input[type="date"], textarea {
       font-size:13px; padding:4px 6px; width:220px; max-width:100%;
     }
     textarea { width:320px; height:60px; }
@@ -33,7 +33,7 @@
     tr.clickable-row { cursor:pointer; }
     tr.clickable-row:hover { background:#f5f5f5; }
 
-    /* FEINPLANUNG: Board wie Magnettafel */
+    /* FEINPLANUNG – BOARD WIE MAGNETTAFEL (Desktop/Lager) */
     .board-table { width:100%; border-collapse:collapse; table-layout:fixed; font-size:12px; }
     .board-table th, .board-table td { border:1px solid #ccc; padding:4px; vertical-align:top; }
     .board-table thead th { background:#eaeaea; text-align:center; }
@@ -45,15 +45,33 @@
     .fine-entry-title { font-weight:bold; font-size:11px; }
     .fine-entry-line { font-size:10px; }
 
-    /* GROBPLANUNG: 12 Monate */
+    /* MOBILE 14-TAGE-LISTE */
+    #fineViewMobile { font-size:12px; }
+    .mobile-day { margin-bottom:8px; padding-bottom:4px; border-bottom:1px solid #ddd; }
+    .mobile-day-title { font-weight:bold; margin-bottom:3px; }
+    .mobile-entry { margin-left:8px; margin-bottom:4px; padding:3px; border-radius:3px; border:1px solid #ccc; background:#fff; cursor:pointer; }
+    .mobile-entry-title { font-weight:bold; font-size:11px; }
+    .mobile-entry-line { font-size:10px; }
+
+    /* GROBPLANUNG – 12 MONATE */
     .year-grid { display:grid; grid-template-columns:repeat(auto-fit, minmax(200px,1fr)); gap:12px; }
     .month-box { border:1px solid #ccc; border-radius:6px; padding:8px; background:#fafafa; }
     .month-title { font-weight:bold; margin-bottom:6px; }
     .month-entry { font-size:12px; margin-bottom:4px; cursor:pointer; }
 
-    /* Urlaubsübersicht */
+    /* URLAUB */
     .urlaub-list { font-size:12px; }
     .urlaub-item { margin-bottom:3px; }
+
+    /* Responsive Umschaltung: wir steuern via JS, aber das hier ist fallback */
+    @media (max-width: 900px) {
+      #fineViewBoard { display:none; }
+      #fineViewMobile { display:block; }
+    }
+    @media (min-width: 901px) {
+      #fineViewBoard { display:block; }
+      #fineViewMobile { display:none; }
+    }
   </style>
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -157,7 +175,8 @@
       <button class="btn" id="btn3W">3 Wochen</button>
       <button class="btn" id="btn4W">4 Wochen</button>
     </div>
-    <div id="fineView"></div>
+    <div id="fineViewBoard"></div>
+    <div id="fineViewMobile"></div>
   </div>
 
   <!-- GROBPLANUNG -->
@@ -189,7 +208,7 @@
 
   // Feinplanung: KW-Anker & Anzahl Wochen (1–4)
   let anchorDate = new Date();  // irgendein Tag innerhalb der KW
-  let weeksShown = 3;           // Standard: 3 Wochen nebeneinander (wie auf deiner Tafel)
+  let weeksShown = 3;           // wird gleich abhängig von Bildschirmbreite gesetzt
 
   function iso(d) {
     return d.toISOString().split("T")[0];
@@ -210,7 +229,6 @@
     d.setDate(d.getDate() + days);
     return d;
   }
-  // ISO-Kalenderwoche
   function getWeekNumber(d) {
     const date = new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()));
     const dayNum = date.getUTCDay() || 7;
@@ -218,6 +236,18 @@
     const yearStart = new Date(Date.UTC(date.getUTCFullYear(),0,1));
     const weekNo = Math.ceil((((date - yearStart) / 86400000) + 1)/7);
     return { week: weekNo, year: date.getUTCFullYear() };
+  }
+
+  // Layout je nach Bildschirmbreite
+  function updateWeeksShown() {
+    const w = window.innerWidth;
+    if (w >= 1400) {
+      weeksShown = 4; // Büro
+    } else if (w >= 900) {
+      weeksShown = 2; // Lager / mittlere Bildschirme
+    } else {
+      weeksShown = 2; // Mobile → Board ausgeblendet, aber 14 Tage Liste
+    }
   }
 
   // EINTRÄGE LADEN
@@ -238,7 +268,7 @@
 
     allEntries = data || [];
     renderList();
-    renderFinePlan();
+    renderAllPlanning();
     renderYearPlan();
     renderUrlaub();
 
@@ -383,9 +413,9 @@
     loadEntries();
   }
 
-  // FEINPLANUNG: BOARD RENDERN (Mo–Fr, KW als Spalten)
-  function renderFinePlan() {
-    const fineContainer = document.getElementById("fineView");
+  // FEINPLANUNG: BOARD (Mo–Fr, KW-Spalten)
+  function renderFinePlanBoard() {
+    const fineContainer = document.getElementById("fineViewBoard");
     fineContainer.innerHTML = "";
 
     const monday = startOfWeekMonday(anchorDate); // Start-KW Montag
@@ -448,11 +478,10 @@
           const div = document.createElement("div");
           div.className = "fine-entry";
 
-          // Klick → Formular laden & Anker auf diese KW setzen
           div.addEventListener("click", () => {
             loadIntoForm(e);
             anchorDate = cellDate;
-            renderFinePlan();
+            renderAllPlanning();
             window.scrollTo({ top: document.querySelector("#container").offsetTop, behavior:"smooth" });
           });
 
@@ -482,6 +511,81 @@
 
     table.appendChild(tbody);
     fineContainer.appendChild(table);
+  }
+
+  // FEINPLANUNG: MOBILE 14-TAGE-LISTE
+  function renderFinePlanMobile() {
+    const container = document.getElementById("fineViewMobile");
+    container.innerHTML = "";
+
+    const monday = startOfWeekMonday(anchorDate);
+    const totalDays = 14; // 14 Tage
+
+    for (let i = 0; i < totalDays; i++) {
+      const dayDate = addDays(monday, i);
+      const dayIso = iso(dayDate);
+
+      const dayDiv = document.createElement("div");
+      dayDiv.className = "mobile-day";
+
+      const title = document.createElement("div");
+      title.className = "mobile-day-title";
+      const { week } = getWeekNumber(dayDate);
+      title.textContent = `${dayDate.toLocaleDateString("de-DE",{weekday:"short", day:"2-digit", month:"2-digit"})} (KW ${week})`;
+      dayDiv.appendChild(title);
+
+      const todaysEntries = allEntries.filter(e => {
+        const start = e.von || e.tag;
+        const end = e.bis || e.von || e.tag;
+        if (!start || !end) return false;
+        return start <= dayIso && end >= dayIso;
+      });
+
+      todaysEntries.forEach(e => {
+        const div = document.createElement("div");
+        div.className = "mobile-entry";
+
+        div.addEventListener("click", () => {
+          loadIntoForm(e);
+          anchorDate = dayDate;
+          renderAllPlanning();
+        });
+
+        const t = document.createElement("div");
+        t.className = "mobile-entry-title";
+        t.textContent = e.baustelle || e.titel || "(ohne Titel)";
+
+        const v = document.createElement("div");
+        v.className = "mobile-entry-line";
+        v.textContent = "Fzg: " + (e.fahrzeug || "-");
+
+        const m = document.createElement("div");
+        m.className = "mobile-entry-line";
+        m.textContent = "MA: " + (e.mitarbeiter || "-");
+
+        div.appendChild(t);
+        div.appendChild(v);
+        div.appendChild(m);
+        dayDiv.appendChild(div);
+      });
+
+      container.appendChild(dayDiv);
+    }
+  }
+
+  // GESAMTE FEINPLANUNG (Board oder Mobile) rendern
+  function renderAllPlanning() {
+    updateWeeksShown();
+    const w = window.innerWidth;
+    if (w >= 900) {
+      document.getElementById("fineViewBoard").style.display = "block";
+      document.getElementById("fineViewMobile").style.display = "none";
+      renderFinePlanBoard();
+    } else {
+      document.getElementById("fineViewBoard").style.display = "none";
+      document.getElementById("fineViewMobile").style.display = "block";
+      renderFinePlanMobile();
+    }
   }
 
   // GROBPLANUNG – MONATE
@@ -536,8 +640,7 @@
 
         div.addEventListener("click", () => {
           anchorDate = d || new Date();
-          weeksShown = 3;           // beim Sprung typische Ansicht
-          renderFinePlan();
+          renderAllPlanning();
           loadIntoForm(e);
           window.scrollTo({ top: document.querySelector("#container").offsetTop, behavior:"smooth" });
         });
@@ -605,31 +708,36 @@
 
   document.getElementById("btnToday").addEventListener("click", () => {
     anchorDate = new Date();
-    renderFinePlan();
+    renderAllPlanning();
   });
   document.getElementById("btnPrev").addEventListener("click", () => {
     anchorDate = addDays(anchorDate, -7 * weeksShown);
-    renderFinePlan();
+    renderAllPlanning();
   });
   document.getElementById("btnNext").addEventListener("click", () => {
     anchorDate = addDays(anchorDate, 7 * weeksShown);
-    renderFinePlan();
+    renderAllPlanning();
   });
   document.getElementById("btn1W").addEventListener("click", () => {
     weeksShown = 1;
-    renderFinePlan();
+    renderAllPlanning();
   });
   document.getElementById("btn2W").addEventListener("click", () => {
     weeksShown = 2;
-    renderFinePlan();
+    renderAllPlanning();
   });
   document.getElementById("btn3W").addEventListener("click", () => {
     weeksShown = 3;
-    renderFinePlan();
+    renderAllPlanning();
   });
   document.getElementById("btn4W").addEventListener("click", () => {
     weeksShown = 4;
-    renderFinePlan();
+    renderAllPlanning();
+  });
+
+  // Reaktion auf Fenstergröße
+  window.addEventListener("resize", () => {
+    renderAllPlanning();
   });
 
   // START
