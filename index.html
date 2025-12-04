@@ -3,43 +3,309 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Plantafel Dachdeckerei Frey – FINAL</title>
+  <title>Plantafel Dachdeckerei Frey</title>
+
+  <!-- Supabase CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
   <style>
-    body { font-family: Arial, sans-serif; margin:0; padding:0; background:#f0f0f0; }
-    header { background:#0075c9; color:white; padding:20px; font-size:24px; font-weight:bold; }
-    #container { padding:20px; }
-    .section { background:white; padding:20px; margin-bottom:20px; border-radius:8px; }
-    .btn { padding:6px 12px; background:#0075c9; color:white; border:none; border-radius:4px; cursor:pointer; }
-    .btn:hover { background:#005a99; }
-
-    table { width:100%; border-collapse:collapse; }
-    th, td { border:1px solid #ccc; padding:6px; }
-    th { background:#eaeaea; }
-
-    .fine-entry{
-      border:1px solid #aaa;
-      padding:4px;
-      margin-bottom:4px;
-      border-radius:4px;
-      background:white;
+    :root {
+      --blue: #0075c9;
+      --blue-dark: #005a99;
+      --bg: #f0f0f0;
+      --card-border: #000000;
+      --text-main: #222;
     }
-    .fine-entry-title{font-weight:bold;}
-  </style>
 
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background: var(--bg);
+      color: var(--text-main);
+    }
+
+    header {
+      background: var(--blue);
+      color: #fff;
+      padding: 14px 18px;
+      font-size: 22px;
+      font-weight: bold;
+    }
+
+    #container {
+      padding: 12px 12px 40px;
+      max-width: 1400px;
+      margin: 0 auto;
+    }
+
+    h1, h2, h3 {
+      margin: 0 0 10px;
+      font-weight: bold;
+    }
+
+    .section {
+      background: #ffffff;
+      margin-bottom: 14px;
+      padding: 12px;
+      border-radius: 6px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+    }
+
+    .section + .section {
+      margin-top: 10px;
+    }
+
+    .section-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 8px;
+    }
+
+    .small-text {
+      font-size: 12px;
+      color: #666;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 13px;
+    }
+
+    th, td {
+      border: 1px solid #ddd;
+      padding: 5px 6px;
+      vertical-align: top;
+    }
+
+    th {
+      background: #e7e7e7;
+      font-weight: 600;
+      text-align: left;
+    }
+
+    .btn {
+      display: inline-block;
+      padding: 6px 12px;
+      font-size: 13px;
+      border-radius: 4px;
+      border: none;
+      cursor: pointer;
+      background: var(--blue);
+      color: #fff;
+      margin-right: 4px;
+      margin-top: 4px;
+    }
+
+    .btn.secondary {
+      background: #777;
+    }
+
+    .btn.danger {
+      background: #b00020;
+    }
+
+    .btn:hover {
+      background: var(--blue-dark);
+    }
+    .btn.secondary:hover {
+      background: #555;
+    }
+    .btn.danger:hover {
+      background: #870018;
+    }
+
+    label {
+      display: block;
+      font-size: 13px;
+      margin-bottom: 6px;
+    }
+
+    input[type="text"],
+    input[type="date"],
+    textarea {
+      width: 100%;
+      padding: 4px 6px;
+      font-size: 13px;
+      border-radius: 3px;
+      border: 1px solid #bbb;
+    }
+
+    textarea {
+      resize: vertical;
+      min-height: 50px;
+    }
+
+    .form-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 8px 16px;
+    }
+
+    .form-actions {
+      margin-top: 8px;
+    }
+
+    .status-badge {
+      display: inline-block;
+      padding: 1px 6px;
+      border-radius: 10px;
+      border: 1px solid #555;
+      font-size: 11px;
+      margin-top: 2px;
+    }
+
+    /* Magnetkarten – klassisch weiß */
+    .card {
+      border: 2px solid var(--card-border);
+      background: #ffffff;
+      padding: 3px 4px;
+      margin-bottom: 3px;
+      font-size: 11px;
+      line-height: 1.2;
+      min-height: 34px;
+    }
+
+    .card-title {
+      font-weight: bold;
+      text-transform: uppercase;
+      border-bottom: 1px solid #000;
+      margin-bottom: 2px;
+      padding-bottom: 1px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .card-line {
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .card-meta {
+      font-size: 10px;
+    }
+
+    .fine-table {
+      width: 100%;
+      border-collapse: collapse;
+      table-layout: fixed;
+      font-size: 11px;
+    }
+
+    .fine-table th,
+    .fine-table td {
+      border: 1px solid #d0d0d0;
+      vertical-align: top;
+      padding: 3px;
+    }
+
+    .fine-table th {
+      background: #f5f5f5;
+      text-align: center;
+      font-weight: 600;
+    }
+
+    .fine-day-cell {
+      min-height: 60px;
+    }
+
+    .fine-day-label {
+      font-weight: bold;
+      font-size: 11px;
+      margin-bottom: 2px;
+    }
+
+    .fine-controls {
+      margin-bottom: 8px;
+    }
+
+    /* Grobplanung */
+    .grob-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+      gap: 8px;
+      font-size: 11px;
+    }
+
+    .grob-month {
+      border: 1px solid #d0d0d0;
+      border-radius: 4px;
+      padding: 4px;
+      background: #fafafa;
+    }
+
+    .grob-month-title {
+      font-weight: bold;
+      margin-bottom: 4px;
+      text-align: center;
+      font-size: 12px;
+    }
+
+    .grob-item {
+      border: 1px solid #ccc;
+      padding: 2px 3px;
+      margin-bottom: 2px;
+      background: #ffffff;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    /* Urlaubsliste */
+    .urlaub-list {
+      font-size: 12px;
+    }
+
+    .urlaub-list table {
+      font-size: 12px;
+    }
+
+    /* Responsive */
+    @media (max-width: 900px) {
+      #container {
+        padding: 8px;
+      }
+
+      .form-grid {
+        grid-template-columns: 1fr;
+      }
+
+      header {
+        font-size: 18px;
+        padding: 12px;
+      }
+
+      .fine-table {
+        font-size: 10px;
+      }
+
+      .card {
+        font-size: 10px;
+      }
+    }
+  </style>
 </head>
 <body>
-
 <header>Plantafel Dachdeckerei Frey</header>
 
 <div id="container">
 
   <!-- LISTE -->
   <div class="section">
-    <h2>Einträge (Liste)</h2>
-    <table id="entriesTable">
-      <thead>
+    <div class="section-header">
+      <h2>Einträge (Liste)</h2>
+      <span class="small-text">Klick auf eine Zeile lädt den Eintrag ins Formular.</span>
+    </div>
+    <div style="overflow-x:auto;">
+      <table id="listTable">
+        <thead>
         <tr>
           <th>Tag/Von</th>
           <th>Bis</th>
@@ -49,239 +315,573 @@
           <th>Fahrzeug</th>
           <th>Status</th>
         </tr>
-      </thead>
-      <tbody></tbody>
-    </table>
+        </thead>
+        <tbody></tbody>
+      </table>
+    </div>
   </div>
 
   <!-- FORMULAR -->
   <div class="section">
     <h2>Eintrag bearbeiten / neu anlegen</h2>
+    <p class="small-text">
+      Wenn kein Eintrag ausgewählt ist, wird ein neuer Eintrag angelegt. Bei Klick auf „Löschen“ wird der aktuell geladene Eintrag gelöscht.
+    </p>
+    <div class="form-grid">
+      <div>
+        <label>
+          Tag (Anker):
+          <input type="date" id="tagInput">
+        </label>
+      </div>
+      <div></div>
 
-    <label>Tag: <input type="date" id="tag"></label><br>
-    <label>Von: <input type="date" id="von"></label><br>
-    <label>Bis: <input type="date" id="bis"></label><br>
-    <label>Titel: <input type="text" id="titel"></label><br>
-    <label>Baustelle: <input type="text" id="baustelle"></label><br>
-    <label>Mitarbeiter: <input type="text" id="mitarbeiter"></label><br>
-    <label>Fahrzeug: <input type="text" id="fahrzeug"></label><br>
-    <label>Status: <input type="text" id="status"></label><br>
-    <label>Notiz: <textarea id="notiz"></textarea></label><br>
+      <div>
+        <label>Von:
+          <input type="date" id="vonInput">
+        </label>
+      </div>
+      <div>
+        <label>Bis:
+          <input type="date" id="bisInput">
+        </label>
+      </div>
 
-    <button class="btn" id="saveBtn">Speichern</button>
-    <button class="btn" id="deleteBtn">Löschen</button>
+      <div>
+        <label>Titel:
+          <input type="text" id="titelInput" placeholder="z.B. Dachsanierung Muster">
+        </label>
+      </div>
+      <div>
+        <label>Baustelle:
+          <input type="text" id="baustelleInput" placeholder="Adresse / Kunde">
+        </label>
+      </div>
+
+      <div>
+        <label>Mitarbeiter:
+          <input type="text" id="mitarbeiterInput" placeholder="z.B. Thomas, Kevin">
+        </label>
+      </div>
+      <div>
+        <label>Fahrzeug:
+          <input type="text" id="fahrzeugInput" placeholder="z.B. Crafter Bus">
+        </label>
+      </div>
+
+      <div>
+        <label>Status:
+          <input type="text" id="statusInput" placeholder="normal / Urlaub / krank / Schule / Fahr / ...">
+        </label>
+      </div>
+      <div>
+        <label>Notiz:
+          <textarea id="notizInput" placeholder="Optionale Zusatzinfos"></textarea>
+        </label>
+      </div>
+    </div>
+
+    <div class="form-actions">
+      <button class="btn" id="saveBtn">Speichern</button>
+      <button class="btn danger" id="deleteBtn">Löschen</button>
+      <button class="btn secondary" id="resetBtn">Formular leeren</button>
+      <span class="small-text" id="statusInfo"></span>
+    </div>
   </div>
 
   <!-- FEINPLANUNG -->
   <div class="section">
-    <h2>Feinplanung – 4 Wochen</h2>
-    <div id="fineView"></div>
+    <div class="section-header">
+      <h2>Feinplanung – Magnettafel (Mo–Fr, KW-Spalten)</h2>
+      <span class="small-text">Für Lager-Monitor einfach „14 Tage“ wählen.</span>
+    </div>
+    <div class="fine-controls">
+      <button class="btn" data-span="7" id="btn1w">1 Woche</button>
+      <button class="btn" data-span="14" id="btn2w">2 Wochen</button>
+      <button class="btn" data-span="28" id="btn4w">4 Wochen</button>
+      <button class="btn secondary" data-span="14" id="btn14d">14 Tage</button>
+      <button class="btn secondary" id="btnToday">Diese Woche</button>
+      <button class="btn secondary" id="btnPrev">Zurück</button>
+      <button class="btn secondary" id="btnNext">Weiter</button>
+      <span class="small-text" id="fineCaption"></span>
+    </div>
+    <div style="overflow-x:auto;">
+      <table class="fine-table" id="fineTable"></table>
+    </div>
+  </div>
+
+  <!-- GROBPLANUNG -->
+  <div class="section">
+    <div class="section-header">
+      <h2>Grobplanung (12 Monate)</h2>
+      <span class="small-text">Nur Bauvorhaben – Klick auf KW springt in die Feinplanung (kommt später).</span>
+    </div>
+    <div class="grob-grid" id="grobView"></div>
+  </div>
+
+  <!-- URLAUB -->
+  <div class="section">
+    <h2>Urlaubsübersicht</h2>
+    <div id="urlaubView" class="urlaub-list"></div>
   </div>
 
 </div>
 
-
 <script>
-/* ------------------------------------------------------------------
-   ✔ SUPABASE – KORREKTE URL + API KEY
-   ------------------------------------------------------------------ */
+  // -------------------------------------------------------------------
+  //  SUPABASE – KORREKTE URL + API KEY
+  // -------------------------------------------------------------------
+  const SUPABASE_URL = "https://yzfmviddzhghvcxowbjl.supabase.co";
+  const SUPABASE_ANON_KEY = "sb_publishable_dacXIaV9sWHEN0ysSeoFuw_88UaV5tn";
 
-const SUPABASE_URL = "https://yzfmviddzhghvcxowbjl.supabase.co";
-const SUPABASE_ANON_KEY = "sb_publishable_dacXIaV9sWHEN0ysSeoFuw_88UaV5tn";
+  const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+  // Globale Daten
+  let allEntries = [];
+  let currentEditId = null;
 
-let allEntries = [];
-let currentEditId = null;
+  // Feinplanung: Startdatum und Spanne in Tagen (Standard: 4 Wochen)
+  let fineStartDate = mondayOf(new Date());
+  let fineSpanDays = window.innerWidth < 800 ? 14 : 28; // mobil 14 Tage, sonst 4 Wochen
 
-/* ------------------------------------------------------------------
-   DATEN LADEN
-   ------------------------------------------------------------------ */
-async function loadEntries(){
-  const { data, error } = await supabase
-    .from("plantafel")
-    .select("*")
-    .order("von",{ascending:true});
-
-  if(error){
-    console.error("Supabase Fehler:", error);
-    return;
+  // -------------------------------------------------------------------
+  //  HELFER
+  // -------------------------------------------------------------------
+  function formatDate(d) {
+    if (!d) return "";
+    const dt = (d instanceof Date) ? d : new Date(d);
+    if (isNaN(dt)) return "";
+    return dt.toLocaleDateString("de-DE");
   }
 
-  allEntries = data;
-  renderList();
-  renderFinePlan();
-}
-
-/* ------------------------------------------------------------------
-   LISTE RENDERN
-   ------------------------------------------------------------------ */
-function renderList(){
-  const tbody = document.querySelector("#entriesTable tbody");
-  tbody.innerHTML = "";
-
-  allEntries.forEach(e=>{
-    const tr=document.createElement("tr");
-    tr.innerHTML = `
-      <td>${e.von || e.tag || ""}</td>
-      <td>${e.bis || e.von || ""}</td>
-      <td>${e.titel || ""}</td>
-      <td>${e.baustelle || ""}</td>
-      <td>${e.mitarbeiter || ""}</td>
-      <td>${e.fahrzeug || ""}</td>
-      <td>${e.status || ""}</td>
-    `;
-    tr.onclick = ()=>loadIntoForm(e);
-    tbody.appendChild(tr);
-  });
-}
-
-/* ------------------------------------------------------------------
-   FORMULAR FÜLLEN
-   ------------------------------------------------------------------ */
-function loadIntoForm(e){
-  currentEditId = e.id;
-  tag.value = e.tag || "";
-  von.value = e.von || "";
-  bis.value = e.bis || "";
-  titel.value = e.titel || "";
-  baustelle.value = e.baustelle || "";
-  mitarbeiter.value = e.mitarbeiter || "";
-  fahrzeug.value = e.fahrzeug || "";
-  status.value = e.status || "";
-  notiz.value = e.notiz || "";
-}
-
-/* ------------------------------------------------------------------
-   SPEICHERN
-   ------------------------------------------------------------------ */
-async function saveEntry(){
-  const payload = {
-    tag: tag.value || von.value || null,
-    von: von.value || null,
-    bis: bis.value || von.value || null,
-    titel: titel.value,
-    baustelle: baustelle.value,
-    mitarbeiter: mitarbeiter.value,
-    fahrzeug: fahrzeug.value,
-    status: status.value,
-    notiz: notiz.value
-  };
-
-  let error = null;
-
-  if(currentEditId){
-    ({ error } = await supabase.from("plantafel").update(payload).eq("id", currentEditId));
-  } else {
-    ({ error } = await supabase.from("plantafel").insert(payload));
+  function toISODate(str) {
+    if (!str) return null;
+    // Browser liefert "YYYY-MM-DD"
+    return str;
   }
 
-  if(error){
-    alert("Fehler: " + error.message);
+  function mondayOf(d) {
+    const dt = new Date(d.getFullYear(), d.getMonth(), d.getDate());
+    const day = dt.getDay(); // So=0, Mo=1, ...
+    const diff = (day === 0 ? -6 : 1 - day);
+    dt.setDate(dt.getDate() + diff);
+    dt.setHours(0,0,0,0);
+    return dt;
   }
 
-  loadEntries();
-}
-
-/* ------------------------------------------------------------------
-   LÖSCHEN
-   ------------------------------------------------------------------ */
-async function deleteEntry(){
-  if(!currentEditId) return;
-  await supabase.from("plantafel").delete().eq("id", currentEditId);
-  loadEntries();
-}
-
-/* ------------------------------------------------------------------
-   FEINPLANUNG (4 Wochen)
-   ------------------------------------------------------------------ */
-function renderFinePlan(){
-  const root = document.getElementById("fineView");
-  root.innerHTML = "";
-
-  const today = new Date();
-  const monday = new Date(today.setDate(today.getDate() - ((today.getDay()+6)%7)));
-
-  const table = document.createElement("table");
-  table.style.width = "100%";
-  table.style.borderCollapse = "collapse";
-
-  // Kopfzeile
-  const head = document.createElement("tr");
-  head.appendChild(document.createElement("th"));
-
-  for(let w=0; w<4; w++){
-    const d=new Date(monday);
-    d.setDate(d.getDate()+w*7);
-    const kw = getKW(d);
-
-    const th = document.createElement("th");
-    th.textContent = "KW " + kw;
-    head.appendChild(th);
+  function addDays(d, days) {
+    const dt = new Date(d.getTime());
+    dt.setDate(dt.getDate() + days);
+    return dt;
   }
-  table.appendChild(head);
 
-  // Tage
-  const days=["Mo","Di","Mi","Do","Fr"];
-  for(let i=0;i<5;i++){
-    const tr=document.createElement("tr");
+  function sameDay(a, b) {
+    return a.getFullYear() === b.getFullYear() &&
+           a.getMonth() === b.getMonth() &&
+           a.getDate() === b.getDate();
+  }
 
-    const th=document.createElement("th");
-    th.textContent=days[i];
-    tr.appendChild(th);
+  // ISO-Kalenderwoche
+  function isoWeek(date) {
+    const d = new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()));
+    const dayNum = d.getUTCDay() || 7;
+    d.setUTCDate(d.getUTCDate() + 4 - dayNum);
+    const yearStart = new Date(Date.UTC(d.getUTCFullYear(),0,1));
+    return Math.ceil((((d - yearStart) / 86400000) + 1)/7);
+  }
 
-    for(let w=0;w<4;w++){
-      const cell=document.createElement("td");
-      const d=new Date(monday);
-      d.setDate(d.getDate()+w*7+i);
-      const iso=d.toISOString().split("T")[0];
+  // -------------------------------------------------------------------
+  //  DATEN LADEN
+  // -------------------------------------------------------------------
+  async function loadEntries() {
+    const { data, error } = await supabase
+      .from("plantafel")
+      .select("*")
+      .order("von", { ascending: true });
 
-      const entries = allEntries.filter(e=>{
-        const start=e.von || e.tag;
-        const end=e.bis || e.von || e.tag;
-        return start<=iso && end>=iso;
-      });
-
-      entries.forEach(e=>{
-        const box=document.createElement("div");
-        box.className="fine-entry";
-        box.innerHTML = `
-          <div class="fine-entry-title">${e.baustelle || e.titel}</div>
-          <div>Fzg: ${e.fahrzeug||"-"}</div>
-          <div>MA: ${e.mitarbeiter||"-"}</div>
-        `;
-        box.onclick = ()=>loadIntoForm(e);
-        cell.appendChild(box);
-      });
-
-      tr.appendChild(cell);
+    if (error) {
+      console.error("Supabase Fehler (loadEntries):", error);
+      document.getElementById("statusInfo").textContent = "Fehler beim Laden der Einträge.";
+      return;
     }
 
-    table.appendChild(tr);
+    allEntries = data || [];
+    renderList();
+    renderFineView();
+    renderGrobView();
+    renderUrlaub();
+    document.getElementById("statusInfo").textContent = "Einträge geladen.";
   }
 
-  root.appendChild(table);
-}
+  // -------------------------------------------------------------------
+  //  LISTE RENDERN
+  // -------------------------------------------------------------------
+  function renderList() {
+    const tbody = document.querySelector("#listTable tbody");
+    tbody.innerHTML = "";
 
-/* ------------------------------------------------------------------
-   KW BERECHNEN
-   ------------------------------------------------------------------ */
-function getKW(d){
-  d=new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()));
-  const day = d.getUTCDay() || 7;
-  d.setUTCDate(d.getUTCDate()+4-day);
-  const start=new Date(Date.UTC(d.getUTCFullYear(),0,1));
-  return Math.ceil((((d-start)/86400000)+1)/7);
-}
+    allEntries.forEach(entry => {
+      const tr = document.createElement("tr");
+      tr.innerHTML = `
+        <td>${formatDate(entry.tag || entry.von)}</td>
+        <td>${formatDate(entry.bis)}</td>
+        <td>${entry.titel || ""}</td>
+        <td>${entry.baustelle || ""}</td>
+        <td>${entry.mitarbeiter || ""}</td>
+        <td>${entry.fahrzeug || ""}</td>
+        <td>${entry.status || ""}</td>
+      `;
+      tr.addEventListener("click", () => fillForm(entry));
+      tbody.appendChild(tr);
+    });
+  }
 
-/* ------------------------------------------------------------------ */
-saveBtn.onclick = saveEntry;
-deleteBtn.onclick = deleteEntry;
+  function fillForm(entry) {
+    currentEditId = entry.id;
 
-/* ------------------------------------------------------------------ */
-loadEntries();
+    document.getElementById("tagInput").value = entry.tag || "";
+    document.getElementById("vonInput").value = entry.von || "";
+    document.getElementById("bisInput").value = entry.bis || "";
+    document.getElementById("titelInput").value = entry.titel || "";
+    document.getElementById("baustelleInput").value = entry.baustelle || "";
+    document.getElementById("mitarbeiterInput").value = entry.mitarbeiter || "";
+    document.getElementById("fahrzeugInput").value = entry.fahrzeug || "";
+    document.getElementById("statusInput").value = entry.status || "";
+    document.getElementById("notizInput").value = entry.notiz || "";
+
+    document.getElementById("statusInfo").textContent = "Eintrag geladen – Änderungen nicht vergessen zu speichern.";
+  }
+
+  function resetForm() {
+    currentEditId = null;
+    document.getElementById("tagInput").value = "";
+    document.getElementById("vonInput").value = "";
+    document.getElementById("bisInput").value = "";
+    document.getElementById("titelInput").value = "";
+    document.getElementById("baustelleInput").value = "";
+    document.getElementById("mitarbeiterInput").value = "";
+    document.getElementById("fahrzeugInput").value = "";
+    document.getElementById("statusInput").value = "";
+    document.getElementById("notizInput").value = "";
+    document.getElementById("statusInfo").textContent = "Neuer Eintrag.";
+  }
+
+  // -------------------------------------------------------------------
+  //  SPEICHERN / LÖSCHEN
+  // -------------------------------------------------------------------
+  async function saveEntry() {
+    const tag = toISODate(document.getElementById("tagInput").value);
+    const von = toISODate(document.getElementById("vonInput").value);
+    const bis = toISODate(document.getElementById("bisInput").value);
+    const titel = document.getElementById("titelInput").value.trim();
+    const baustelle = document.getElementById("baustelleInput").value.trim();
+    const mitarbeiter = document.getElementById("mitarbeiterInput").value.trim();
+    const fahrzeug = document.getElementById("fahrzeugInput").value.trim();
+    const status = document.getElementById("statusInput").value.trim();
+    const notiz = document.getElementById("notizInput").value.trim();
+
+    const payload = { tag, von, bis, titel, baustelle, mitarbeiter, fahrzeug, status, notiz };
+
+    let error;
+    if (currentEditId) {
+      ({ error } = await supabase
+        .from("plantafel")
+        .update(payload)
+        .eq("id", currentEditId));
+    } else {
+      ({ error } = await supabase
+        .from("plantafel")
+        .insert(payload));
+    }
+
+    if (error) {
+      console.error("Supabase Fehler (saveEntry):", error);
+      alert("Fehler beim Speichern.");
+      return;
+    }
+
+    document.getElementById("statusInfo").textContent = "Gespeichert.";
+    await loadEntries();
+    resetForm();
+  }
+
+  async function deleteEntry() {
+    if (!currentEditId) {
+      alert("Kein Eintrag ausgewählt.");
+      return;
+    }
+    if (!confirm("Diesen Eintrag wirklich löschen?")) return;
+
+    const { error } = await supabase
+      .from("plantafel")
+      .delete()
+      .eq("id", currentEditId);
+
+    if (error) {
+      console.error("Supabase Fehler (deleteEntry):", error);
+      alert("Fehler beim Löschen.");
+      return;
+    }
+
+    document.getElementById("statusInfo").textContent = "Eintrag gelöscht.";
+    await loadEntries();
+    resetForm();
+  }
+
+  // -------------------------------------------------------------------
+  //  FEINPLANUNG (Magnettafel)
+  // -------------------------------------------------------------------
+  function renderFineView() {
+    const table = document.getElementById("fineTable");
+    table.innerHTML = "";
+
+    const days = [];
+    for (let i = 0; i < fineSpanDays; i++) {
+      days.push(addDays(fineStartDate, i));
+    }
+
+    const caption = document.getElementById("fineCaption");
+    const first = days[0];
+    const last = days[days.length - 1];
+    caption.textContent = `Zeitraum: ${formatDate(first)} – ${formatDate(last)} (${fineSpanDays} Tage)`;
+
+    // Kopfzeile: Spalte 0 = Wochentag, dann je Tag eine Spalte
+    const thead = document.createElement("thead");
+    const headRow = document.createElement("tr");
+    headRow.innerHTML = `<th style="width:70px;">Tag / KW</th>`;
+    days.forEach(d => {
+      const kw = isoWeek(d);
+      headRow.innerHTML += `<th>KW ${kw}<br>${formatDate(d)}</th>`;
+    });
+    thead.appendChild(headRow);
+    table.appendChild(thead);
+
+    const tbody = document.createElement("tbody");
+    const weekdays = ["Mo","Di","Mi","Do","Fr"];
+
+    weekdays.forEach((wdName, wdIndex) => {
+      const tr = document.createElement("tr");
+      const labelCell = document.createElement("td");
+      labelCell.innerHTML = `<strong>${wdName}</strong>`;
+      tr.appendChild(labelCell);
+
+      days.forEach(d => {
+        // Nur die Zelle für den richtigen Wochentag
+        const cell = document.createElement("td");
+        cell.className = "fine-day-cell";
+
+        const weekday = d.getDay() === 0 ? 7 : d.getDay(); // So=7
+        if (weekday === wdIndex + 1) {
+          const cellDate = new Date(d.getFullYear(), d.getMonth(), d.getDate());
+          const cards = entriesForDay(cellDate);
+
+          cards.forEach(entry => {
+            const card = document.createElement("div");
+            card.className = "card";
+
+            const title = entry.baustelle || entry.titel || "Ohne Titel";
+            const fahr = entry.fahrzeug || "";
+            const mit = entry.mitarbeiter || "";
+            const stat = (entry.status || "").toLowerCase();
+
+            card.innerHTML = `
+              <div class="card-title">${title}</div>
+              <div class="card-line card-meta">Fahrzeug: ${fahr}</div>
+              <div class="card-line card-meta">MA: ${mit}</div>
+              ${stat ? `<div class="card-line"><span class="status-badge">${stat}</span></div>` : ""}
+            `;
+
+            cell.appendChild(card);
+          });
+        }
+
+        tr.appendChild(cell);
+      });
+
+      tbody.appendChild(tr);
+    });
+
+    table.appendChild(tbody);
+  }
+
+  function entriesForDay(date) {
+    return allEntries.filter(e => {
+      const von = e.von ? new Date(e.von) : null;
+      const bis = e.bis ? new Date(e.bis) : null;
+      if (!von && !bis) return false;
+
+      const start = von || bis;
+      const end = bis || von;
+
+      const d = new Date(date.getFullYear(), date.getMonth(), date.getDate());
+      start.setHours(0,0,0,0);
+      end.setHours(0,0,0,0);
+
+      return d >= start && d <= end;
+    });
+  }
+
+  // -------------------------------------------------------------------
+  //  GROBPLANUNG (12 Monate)
+  // -------------------------------------------------------------------
+  function renderGrobView() {
+    const container = document.getElementById("grobView");
+    container.innerHTML = "";
+
+    const today = new Date();
+    const year = today.getFullYear();
+    const months = [
+      "Januar","Februar","März","April","Mai","Juni",
+      "Juli","August","September","Oktober","November","Dezember"
+    ];
+
+    for (let m = 0; m < 12; m++) {
+      const monthStart = new Date(year, m, 1);
+      const monthEnd = new Date(year, m + 1, 0);
+
+      const monthEntries = allEntries.filter(e => {
+        const tag = e.tag || e.von;
+        if (!tag) return false;
+        const d = new Date(tag);
+        return d >= monthStart && d <= monthEnd;
+      });
+
+      const box = document.createElement("div");
+      box.className = "grob-month";
+      box.innerHTML = `<div class="grob-month-title">${months[m]} ${year}</div>`;
+
+      monthEntries.forEach(e => {
+        const start = e.von ? new Date(e.von) : (e.tag ? new Date(e.tag) : null);
+        if (!start) return;
+        const kw = isoWeek(start);
+        const title = e.baustelle || e.titel || "Ohne Titel";
+        const item = document.createElement("div");
+        item.className = "grob-item";
+        item.textContent = `KW ${kw}: ${title}`;
+        box.appendChild(item);
+      });
+
+      container.appendChild(box);
+    }
+  }
+
+  // -------------------------------------------------------------------
+  //  URLAUBSÜBERSICHT
+  // -------------------------------------------------------------------
+  function renderUrlaub() {
+    const container = document.getElementById("urlaubView");
+    container.innerHTML = "";
+
+    const urlaubEntries = allEntries.filter(e =>
+      (e.status || "").toLowerCase().includes("urlaub")
+    );
+
+    if (urlaubEntries.length === 0) {
+      container.textContent = "Noch keine Urlaube erfasst.";
+      return;
+    }
+
+    // nach Mitarbeiter gruppieren
+    const byMA = {};
+    urlaubEntries.forEach(e => {
+      const name = (e.mitarbeiter || "Unbekannt").trim() || "Unbekannt";
+      if (!byMA[name]) byMA[name] = [];
+      byMA[name].push(e);
+    });
+
+    const table = document.createElement("table");
+    const thead = document.createElement("thead");
+    thead.innerHTML = `
+      <tr>
+        <th>Mitarbeiter</th>
+        <th>Von</th>
+        <th>Bis</th>
+        <th>Titel / Baustelle</th>
+      </tr>`;
+    table.appendChild(thead);
+
+    const tbody = document.createElement("tbody");
+
+    Object.keys(byMA).sort().forEach(name => {
+      byMA[name].forEach(e => {
+        const tr = document.createElement("tr");
+        tr.innerHTML = `
+          <td>${name}</td>
+          <td>${formatDate(e.von || e.tag)}</td>
+          <td>${formatDate(e.bis || e.von || e.tag)}</td>
+          <td>${(e.baustelle || e.titel || "").slice(0,60)}</td>
+        `;
+        tbody.appendChild(tr);
+      });
+    });
+
+    table.appendChild(tbody);
+    container.appendChild(table);
+  }
+
+  // -------------------------------------------------------------------
+  //  EVENTS
+  // -------------------------------------------------------------------
+  document.getElementById("saveBtn").addEventListener("click", (e) => {
+    e.preventDefault();
+    saveEntry();
+  });
+
+  document.getElementById("deleteBtn").addEventListener("click", (e) => {
+    e.preventDefault();
+    deleteEntry();
+  });
+
+  document.getElementById("resetBtn").addEventListener("click", (e) => {
+    e.preventDefault();
+    resetForm();
+  });
+
+  document.getElementById("btnToday").addEventListener("click", () => {
+    fineStartDate = mondayOf(new Date());
+    renderFineView();
+  });
+
+  document.getElementById("btnPrev").addEventListener("click", () => {
+    fineStartDate = addDays(fineStartDate, -fineSpanDays);
+    renderFineView();
+  });
+
+  document.getElementById("btnNext").addEventListener("click", () => {
+    fineStartDate = addDays(fineStartDate, fineSpanDays);
+    renderFineView();
+  });
+
+  document.getElementById("btn1w").addEventListener("click", () => {
+    fineSpanDays = 7;
+    fineStartDate = mondayOf(new Date());
+    renderFineView();
+  });
+
+  document.getElementById("btn2w").addEventListener("click", () => {
+    fineSpanDays = 14;
+    fineStartDate = mondayOf(new Date());
+    renderFineView();
+  });
+
+  document.getElementById("btn4w").addEventListener("click", () => {
+    fineSpanDays = 28;
+    fineStartDate = mondayOf(new Date());
+    renderFineView();
+  });
+
+  document.getElementById("btn14d").addEventListener("click", () => {
+    fineSpanDays = 14;
+    fineStartDate = mondayOf(new Date());
+    renderFineView();
+  });
+
+  // -------------------------------------------------------------------
+  //  START
+  // -------------------------------------------------------------------
+  resetForm();
+  loadEntries();
 </script>
 
 </body>
 </html>
-
