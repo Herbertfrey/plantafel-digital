@@ -17,9 +17,7 @@
       --text-main: #222;
     }
 
-    * {
-      box-sizing: border-box;
-    }
+    * { box-sizing: border-box; }
 
     body {
       margin: 0;
@@ -36,10 +34,10 @@
       font-weight: bold;
     }
 
-    #container {
-      padding: 12px 12px 40px;
+    #page {
       max-width: 1400px;
       margin: 0 auto;
+      padding: 10px 10px 40px;
     }
 
     h1, h2, h3 {
@@ -53,10 +51,6 @@
       padding: 12px;
       border-radius: 6px;
       box-shadow: 0 1px 3px rgba(0,0,0,0.04);
-    }
-
-    .section + .section {
-      margin-top: 10px;
     }
 
     .section-header {
@@ -101,24 +95,12 @@
       margin-right: 4px;
       margin-top: 4px;
     }
+    .btn.secondary { background: #777; }
+    .btn.danger { background: #b00020; }
 
-    .btn.secondary {
-      background: #777;
-    }
-
-    .btn.danger {
-      background: #b00020;
-    }
-
-    .btn:hover {
-      background: var(--blue-dark);
-    }
-    .btn.secondary:hover {
-      background: #555;
-    }
-    .btn.danger:hover {
-      background: #870018;
-    }
+    .btn:hover { background: var(--blue-dark); }
+    .btn.secondary:hover { background: #555; }
+    .btn.danger:hover { background: #870018; }
 
     label {
       display: block;
@@ -128,6 +110,7 @@
 
     input[type="text"],
     input[type="date"],
+    input[type="color"],
     textarea {
       width: 100%;
       padding: 4px 6px;
@@ -147,9 +130,7 @@
       gap: 8px 16px;
     }
 
-    .form-actions {
-      margin-top: 8px;
-    }
+    .form-actions { margin-top: 8px; }
 
     .status-badge {
       display: inline-block;
@@ -160,7 +141,30 @@
       margin-top: 2px;
     }
 
-    /* Magnetkarten – klassisch weiß */
+    /* Tabs */
+    .tabs {
+      display: flex;
+      gap: 6px;
+      margin: 10px 0 14px;
+      border-bottom: 2px solid #ddd;
+    }
+    .tab-btn {
+      border: none;
+      background: #e0e0e0;
+      padding: 8px 14px;
+      border-radius: 6px 6px 0 0;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+    }
+    .tab-btn.active {
+      background: #ffffff;
+      border-bottom: 2px solid #ffffff;
+    }
+    .tab-content { display: none; }
+    .tab-content.active { display: block; }
+
+    /* Karten */
     .card {
       border: 2px solid var(--card-border);
       background: #ffffff;
@@ -169,6 +173,20 @@
       font-size: 11px;
       line-height: 1.2;
       min-height: 34px;
+    }
+
+    .card-inner {
+      display: flex;
+    }
+
+    .card-color-strip {
+      width: 4px;
+      background: transparent;
+      margin-right: 4px;
+    }
+
+    .card-content {
+      flex: 1;
     }
 
     .card-title {
@@ -182,16 +200,15 @@
       text-overflow: ellipsis;
     }
 
-    .card-line {
+    .card-line,
+    .card-meta {
       white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
-    }
-
-    .card-meta {
       font-size: 10px;
     }
 
+    /* Feinplanung-Tabelle */
     .fine-table {
       width: 100%;
       border-collapse: collapse;
@@ -212,224 +229,374 @@
       font-weight: 600;
     }
 
-    .fine-day-cell {
+    .fine-day-cell { min-height: 60px; }
+
+    .fine-controls { margin-bottom: 8px; }
+
+    /* Jahresübersicht */
+    .year-layout {
+      display: flex;
+      gap: 12px;
+      align-items: flex-start;
+    }
+
+    .year-table {
+      border-collapse: collapse;
+      font-size: 12px;
+      min-width: 700px;
+    }
+
+    .year-table th,
+    .year-table td {
+      border: 1px solid #ccc;
+      padding: 4px;
+      vertical-align: top;
+    }
+
+    .year-kw-cell {
+      width: 60px;
+      text-align: center;
+      font-weight: bold;
+      background: #f3f3f3;
+    }
+
+    .year-month-header {
+      text-align: center;
+      font-weight: bold;
+      background: #e7e7e7;
+    }
+
+    .year-month-cell {
+      min-height: 80px;
+      background: #fff;
+    }
+
+    .year-month-title {
+      font-weight: bold;
+      font-size: 11px;
+      text-align: center;
+      margin-bottom: 2px;
+    }
+
+    .year-month-drop {
       min-height: 60px;
     }
 
-    .fine-day-label {
-      font-weight: bold;
-      font-size: 11px;
-      margin-bottom: 2px;
+    .year-month-drop.dragover {
+      outline: 2px dashed #0075c9;
     }
 
-    .fine-controls {
-      margin-bottom: 8px;
+    .year-right-cols {
+      min-width: 220px;
     }
 
-    /* Grobplanung */
-    .grob-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
-      gap: 8px;
-      font-size: 11px;
-    }
-
-    .grob-month {
-      border: 1px solid #d0d0d0;
+    .year-cat-box {
+      border: 1px solid #ccc;
       border-radius: 4px;
       padding: 4px;
+      margin-bottom: 6px;
       background: #fafafa;
     }
 
-    .grob-month-title {
+    .year-cat-title {
       font-weight: bold;
+      font-size: 12px;
       margin-bottom: 4px;
       text-align: center;
-      font-size: 12px;
     }
 
-    .grob-item {
-      border: 1px solid #ccc;
-      padding: 2px 3px;
-      margin-bottom: 2px;
-      background: #ffffff;
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
+    .year-cat-drop {
+      min-height: 60px;
+      background: #fff;
+      padding: 2px;
+    }
+
+    .year-cat-drop.dragover {
+      outline: 2px dashed #0075c9;
     }
 
     /* Urlaubsliste */
-    .urlaub-list {
-      font-size: 12px;
+    .urlaub-list table { font-size: 12px; }
+
+    /* Stammdaten */
+    .stamm-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+      gap: 12px;
     }
 
-    .urlaub-list table {
+    .stamm-table {
       font-size: 12px;
+      margin-top: 6px;
+    }
+
+    .stamm-table th,
+    .stamm-table td {
+      padding: 3px 4px;
+    }
+
+    .stamm-table tr:hover {
+      background: #f0f8ff;
+      cursor: pointer;
+    }
+
+    .color-dot {
+      display: inline-block;
+      width: 14px;
+      height: 14px;
+      border-radius: 50%;
+      border: 1px solid #555;
+      margin-right: 4px;
+      vertical-align: middle;
     }
 
     /* Responsive */
     @media (max-width: 900px) {
-      #container {
-        padding: 8px;
-      }
-
-      .form-grid {
-        grid-template-columns: 1fr;
-      }
-
-      header {
-        font-size: 18px;
-        padding: 12px;
-      }
-
-      .fine-table {
-        font-size: 10px;
-      }
-
-      .card {
-        font-size: 10px;
-      }
+      .form-grid { grid-template-columns: 1fr; }
+      header { font-size: 18px; padding: 12px; }
+      .fine-table { font-size: 10px; }
+      .card { font-size: 10px; }
+      .year-layout { flex-direction: column; }
     }
   </style>
 </head>
 <body>
 <header>Plantafel Dachdeckerei Frey</header>
 
-<div id="container">
+<div id="page">
 
-  <!-- LISTE -->
-  <div class="section">
-    <div class="section-header">
-      <h2>Einträge (Liste)</h2>
-      <span class="small-text">Klick auf eine Zeile lädt den Eintrag ins Formular.</span>
-    </div>
-    <div style="overflow-x:auto;">
-      <table id="listTable">
-        <thead>
-        <tr>
-          <th>Tag/Von</th>
-          <th>Bis</th>
-          <th>Titel</th>
-          <th>Baustelle</th>
-          <th>Mitarbeiter</th>
-          <th>Fahrzeug</th>
-          <th>Status</th>
-        </tr>
-        </thead>
-        <tbody></tbody>
-      </table>
+  <!-- Tabs -->
+  <nav class="tabs">
+    <button class="tab-btn active" data-tab="jahr">Jahresplanung</button>
+    <button class="tab-btn" data-tab="woche">Wochenplanung</button>
+  </nav>
+
+  <!-- TAB: JAHRESPLANUNG -->
+  <div id="tab-jahr" class="tab-content active">
+    <div class="section">
+      <div class="section-header">
+        <h2>Jahresübersicht (wie großes Board)</h2>
+        <span class="small-text">Karten frei per Drag & Drop verschieben – Datum wird nicht verändert.</span>
+      </div>
+
+      <div class="year-layout">
+        <!-- Raster 4x3 Monate -->
+        <table class="year-table" id="yearTable"></table>
+
+        <!-- Rechte Kategorien-Spalte -->
+        <div class="year-right-cols" id="yearCategories"></div>
+      </div>
     </div>
   </div>
 
-  <!-- FORMULAR -->
-  <div class="section">
-    <h2>Eintrag bearbeiten / neu anlegen</h2>
-    <p class="small-text">
-      Wenn kein Eintrag ausgewählt ist, wird ein neuer Eintrag angelegt. Bei Klick auf „Löschen“ wird der aktuell geladene Eintrag gelöscht.
-    </p>
-    <div class="form-grid">
-      <div>
-        <label>
-          Tag (Anker):
-          <input type="date" id="tagInput">
-        </label>
-      </div>
-      <div></div>
+  <!-- TAB: WOCHENPLANUNG -->
+  <div id="tab-woche" class="tab-content">
 
-      <div>
-        <label>Von:
-          <input type="date" id="vonInput">
-        </label>
+    <!-- LISTE -->
+    <div class="section">
+      <div class="section-header">
+        <h2>Einträge (Liste)</h2>
+        <span class="small-text">Klick auf eine Zeile lädt den Eintrag ins Formular.</span>
       </div>
-      <div>
-        <label>Bis:
-          <input type="date" id="bisInput">
-        </label>
-      </div>
-
-      <div>
-        <label>Titel:
-          <input type="text" id="titelInput" placeholder="z.B. Dachsanierung Muster">
-        </label>
-      </div>
-      <div>
-        <label>Baustelle:
-          <input type="text" id="baustelleInput" placeholder="Adresse / Kunde">
-        </label>
-      </div>
-
-      <div>
-        <label>Mitarbeiter:
-          <input type="text" id="mitarbeiterInput" placeholder="z.B. Thomas, Kevin">
-        </label>
-      </div>
-      <div>
-        <label>Fahrzeug:
-          <input type="text" id="fahrzeugInput" placeholder="z.B. Crafter Bus">
-        </label>
-      </div>
-
-      <div>
-        <label>Status:
-          <input type="text" id="statusInput" placeholder="normal / Urlaub / krank / Schule / Fahr / ...">
-        </label>
-      </div>
-      <div>
-        <label>Notiz:
-          <textarea id="notizInput" placeholder="Optionale Zusatzinfos"></textarea>
-        </label>
+      <div style="overflow-x:auto;">
+        <table id="listTable">
+          <thead>
+          <tr>
+            <th>Tag/Von</th>
+            <th>Bis</th>
+            <th>Titel</th>
+            <th>Baustelle</th>
+            <th>Mitarbeiter</th>
+            <th>Fahrzeug</th>
+            <th>Status</th>
+          </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
       </div>
     </div>
 
-    <div class="form-actions">
-      <button class="btn" id="saveBtn">Speichern</button>
-      <button class="btn danger" id="deleteBtn">Löschen</button>
-      <button class="btn secondary" id="resetBtn">Formular leeren</button>
-      <span class="small-text" id="statusInfo"></span>
-    </div>
-  </div>
+    <!-- FORMULAR -->
+    <div class="section">
+      <h2>Eintrag bearbeiten / neu anlegen</h2>
+      <p class="small-text">
+        Wenn kein Eintrag ausgewählt ist, wird ein neuer Eintrag angelegt. „Bereich“ steuert das Jahresbrett (Monat/Kategorie).
+      </p>
+      <div class="form-grid">
+        <div>
+          <label>Tag (Anker):
+            <input type="date" id="tagInput">
+          </label>
+        </div>
+        <div>
+          <label>Bereich (für Jahresbrett):
+            <input type="text" id="bereichInput" placeholder="z.B. jan, pv, kleinigkeiten">
+          </label>
+        </div>
 
-  <!-- FEINPLANUNG -->
-  <div class="section">
-    <div class="section-header">
-      <h2>Feinplanung – Magnettafel (Mo–Fr, KW-Spalten)</h2>
-      <span class="small-text">Für Lager-Monitor einfach „14 Tage“ wählen.</span>
-    </div>
-    <div class="fine-controls">
-      <button class="btn" data-span="7" id="btn1w">1 Woche</button>
-      <button class="btn" data-span="14" id="btn2w">2 Wochen</button>
-      <button class="btn" data-span="28" id="btn4w">4 Wochen</button>
-      <button class="btn secondary" data-span="14" id="btn14d">14 Tage</button>
-      <button class="btn secondary" id="btnToday">Diese Woche</button>
-      <button class="btn secondary" id="btnPrev">Zurück</button>
-      <button class="btn secondary" id="btnNext">Weiter</button>
-      <span class="small-text" id="fineCaption"></span>
-    </div>
-    <div style="overflow-x:auto;">
-      <table class="fine-table" id="fineTable"></table>
-    </div>
-  </div>
+        <div>
+          <label>Von:
+            <input type="date" id="vonInput">
+          </label>
+        </div>
+        <div>
+          <label>Bis:
+            <input type="date" id="bisInput">
+          </label>
+        </div>
 
-  <!-- GROBPLANUNG -->
-  <div class="section">
-    <div class="section-header">
-      <h2>Grobplanung (12 Monate)</h2>
-      <span class="small-text">Nur Bauvorhaben – Klick auf KW springt in die Feinplanung (kommt später).</span>
+        <div>
+          <label>Titel:
+            <input type="text" id="titelInput" placeholder="z.B. Dachsanierung Muster">
+          </label>
+        </div>
+        <div>
+          <label>Baustelle:
+            <input type="text" id="baustelleInput" placeholder="Adresse / Kunde">
+          </label>
+        </div>
+
+        <div>
+          <label>Mitarbeiter:
+            <input type="text" id="mitarbeiterInput" placeholder="z.B. Thomas, Kevin">
+          </label>
+        </div>
+        <div>
+          <label>Fahrzeug:
+            <input type="text" id="fahrzeugInput" placeholder="z.B. Crafter Bus">
+          </label>
+        </div>
+
+        <div>
+          <label>Status:
+            <input type="text" id="statusInput" placeholder="normal / Urlaub / krank / Schule / Fahr / ...">
+          </label>
+        </div>
+        <div>
+          <label>Notiz:
+            <textarea id="notizInput" placeholder="Optionale Zusatzinfos"></textarea>
+          </label>
+        </div>
+      </div>
+
+      <div class="form-actions">
+        <button class="btn" id="saveBtn">Speichern</button>
+        <button class="btn danger" id="deleteBtn">Löschen</button>
+        <button class="btn secondary" id="resetBtn">Formular leeren</button>
+        <span class="small-text" id="statusInfo"></span>
+      </div>
     </div>
-    <div class="grob-grid" id="grobView"></div>
-  </div>
 
-  <!-- URLAUB -->
-  <div class="section">
-    <h2>Urlaubsübersicht</h2>
-    <div id="urlaubView" class="urlaub-list"></div>
-  </div>
+    <!-- FEINPLANUNG -->
+    <div class="section">
+      <div class="section-header">
+        <h2>Feinplanung – Magnettafel (Mo–Fr, KW-Spalten)</h2>
+        <span class="small-text">Drag & Drop verschiebt die Baustelle im Zeitraum.</span>
+      </div>
+      <div class="fine-controls">
+        <button class="btn" id="btn1w">1 Woche</button>
+        <button class="btn" id="btn2w">2 Wochen</button>
+        <button class="btn" id="btn4w">4 Wochen</button>
+        <button class="btn secondary" id="btnPrev">Zurück</button>
+        <button class="btn secondary" id="btnToday">Diese Woche</button>
+        <button class="btn secondary" id="btnNext">Weiter</button>
+        <span class="small-text" id="fineCaption"></span>
+      </div>
+      <div style="overflow-x:auto;">
+        <table class="fine-table" id="fineTable"></table>
+      </div>
+    </div>
 
-</div>
+    <!-- URLAUB -->
+    <div class="section">
+      <div class="section-header">
+        <h2>Urlaubsübersicht</h2>
+        <span class="small-text">Status enthält „Urlaub“ → erscheint hier.</span>
+      </div>
+      <div id="urlaubView" class="urlaub-list"></div>
+    </div>
+
+    <!-- STAMMDATEN -->
+    <div class="section">
+      <div class="section-header">
+        <h2>Stammdaten</h2>
+        <span class="small-text">Farben steuern Farbstreifen auf den Magnetkarten.</span>
+      </div>
+      <div class="stamm-grid">
+        <!-- Mitarbeiter -->
+        <div>
+          <h3>Mitarbeiter</h3>
+          <div class="form-grid">
+            <div>
+              <label>Name:
+                <input type="text" id="maNameInput" placeholder="z.B. Thomas">
+              </label>
+            </div>
+            <div>
+              <label>Farbe:
+                <input type="color" id="maColorInput" value="#ffcc00">
+              </label>
+            </div>
+          </div>
+          <div class="form-actions">
+            <button class="btn" id="maSaveBtn">Mitarbeiter speichern</button>
+            <button class="btn secondary" id="maNewBtn">Neu</button>
+            <button class="btn danger" id="maDeleteBtn">Löschen</button>
+            <input type="hidden" id="maIdHidden">
+          </div>
+
+          <table class="stamm-table" id="maTable">
+            <thead>
+            <tr><th>Name</th><th>Farbe</th></tr>
+            </thead>
+            <tbody></tbody>
+          </table>
+        </div>
+
+        <!-- Fahrzeuge -->
+        <div>
+          <h3>Fahrzeuge</h3>
+          <div class="form-grid">
+            <div>
+              <label>Bezeichnung:
+                <input type="text" id="fzNameInput" placeholder="z.B. Crafter Bus">
+              </label>
+            </div>
+            <div>
+              <label>Kennzeichen:
+                <input type="text" id="fzKennzInput" placeholder="z.B. EI-XY 123">
+              </label>
+            </div>
+            <div>
+              <label>Farbe:
+                <input type="color" id="fzColorInput" value="#ff0000">
+              </label>
+            </div>
+          </div>
+          <div class="form-actions">
+            <button class="btn" id="fzSaveBtn">Fahrzeug speichern</button>
+            <button class="btn secondary" id="fzNewBtn">Neu</button>
+            <button class="btn danger" id="fzDeleteBtn">Löschen</button>
+            <input type="hidden" id="fzIdHidden">
+          </div>
+
+          <table class="stamm-table" id="fzTable">
+            <thead>
+            <tr><th>Bezeichnung</th><th>Kennzeichen</th><th>Farbe</th></tr>
+            </thead>
+            <tbody></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /tab-woche -->
+
+</div><!-- /page -->
 
 <script>
   // -------------------------------------------------------------------
-  //  SUPABASE – KORREKTE URL + API KEY
+  //  SUPABASE – URL + API KEY
   // -------------------------------------------------------------------
   const SUPABASE_URL = "https://yzfmviddzhghvcxowbjl.supabase.co";
   const SUPABASE_ANON_KEY = "sb_publishable_dacXIaV9sWHEN0ysSeoFuw_88UaV5tn";
@@ -438,14 +605,34 @@
 
   // Globale Daten
   let allEntries = [];
+  let allMitarbeiter = [];
+  let allFahrzeuge = [];
   let currentEditId = null;
 
-  // Feinplanung: Startdatum und Spanne in Tagen (Standard: 4 Wochen)
+  // Feinplanung
   let fineStartDate = mondayOf(new Date());
-  let fineSpanDays = window.innerWidth < 800 ? 14 : 28; // mobil 14 Tage, sonst 4 Wochen
+  let fineSpanDays = window.innerWidth < 800 ? 14 : 28; // mobil 14, sonst 4 Wochen
+
+  // Drag & Drop
+  let draggedEntryId = null;
 
   // -------------------------------------------------------------------
-  //  HELFER
+  //  TAB-Umschaltung
+  // -------------------------------------------------------------------
+  const tabButtons = document.querySelectorAll(".tab-btn");
+  const tabContents = document.querySelectorAll(".tab-content");
+
+  tabButtons.forEach(btn => {
+    btn.addEventListener("click", () => {
+      tabButtons.forEach(b => b.classList.remove("active"));
+      tabContents.forEach(c => c.classList.remove("active"));
+      btn.classList.add("active");
+      document.getElementById("tab-" + btn.dataset.tab).classList.add("active");
+    });
+  });
+
+  // -------------------------------------------------------------------
+  //  Helfer
   // -------------------------------------------------------------------
   function formatDate(d) {
     if (!d) return "";
@@ -456,13 +643,12 @@
 
   function toISODate(str) {
     if (!str) return null;
-    // Browser liefert "YYYY-MM-DD"
     return str;
   }
 
   function mondayOf(d) {
     const dt = new Date(d.getFullYear(), d.getMonth(), d.getDate());
-    const day = dt.getDay(); // So=0, Mo=1, ...
+    const day = dt.getDay(); // So=0, Mo=1...
     const diff = (day === 0 ? -6 : 1 - day);
     dt.setDate(dt.getDate() + diff);
     dt.setHours(0,0,0,0);
@@ -475,13 +661,11 @@
     return dt;
   }
 
-  function sameDay(a, b) {
-    return a.getFullYear() === b.getFullYear() &&
-           a.getMonth() === b.getMonth() &&
-           a.getDate() === b.getDate();
+  function diffInDays(a, b) {
+    const ms = a.getTime() - b.getTime();
+    return Math.round(ms / 86400000);
   }
 
-  // ISO-Kalenderwoche
   function isoWeek(date) {
     const d = new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()));
     const dayNum = d.getUTCDay() || 7;
@@ -490,8 +674,235 @@
     return Math.ceil((((d - yearStart) / 86400000) + 1)/7);
   }
 
+  function normalizeName(name) {
+    if (!name) return "";
+    return name.trim().toLowerCase();
+  }
+
+  function normalizeFirstFromList(listStr) {
+    if (!listStr) return "";
+    const first = listStr.split(",")[0];
+    return normalizeName(first);
+  }
+
   // -------------------------------------------------------------------
-  //  DATEN LADEN
+  //  Stammdaten: Mitarbeiter + Fahrzeuge
+  // -------------------------------------------------------------------
+  async function loadMitarbeiter() {
+    const { data, error } = await supabase
+      .from("mitarbeiter")
+      .select("*")
+      .order("name", { ascending: true });
+
+    if (error) {
+      console.warn("Fehler beim Laden Mitarbeiter:", error.message);
+      allMitarbeiter = [];
+    } else {
+      allMitarbeiter = data || [];
+    }
+    renderMitarbeiterTable();
+  }
+
+  async function loadFahrzeuge() {
+    const { data, error } = await supabase
+      .from("fahrzeuge")
+      .select("*")
+      .order("name", { ascending: true });
+
+    if (error) {
+      console.warn("Fehler beim Laden Fahrzeuge:", error.message);
+      allFahrzeuge = [];
+    } else {
+      allFahrzeuge = data || [];
+    }
+    renderFahrzeugTable();
+  }
+
+  function renderMitarbeiterTable() {
+    const tbody = document.querySelector("#maTable tbody");
+    if (!tbody) return;
+    tbody.innerHTML = "";
+    allMitarbeiter.forEach(ma => {
+      const tr = document.createElement("tr");
+      tr.innerHTML = `
+        <td>${ma.name || ""}</td>
+        <td>
+          <span class="color-dot" style="background:${ma.color || "#ffffff"}"></span>
+          ${ma.color || ""}
+        </td>`;
+      tr.addEventListener("click", () => fillMitarbeiterForm(ma));
+      tbody.appendChild(tr);
+    });
+  }
+
+  function renderFahrzeugTable() {
+    const tbody = document.querySelector("#fzTable tbody");
+    if (!tbody) return;
+    tbody.innerHTML = "";
+    allFahrzeuge.forEach(fz => {
+      const tr = document.createElement("tr");
+      tr.innerHTML = `
+        <td>${fz.name || ""}</td>
+        <td>${fz.kennzeichen || ""}</td>
+        <td>
+          <span class="color-dot" style="background:${fz.color || "#ffffff"}"></span>
+          ${fz.color || ""}
+        </td>`;
+      tr.addEventListener("click", () => fillFahrzeugForm(fz));
+      tbody.appendChild(tr);
+    });
+  }
+
+  function fillMitarbeiterForm(ma) {
+    document.getElementById("maIdHidden").value = ma.id || "";
+    document.getElementById("maNameInput").value = ma.name || "";
+    document.getElementById("maColorInput").value = ma.color || "#ffcc00";
+  }
+
+  function clearMitarbeiterForm() {
+    document.getElementById("maIdHidden").value = "";
+    document.getElementById("maNameInput").value = "";
+    document.getElementById("maColorInput").value = "#ffcc00";
+  }
+
+  async function saveMitarbeiter() {
+    const id = document.getElementById("maIdHidden").value || null;
+    const name = document.getElementById("maNameInput").value.trim();
+    const color = document.getElementById("maColorInput").value;
+
+    if (!name) {
+      alert("Name darf nicht leer sein.");
+      return;
+    }
+
+    let error;
+    if (id) {
+      ({ error } = await supabase.from("mitarbeiter").update({ name, color }).eq("id", id));
+    } else {
+      ({ error } = await supabase.from("mitarbeiter").insert({ name, color }));
+    }
+
+    if (error) {
+      console.error("Fehler beim Speichern Mitarbeiter:", error);
+      alert("Fehler beim Speichern Mitarbeiter.");
+      return;
+    }
+
+    await loadMitarbeiter();
+    renderFineView();
+    renderYearView();
+  }
+
+  async function deleteMitarbeiter() {
+    const id = document.getElementById("maIdHidden").value;
+    if (!id) {
+      alert("Kein Mitarbeiter ausgewählt.");
+      return;
+    }
+    if (!confirm("Mitarbeiter wirklich löschen?")) return;
+
+    const { error } = await supabase.from("mitarbeiter").delete().eq("id", id);
+    if (error) {
+      console.error("Fehler beim Löschen Mitarbeiter:", error);
+      alert("Fehler beim Löschen.");
+      return;
+    }
+
+    clearMitarbeiterForm();
+    await loadMitarbeiter();
+    renderFineView();
+    renderYearView();
+  }
+
+  function fillFahrzeugForm(fz) {
+    document.getElementById("fzIdHidden").value = fz.id || "";
+    document.getElementById("fzNameInput").value = fz.name || "";
+    document.getElementById("fzKennzInput").value = fz.kennzeichen || "";
+    document.getElementById("fzColorInput").value = fz.color || "#ff0000";
+  }
+
+  function clearFahrzeugForm() {
+    document.getElementById("fzIdHidden").value = "";
+    document.getElementById("fzNameInput").value = "";
+    document.getElementById("fzKennzInput").value = "";
+    document.getElementById("fzColorInput").value = "#ff0000";
+  }
+
+  async function saveFahrzeug() {
+    const id = document.getElementById("fzIdHidden").value || null;
+    const name = document.getElementById("fzNameInput").value.trim();
+    const kennzeichen = document.getElementById("fzKennzInput").value.trim();
+    const color = document.getElementById("fzColorInput").value;
+
+    if (!name) {
+      alert("Bezeichnung darf nicht leer sein.");
+      return;
+    }
+
+    let error;
+    if (id) {
+      ({ error } = await supabase
+        .from("fahrzeuge")
+        .update({ name, kennzeichen, color })
+        .eq("id", id));
+    } else {
+      ({ error } = await supabase
+        .from("fahrzeuge")
+        .insert({ name, kennzeichen, color }));
+    }
+
+    if (error) {
+      console.error("Fehler beim Speichern Fahrzeug:", error);
+      alert("Fehler beim Speichern Fahrzeug.");
+      return;
+    }
+
+    await loadFahrzeuge();
+    renderFineView();
+    renderYearView();
+  }
+
+  async function deleteFahrzeug() {
+    const id = document.getElementById("fzIdHidden").value;
+    if (!id) {
+      alert("Kein Fahrzeug ausgewählt.");
+      return;
+    }
+    if (!confirm("Fahrzeug wirklich löschen?")) return;
+
+    const { error } = await supabase.from("fahrzeuge").delete().eq("id", id);
+    if (error) {
+      console.error("Fehler beim Löschen Fahrzeug:", error);
+      alert("Fehler beim Löschen.");
+      return;
+    }
+
+    clearFahrzeugForm();
+    await loadFahrzeuge();
+    renderFineView();
+    renderYearView();
+  }
+
+  function getMitarbeiterColor(mitarbeiterStr) {
+    const name = normalizeFirstFromList(mitarbeiterStr);
+    if (!name) return null;
+    const found = allMitarbeiter.find(ma => normalizeName(ma.name) === name);
+    return found ? found.color : null;
+  }
+
+  function getFahrzeugColor(fahrzeugStr) {
+    if (!fahrzeugStr) return null;
+    const val = normalizeName(fahrzeugStr);
+    if (!val) return null;
+    const found = allFahrzeuge.find(fz =>
+      normalizeName(fz.name) === val ||
+      normalizeName(fz.kennzeichen || "") === val
+    );
+    return found ? found.color : null;
+  }
+
+  // -------------------------------------------------------------------
+  //  Plantafel-Einträge
   // -------------------------------------------------------------------
   async function loadEntries() {
     const { data, error } = await supabase
@@ -501,23 +912,25 @@
 
     if (error) {
       console.error("Supabase Fehler (loadEntries):", error);
-      document.getElementById("statusInfo").textContent = "Fehler beim Laden der Einträge.";
+      const si = document.getElementById("statusInfo");
+      if (si) si.textContent = "Fehler beim Laden der Einträge.";
       return;
     }
 
     allEntries = data || [];
     renderList();
     renderFineView();
+    renderYearView();
     renderGrobView();
     renderUrlaub();
-    document.getElementById("statusInfo").textContent = "Einträge geladen.";
+
+    const si = document.getElementById("statusInfo");
+    if (si) si.textContent = "Einträge geladen.";
   }
 
-  // -------------------------------------------------------------------
-  //  LISTE RENDERN
-  // -------------------------------------------------------------------
   function renderList() {
     const tbody = document.querySelector("#listTable tbody");
+    if (!tbody) return;
     tbody.innerHTML = "";
 
     allEntries.forEach(entry => {
@@ -540,6 +953,7 @@
     currentEditId = entry.id;
 
     document.getElementById("tagInput").value = entry.tag || "";
+    document.getElementById("bereichInput").value = entry.bereich || "";
     document.getElementById("vonInput").value = entry.von || "";
     document.getElementById("bisInput").value = entry.bis || "";
     document.getElementById("titelInput").value = entry.titel || "";
@@ -549,12 +963,14 @@
     document.getElementById("statusInput").value = entry.status || "";
     document.getElementById("notizInput").value = entry.notiz || "";
 
-    document.getElementById("statusInfo").textContent = "Eintrag geladen – Änderungen nicht vergessen zu speichern.";
+    document.getElementById("statusInfo").textContent =
+      "Eintrag geladen – Änderungen nicht vergessen zu speichern.";
   }
 
   function resetForm() {
     currentEditId = null;
     document.getElementById("tagInput").value = "";
+    document.getElementById("bereichInput").value = "";
     document.getElementById("vonInput").value = "";
     document.getElementById("bisInput").value = "";
     document.getElementById("titelInput").value = "";
@@ -563,14 +979,13 @@
     document.getElementById("fahrzeugInput").value = "";
     document.getElementById("statusInput").value = "";
     document.getElementById("notizInput").value = "";
-    document.getElementById("statusInfo").textContent = "Neuer Eintrag.";
+    const si = document.getElementById("statusInfo");
+    if (si) si.textContent = "Neuer Eintrag.";
   }
 
-  // -------------------------------------------------------------------
-  //  SPEICHERN / LÖSCHEN
-  // -------------------------------------------------------------------
   async function saveEntry() {
     const tag = toISODate(document.getElementById("tagInput").value);
+    const bereich = document.getElementById("bereichInput").value.trim() || null;
     const von = toISODate(document.getElementById("vonInput").value);
     const bis = toISODate(document.getElementById("bisInput").value);
     const titel = document.getElementById("titelInput").value.trim();
@@ -580,18 +995,13 @@
     const status = document.getElementById("statusInput").value.trim();
     const notiz = document.getElementById("notizInput").value.trim();
 
-    const payload = { tag, von, bis, titel, baustelle, mitarbeiter, fahrzeug, status, notiz };
+    const payload = { tag, bereich, von, bis, titel, baustelle, mitarbeiter, fahrzeug, status, notiz };
 
     let error;
     if (currentEditId) {
-      ({ error } = await supabase
-        .from("plantafel")
-        .update(payload)
-        .eq("id", currentEditId));
+      ({ error } = await supabase.from("plantafel").update(payload).eq("id", currentEditId));
     } else {
-      ({ error } = await supabase
-        .from("plantafel")
-        .insert(payload));
+      ({ error } = await supabase.from("plantafel").insert(payload));
     }
 
     if (error) {
@@ -612,10 +1022,7 @@
     }
     if (!confirm("Diesen Eintrag wirklich löschen?")) return;
 
-    const { error } = await supabase
-      .from("plantafel")
-      .delete()
-      .eq("id", currentEditId);
+    const { error } = await supabase.from("plantafel").delete().eq("id", currentEditId);
 
     if (error) {
       console.error("Supabase Fehler (deleteEntry):", error);
@@ -629,81 +1036,8 @@
   }
 
   // -------------------------------------------------------------------
-  //  FEINPLANUNG (Magnettafel)
+  //  FEINPLANUNG (Wochenansicht)
   // -------------------------------------------------------------------
-  function renderFineView() {
-    const table = document.getElementById("fineTable");
-    table.innerHTML = "";
-
-    const days = [];
-    for (let i = 0; i < fineSpanDays; i++) {
-      days.push(addDays(fineStartDate, i));
-    }
-
-    const caption = document.getElementById("fineCaption");
-    const first = days[0];
-    const last = days[days.length - 1];
-    caption.textContent = `Zeitraum: ${formatDate(first)} – ${formatDate(last)} (${fineSpanDays} Tage)`;
-
-    // Kopfzeile: Spalte 0 = Wochentag, dann je Tag eine Spalte
-    const thead = document.createElement("thead");
-    const headRow = document.createElement("tr");
-    headRow.innerHTML = `<th style="width:70px;">Tag / KW</th>`;
-    days.forEach(d => {
-      const kw = isoWeek(d);
-      headRow.innerHTML += `<th>KW ${kw}<br>${formatDate(d)}</th>`;
-    });
-    thead.appendChild(headRow);
-    table.appendChild(thead);
-
-    const tbody = document.createElement("tbody");
-    const weekdays = ["Mo","Di","Mi","Do","Fr"];
-
-    weekdays.forEach((wdName, wdIndex) => {
-      const tr = document.createElement("tr");
-      const labelCell = document.createElement("td");
-      labelCell.innerHTML = `<strong>${wdName}</strong>`;
-      tr.appendChild(labelCell);
-
-      days.forEach(d => {
-        // Nur die Zelle für den richtigen Wochentag
-        const cell = document.createElement("td");
-        cell.className = "fine-day-cell";
-
-        const weekday = d.getDay() === 0 ? 7 : d.getDay(); // So=7
-        if (weekday === wdIndex + 1) {
-          const cellDate = new Date(d.getFullYear(), d.getMonth(), d.getDate());
-          const cards = entriesForDay(cellDate);
-
-          cards.forEach(entry => {
-            const card = document.createElement("div");
-            card.className = "card";
-
-            const title = entry.baustelle || entry.titel || "Ohne Titel";
-            const fahr = entry.fahrzeug || "";
-            const mit = entry.mitarbeiter || "";
-            const stat = (entry.status || "").toLowerCase();
-
-            card.innerHTML = `
-              <div class="card-title">${title}</div>
-              <div class="card-line card-meta">Fahrzeug: ${fahr}</div>
-              <div class="card-line card-meta">MA: ${mit}</div>
-              ${stat ? `<div class="card-line"><span class="status-badge">${stat}</span></div>` : ""}
-            `;
-
-            cell.appendChild(card);
-          });
-        }
-
-        tr.appendChild(cell);
-      });
-
-      tbody.appendChild(tr);
-    });
-
-    table.appendChild(tbody);
-  }
-
   function entriesForDay(date) {
     return allEntries.filter(e => {
       const von = e.von ? new Date(e.von) : null;
@@ -721,55 +1055,363 @@
     });
   }
 
-  // -------------------------------------------------------------------
-  //  GROBPLANUNG (12 Monate)
-  // -------------------------------------------------------------------
-  function renderGrobView() {
-    const container = document.getElementById("grobView");
-    container.innerHTML = "";
+  function renderFineView() {
+    const table = document.getElementById("fineTable");
+    if (!table) return;
+    table.innerHTML = "";
 
-    const today = new Date();
-    const year = today.getFullYear();
-    const months = [
-      "Januar","Februar","März","April","Mai","Juni",
-      "Juli","August","September","Oktober","November","Dezember"
-    ];
-
-    for (let m = 0; m < 12; m++) {
-      const monthStart = new Date(year, m, 1);
-      const monthEnd = new Date(year, m + 1, 0);
-
-      const monthEntries = allEntries.filter(e => {
-        const tag = e.tag || e.von;
-        if (!tag) return false;
-        const d = new Date(tag);
-        return d >= monthStart && d <= monthEnd;
-      });
-
-      const box = document.createElement("div");
-      box.className = "grob-month";
-      box.innerHTML = `<div class="grob-month-title">${months[m]} ${year}</div>`;
-
-      monthEntries.forEach(e => {
-        const start = e.von ? new Date(e.von) : (e.tag ? new Date(e.tag) : null);
-        if (!start) return;
-        const kw = isoWeek(start);
-        const title = e.baustelle || e.titel || "Ohne Titel";
-        const item = document.createElement("div");
-        item.className = "grob-item";
-        item.textContent = `KW ${kw}: ${title}`;
-        box.appendChild(item);
-      });
-
-      container.appendChild(box);
+    const days = [];
+    for (let i = 0; i < fineSpanDays; i++) {
+      days.push(addDays(fineStartDate, i));
     }
+
+    const caption = document.getElementById("fineCaption");
+    const first = days[0];
+    const last = days[days.length - 1];
+    caption.textContent = `Zeitraum: ${formatDate(first)} – ${formatDate(last)} (${fineSpanDays} Tage)`;
+
+    const thead = document.createElement("thead");
+    const headRow = document.createElement("tr");
+    headRow.innerHTML = `<th style="width:70px;">Tag / KW</th>`;
+    days.forEach(d => {
+      const kw = isoWeek(d);
+      headRow.innerHTML += `<th data-date="${d.toISOString().slice(0,10)}">KW ${kw}<br>${formatDate(d)}</th>`;
+    });
+    thead.appendChild(headRow);
+    table.appendChild(thead);
+
+    const tbody = document.createElement("tbody");
+    const weekdays = ["Mo","Di","Mi","Do","Fr"];
+
+    weekdays.forEach((wdName, wdIndex) => {
+      const tr = document.createElement("tr");
+      const labelCell = document.createElement("td");
+      labelCell.innerHTML = `<strong>${wdName}</strong>`;
+      tr.appendChild(labelCell);
+
+      days.forEach(d => {
+        const cell = document.createElement("td");
+        cell.className = "fine-day-cell";
+        const weekday = d.getDay() === 0 ? 7 : d.getDay(); // So=7
+
+        const cellDateISO = d.toISOString().slice(0,10);
+        cell.dataset.date = cellDateISO;
+
+        // Dropziel
+        cell.addEventListener("dragover", ev => {
+          ev.preventDefault();
+        });
+        cell.addEventListener("drop", ev => {
+          ev.preventDefault();
+          if (draggedEntryId) {
+            moveEntryToDate(draggedEntryId, cellDateISO);
+          }
+        });
+
+        if (weekday === wdIndex + 1) {
+          const cellDate = new Date(d.getFullYear(), d.getMonth(), d.getDate());
+          const cards = entriesForDay(cellDate);
+
+          cards.forEach(entry => {
+            const card = document.createElement("div");
+            card.className = "card";
+            card.draggable = true;
+            card.dataset.entryId = entry.id;
+
+            card.addEventListener("dragstart", () => { draggedEntryId = entry.id; });
+            card.addEventListener("dragend", () => { draggedEntryId = null; });
+
+            const title = entry.baustelle || entry.titel || "Ohne Titel";
+            const fahr = entry.fahrzeug || "";
+            const mit = entry.mitarbeiter || "";
+            const stat = (entry.status || "").toLowerCase();
+
+            const maColor = getMitarbeiterColor(mit);
+            const fzColor = getFahrzeugColor(fahr);
+            const stripeColor = maColor || fzColor || null;
+
+            const inner = document.createElement("div");
+            inner.className = "card-inner";
+
+            const strip = document.createElement("div");
+            strip.className = "card-color-strip";
+            if (stripeColor) strip.style.background = stripeColor;
+
+            const content = document.createElement("div");
+            content.className = "card-content";
+            content.innerHTML = `
+              <div class="card-title">${title}</div>
+              <div class="card-line card-meta">Fahrzeug: ${fahr}</div>
+              <div class="card-line card-meta">MA: ${mit}</div>
+              ${stat ? `<div class="card-line"><span class="status-badge">${stat}</span></div>` : ""}`;
+
+            inner.appendChild(strip);
+            inner.appendChild(content);
+            card.appendChild(inner);
+            cell.appendChild(card);
+          });
+        }
+
+        tr.appendChild(cell);
+      });
+
+      tbody.appendChild(tr);
+    });
+
+    table.appendChild(tbody);
+  }
+
+  async function moveEntryToDate(entryId, targetISO) {
+    const entry = allEntries.find(e => e.id === entryId);
+    if (!entry) return;
+
+    const oldStart = entry.von ? new Date(entry.von)
+      : (entry.tag ? new Date(entry.tag)
+      : (entry.bis ? new Date(entry.bis) : null));
+    const oldEnd = entry.bis ? new Date(entry.bis)
+      : (entry.von ? new Date(entry.von)
+      : (entry.tag ? new Date(entry.tag) : null));
+
+    if (!oldStart || !oldEnd) return;
+
+    oldStart.setHours(0,0,0,0);
+    oldEnd.setHours(0,0,0,0);
+
+    const targetDate = new Date(targetISO);
+    targetDate.setHours(0,0,0,0);
+
+    const diff = diffInDays(targetDate, oldStart);
+
+    const newVon = entry.von ? addDays(oldStart, diff) : null;
+    const newBis = entry.bis ? addDays(oldEnd, diff) : null;
+    const newTag = entry.tag ? targetISO : null;
+
+    const payload = {
+      von: newVon ? newVon.toISOString().slice(0,10) : entry.von,
+      bis: newBis ? newBis.toISOString().slice(0,10) : entry.bis,
+      tag: newTag || entry.tag
+    };
+
+    const { error } = await supabase.from("plantafel").update(payload).eq("id", entryId);
+    if (error) {
+      console.error("Fehler beim Verschieben:", error);
+      alert("Fehler beim Verschieben.");
+      return;
+    }
+
+    await loadEntries();
   }
 
   // -------------------------------------------------------------------
-  //  URLAUBSÜBERSICHT
+  //  JAHRESÜBERSICHT (4x3 Monate + rechte Spalten)
+  // -------------------------------------------------------------------
+  const monthsDef = [
+    { key: "jan", label: "Januar" },
+    { key: "feb", label: "Februar" },
+    { key: "mar", label: "März" },
+    { key: "apr", label: "April" },
+    { key: "mai", label: "Mai" },
+    { key: "jun", label: "Juni" },
+    { key: "jul", label: "Juli" },
+    { key: "aug", label: "August" },
+    { key: "sep", label: "September" },
+    { key: "okt", label: "Oktober" },
+    { key: "nov", label: "November" },
+    { key: "dez", label: "Dezember" }
+  ];
+
+  const yearCategoriesDef = [
+    { key: "kleinigkeiten", label: "Kleinigkeiten" },
+    { key: "sanierung", label: "Sanierungen" },
+    { key: "pv", label: "PV" },
+    { key: "flachdach", label: "Flachdach" },
+    { key: "sonst", label: "Sonstiges" }
+  ];
+
+  function renderYearView() {
+    const yearTable = document.getElementById("yearTable");
+    const catContainer = document.getElementById("yearCategories");
+    if (!yearTable || !catContainer) return;
+
+    // Tabelle (4 Reihen × 3 Monate)
+    yearTable.innerHTML = "";
+    const headerRow = document.createElement("tr");
+    headerRow.innerHTML = `<th class="year-kw-cell">KW</th>
+      <th class="year-month-header">Januar</th>
+      <th class="year-month-header">Februar</th>
+      <th class="year-month-header">März</th>`;
+    yearTable.appendChild(headerRow);
+
+    const headerRow2 = document.createElement("tr");
+    headerRow2.innerHTML = `<th class="year-kw-cell"></th>
+      <th class="year-month-header">April</th>
+      <th class="year-month-header">Mai</th>
+      <th class="year-month-header">Juni</th>`;
+    const headerRow3 = document.createElement("tr");
+    headerRow3.innerHTML = `<th class="year-kw-cell"></th>
+      <th class="year-month-header">Juli</th>
+      <th class="year-month-header">August</th>
+      <th class="year-month-header">September</th>`;
+    const headerRow4 = document.createElement("tr");
+    headerRow4.innerHTML = `<th class="year-kw-cell"></th>
+      <th class="year-month-header">Oktober</th>
+      <th class="year-month-header">November</th>
+      <th class="year-month-header">Dezember</th>`;
+
+    // Body
+    const rows = [];
+    for (let r = 0; r < 4; r++) {
+      const tr = document.createElement("tr");
+      tr.innerHTML = `<td class="year-kw-cell">KW</td>`;
+      for (let c = 0; c < 3; c++) {
+        const monthIndex = r * 3 + c;
+        const mDef = monthsDef[monthIndex];
+
+        const td = document.createElement("td");
+        td.className = "year-month-cell";
+
+        const title = document.createElement("div");
+        title.className = "year-month-title";
+        title.textContent = mDef.label;
+
+        const drop = document.createElement("div");
+        drop.className = "year-month-drop";
+        drop.dataset.bereich = mDef.key;
+
+        makeDropTarget(drop, mDef.key);
+
+        // Karten für diesen Bereich
+        const entries = allEntries.filter(e => (e.bereich || "").toLowerCase() === mDef.key);
+        entries.forEach(e => {
+          drop.appendChild(createCardElement(e));
+        });
+
+        td.appendChild(title);
+        td.appendChild(drop);
+        tr.appendChild(td);
+      }
+      rows.push(tr);
+    }
+
+    // Header + body anhängen
+    yearTable.innerHTML = "";
+    yearTable.appendChild(headerRow);
+    yearTable.appendChild(rows[0]);
+    yearTable.appendChild(headerRow2);
+    yearTable.appendChild(rows[1]);
+    yearTable.appendChild(headerRow3);
+    yearTable.appendChild(rows[2]);
+    yearTable.appendChild(headerRow4);
+    yearTable.appendChild(rows[3]);
+
+    // Rechte Kategorien-Spalten
+    catContainer.innerHTML = "";
+    yearCategoriesDef.forEach(cat => {
+      const box = document.createElement("div");
+      box.className = "year-cat-box";
+
+      const title = document.createElement("div");
+      title.className = "year-cat-title";
+      title.textContent = cat.label;
+      box.appendChild(title);
+
+      const drop = document.createElement("div");
+      drop.className = "year-cat-drop";
+      drop.dataset.bereich = cat.key;
+
+      makeDropTarget(drop, cat.key);
+
+      const entries = allEntries.filter(e => (e.bereich || "").toLowerCase() === cat.key);
+      entries.forEach(e => drop.appendChild(createCardElement(e)));
+
+      box.appendChild(drop);
+      catContainer.appendChild(box);
+    });
+  }
+
+  function makeDropTarget(el, bereichKey) {
+    el.addEventListener("dragover", ev => {
+      ev.preventDefault();
+      el.classList.add("dragover");
+    });
+    el.addEventListener("dragleave", () => {
+      el.classList.remove("dragover");
+    });
+    el.addEventListener("drop", async ev => {
+      ev.preventDefault();
+      el.classList.remove("dragover");
+      if (draggedEntryId) {
+        await moveEntryToBereich(draggedEntryId, bereichKey);
+      }
+    });
+  }
+
+  function createCardElement(entry) {
+    const card = document.createElement("div");
+    card.className = "card";
+    card.draggable = true;
+    card.dataset.entryId = entry.id;
+
+    card.addEventListener("dragstart", () => { draggedEntryId = entry.id; });
+    card.addEventListener("dragend", () => { draggedEntryId = null; });
+
+    const title = entry.baustelle || entry.titel || "Ohne Titel";
+    const fahr = entry.fahrzeug || "";
+    const mit = entry.mitarbeiter || "";
+    const stat = (entry.status || "").toLowerCase();
+
+    const maColor = getMitarbeiterColor(mit);
+    const fzColor = getFahrzeugColor(fahr);
+    const stripeColor = maColor || fzColor || null;
+
+    const inner = document.createElement("div");
+    inner.className = "card-inner";
+
+    const strip = document.createElement("div");
+    strip.className = "card-color-strip";
+    if (stripeColor) strip.style.background = stripeColor;
+
+    const content = document.createElement("div");
+    content.className = "card-content";
+    content.innerHTML = `
+      <div class="card-title">${title}</div>
+      <div class="card-line card-meta">Fahrzeug: ${fahr}</div>
+      <div class="card-line card-meta">MA: ${mit}</div>
+      ${stat ? `<div class="card-line"><span class="status-badge">${stat}</span></div>` : ""}`;
+
+    inner.appendChild(strip);
+    inner.appendChild(content);
+    card.appendChild(inner);
+    return card;
+  }
+
+  async function moveEntryToBereich(entryId, bereichKey) {
+    const { error } = await supabase
+      .from("plantafel")
+      .update({ bereich: bereichKey })
+      .eq("id", entryId);
+
+    if (error) {
+      console.error("Fehler beim Verschieben in Bereich:", error);
+      alert("Fehler beim Verschieben.");
+      return;
+    }
+    await loadEntries();
+  }
+
+  // -------------------------------------------------------------------
+  //  Grobplanung (einfach: Nutzung von Datum, kann später verfeinert werden)
+  // -------------------------------------------------------------------
+  function renderGrobView() {
+    // Platzhalter; du kannst diese Funktion später für Extra-Ansichten nutzen.
+  }
+
+  // -------------------------------------------------------------------
+  //  Urlaubsübersicht
   // -------------------------------------------------------------------
   function renderUrlaub() {
     const container = document.getElementById("urlaubView");
+    if (!container) return;
     container.innerHTML = "";
 
     const urlaubEntries = allEntries.filter(e =>
@@ -781,7 +1423,6 @@
       return;
     }
 
-    // nach Mitarbeiter gruppieren
     const byMA = {};
     urlaubEntries.forEach(e => {
       const name = (e.mitarbeiter || "Unbekannt").trim() || "Unbekannt";
@@ -801,7 +1442,6 @@
     table.appendChild(thead);
 
     const tbody = document.createElement("tbody");
-
     Object.keys(byMA).sort().forEach(name => {
       byMA[name].forEach(e => {
         const tr = document.createElement("tr");
@@ -814,25 +1454,22 @@
         tbody.appendChild(tr);
       });
     });
-
     table.appendChild(tbody);
     container.appendChild(table);
   }
 
   // -------------------------------------------------------------------
-  //  EVENTS
+  //  Events
   // -------------------------------------------------------------------
-  document.getElementById("saveBtn").addEventListener("click", (e) => {
+  document.getElementById("saveBtn").addEventListener("click", e => {
     e.preventDefault();
     saveEntry();
   });
-
-  document.getElementById("deleteBtn").addEventListener("click", (e) => {
+  document.getElementById("deleteBtn").addEventListener("click", e => {
     e.preventDefault();
     deleteEntry();
   });
-
-  document.getElementById("resetBtn").addEventListener("click", (e) => {
+  document.getElementById("resetBtn").addEventListener("click", e => {
     e.preventDefault();
     resetForm();
   });
@@ -841,46 +1478,70 @@
     fineStartDate = mondayOf(new Date());
     renderFineView();
   });
-
   document.getElementById("btnPrev").addEventListener("click", () => {
     fineStartDate = addDays(fineStartDate, -fineSpanDays);
     renderFineView();
   });
-
   document.getElementById("btnNext").addEventListener("click", () => {
     fineStartDate = addDays(fineStartDate, fineSpanDays);
     renderFineView();
   });
-
   document.getElementById("btn1w").addEventListener("click", () => {
     fineSpanDays = 7;
     fineStartDate = mondayOf(new Date());
     renderFineView();
   });
-
   document.getElementById("btn2w").addEventListener("click", () => {
     fineSpanDays = 14;
     fineStartDate = mondayOf(new Date());
     renderFineView();
   });
-
   document.getElementById("btn4w").addEventListener("click", () => {
     fineSpanDays = 28;
     fineStartDate = mondayOf(new Date());
     renderFineView();
   });
 
-  document.getElementById("btn14d").addEventListener("click", () => {
-    fineSpanDays = 14;
-    fineStartDate = mondayOf(new Date());
-    renderFineView();
+  // Stammdaten-Buttons
+  document.getElementById("maSaveBtn").addEventListener("click", e => {
+    e.preventDefault();
+    saveMitarbeiter();
+  });
+  document.getElementById("maNewBtn").addEventListener("click", e => {
+    e.preventDefault();
+    clearMitarbeiterForm();
+  });
+  document.getElementById("maDeleteBtn").addEventListener("click", e => {
+    e.preventDefault();
+    deleteMitarbeiter();
+  });
+
+  document.getElementById("fzSaveBtn").addEventListener("click", e => {
+    e.preventDefault();
+    saveFahrzeug();
+  });
+  document.getElementById("fzNewBtn").addEventListener("click", e => {
+    e.preventDefault();
+    clearFahrzeugForm();
+  });
+  document.getElementById("fzDeleteBtn").addEventListener("click", e => {
+    e.preventDefault();
+    deleteFahrzeug();
   });
 
   // -------------------------------------------------------------------
-  //  START
+  //  Init
   // -------------------------------------------------------------------
-  resetForm();
-  loadEntries();
+  async function init() {
+    resetForm();
+    clearMitarbeiterForm();
+    clearFahrzeugForm();
+    await loadMitarbeiter();
+    await loadFahrzeuge();
+    await loadEntries();
+  }
+
+  init();
 </script>
 
 </body>
