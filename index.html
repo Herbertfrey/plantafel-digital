@@ -30,15 +30,22 @@
 
     .small-text { font-size:11px; color:#555; }
 
-    /* Feinplanung: Woche */
-    .week-controls { display:flex; flex-wrap:wrap; gap:6px; margin-bottom:12px; }
-    .fine-grid { border-collapse:collapse; width:100%; font-size:12px; }
-    .fine-grid th, .fine-grid td { border:1px solid #ccc; padding:4px; vertical-align:top; }
-    .fine-entry { margin-bottom:4px; padding:3px; border-radius:3px; border:1px solid #ccc; cursor:pointer; }
-    .fine-entry-title { font-weight:bold; }
-    .fine-entry-line { font-size:11px; }
+    tr.clickable-row { cursor:pointer; }
+    tr.clickable-row:hover { background:#f5f5f5; }
 
-    /* Grobplanung: Jahr */
+    /* FEINPLANUNG: Board wie Magnettafel */
+    .board-table { width:100%; border-collapse:collapse; table-layout:fixed; font-size:12px; }
+    .board-table th, .board-table td { border:1px solid #ccc; padding:4px; vertical-align:top; }
+    .board-table thead th { background:#eaeaea; text-align:center; }
+    .board-table tbody th { background:#f5f5f5; width:60px; }
+
+    .week-controls { display:flex; flex-wrap:wrap; gap:6px; margin-bottom:12px; }
+
+    .fine-entry { margin-bottom:4px; padding:3px; border-radius:3px; border:1px solid #ccc; cursor:pointer; background:#fff; }
+    .fine-entry-title { font-weight:bold; font-size:11px; }
+    .fine-entry-line { font-size:10px; }
+
+    /* GROBPLANUNG: 12 Monate */
     .year-grid { display:grid; grid-template-columns:repeat(auto-fit, minmax(200px,1fr)); gap:12px; }
     .month-box { border:1px solid #ccc; border-radius:6px; padding:8px; background:#fafafa; }
     .month-title { font-weight:bold; margin-bottom:6px; }
@@ -47,9 +54,6 @@
     /* Urlaubsübersicht */
     .urlaub-list { font-size:12px; }
     .urlaub-item { margin-bottom:3px; }
-
-    tr.clickable-row { cursor:pointer; }
-    tr.clickable-row:hover { background:#f5f5f5; }
   </style>
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -59,7 +63,7 @@
 
 <div id="container">
 
-  <!-- Eintragsliste -->
+  <!-- EINTRAGSLISTE -->
   <div class="section">
     <h2>Einträge (Liste)</h2>
     <p class="small-text">Klick auf eine Zeile lädt sie unten ins Formular zum Bearbeiten.</p>
@@ -79,7 +83,7 @@
     </table>
   </div>
 
-  <!-- Formular -->
+  <!-- FORMULAR -->
   <div class="section">
     <h2>Eintrag bearbeiten / neu anlegen</h2>
     <p class="small-text">
@@ -141,30 +145,31 @@
     <p class="small-text" id="statusInfo"></p>
   </div>
 
-  <!-- Feinplanung -->
+  <!-- FEINPLANUNG – BOARD WIE MAGNETTAFEL -->
   <div class="section">
-    <h2>Feinplanung (Woche / Wochen)</h2>
+    <h2>Feinplanung – Wochenboard (Mo–Fr, KW-Spalten)</h2>
     <div class="week-controls">
-      <button class="btn" id="btnToday">Heute</button>
-      <button class="btn" id="btnPrev">&lt; Zurück</button>
-      <button class="btn" id="btnNext">Weiter &gt;</button>
+      <button class="btn" id="btnToday">Diese Woche</button>
+      <button class="btn" id="btnPrev">&lt; Woche zurück</button>
+      <button class="btn" id="btnNext">Woche vor &gt;</button>
       <button class="btn" id="btn1W">1 Woche</button>
       <button class="btn" id="btn2W">2 Wochen</button>
+      <button class="btn" id="btn3W">3 Wochen</button>
       <button class="btn" id="btn4W">4 Wochen</button>
     </div>
     <div id="fineView"></div>
   </div>
 
-  <!-- Grobplanung -->
+  <!-- GROBPLANUNG -->
   <div class="section">
     <h2>Grobplanung (12 Monate)</h2>
     <p class="small-text">
-      Klick auf ein Bauvorhaben springt in die passende Woche in der Feinplanung.
+      Klick auf ein Bauvorhaben springt in die passende KW in der Feinplanung.
     </p>
     <div id="yearView" class="year-grid"></div>
   </div>
 
-  <!-- Urlaubsübersicht -->
+  <!-- URLAUB -->
   <div class="section">
     <h2>Urlaubsübersicht</h2>
     <div id="urlaubView" class="urlaub-list"></div>
@@ -182,9 +187,9 @@
   let allEntries = [];
   let currentEditId = null;
 
-  // Feinplanung: Anker & Reichweite (in Wochen)
-  let anchorDate = new Date();
-  let weekSpan = 1; // 1, 2, 4 Wochen
+  // Feinplanung: KW-Anker & Anzahl Wochen (1–4)
+  let anchorDate = new Date();  // irgendein Tag innerhalb der KW
+  let weeksShown = 3;           // Standard: 3 Wochen nebeneinander (wie auf deiner Tafel)
 
   function iso(d) {
     return d.toISOString().split("T")[0];
@@ -205,8 +210,17 @@
     d.setDate(d.getDate() + days);
     return d;
   }
+  // ISO-Kalenderwoche
+  function getWeekNumber(d) {
+    const date = new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()));
+    const dayNum = date.getUTCDay() || 7;
+    date.setUTCDate(date.getUTCDate() + 4 - dayNum);
+    const yearStart = new Date(Date.UTC(date.getUTCFullYear(),0,1));
+    const weekNo = Math.ceil((((date - yearStart) / 86400000) + 1)/7);
+    return { week: weekNo, year: date.getUTCFullYear() };
+  }
 
-  // Einträge laden
+  // EINTRÄGE LADEN
   async function loadEntries() {
     document.getElementById("statusInfo").textContent = "Lade Einträge ...";
 
@@ -232,7 +246,7 @@
       "Einträge geladen: " + allEntries.length;
   }
 
-  // Eintragsliste (oben)
+  // LISTE OBEN
   function renderList() {
     const tbody = document.querySelector("#entriesTable tbody");
     tbody.innerHTML = "";
@@ -252,7 +266,7 @@
       tr.classList.add("clickable-row");
 
       const tagOrVon = row.von || row.tag || "";
-      const bis = row.bis || row.tag || "";
+      const bis = row.bis || row.von || row.tag || "";
 
       tr.innerHTML = `
         <td>${tagOrVon || ""}</td>
@@ -264,15 +278,12 @@
         <td>${row.status || ""}</td>
       `;
 
-      tr.addEventListener("click", () => {
-        loadIntoForm(row);
-      });
-
+      tr.addEventListener("click", () => loadIntoForm(row));
       tbody.appendChild(tr);
     });
   }
 
-  // Formular füllen
+  // FORMULAR LADEN
   function loadIntoForm(row) {
     currentEditId = row.id;
     document.getElementById("tag").value = row.tag || "";
@@ -290,7 +301,7 @@
       "Eintrag zum Bearbeiten geladen (ID: " + currentEditId + ")";
   }
 
-  // Formular leeren
+  // FORMULAR LEEREN
   function resetForm() {
     currentEditId = null;
     document.getElementById("tag").value = "";
@@ -307,7 +318,7 @@
       "Formular geleert – neuer Eintrag.";
   }
 
-  // Speichern (neu oder update)
+  // SPEICHERN
   async function saveEntry() {
     const tag = document.getElementById("tag").value || null;
     const von = document.getElementById("von").value || null;
@@ -319,7 +330,6 @@
     const status = document.getElementById("status").value.trim();
     const notiz = document.getElementById("notiz").value.trim();
 
-    // Wenn kein tag gesetzt → tag = von
     const tagValue = tag || von || null;
 
     const payload = {
@@ -335,16 +345,10 @@
     };
 
     let error;
-
     if (currentEditId) {
-      ({ error } = await supabase
-        .from("plantafel")
-        .update(payload)
-        .eq("id", currentEditId));
+      ({ error } = await supabase.from("plantafel").update(payload).eq("id", currentEditId));
     } else {
-      ({ error } = await supabase
-        .from("plantafel")
-        .insert(payload));
+      ({ error } = await supabase.from("plantafel").insert(payload));
     }
 
     if (error) {
@@ -360,7 +364,7 @@
     loadEntries();
   }
 
-  // Löschen
+  // LÖSCHEN
   async function deleteEntry() {
     if (!currentEditId) {
       alert("Kein Eintrag ausgewählt.");
@@ -368,59 +372,71 @@
     }
     if (!confirm("Diesen Eintrag wirklich löschen?")) return;
 
-    const { error } = await supabase
-      .from("plantafel")
-      .delete()
-      .eq("id", currentEditId);
-
+    const { error } = await supabase.from("plantafel").delete().eq("id", currentEditId);
     if (error) {
       console.error(error);
       alert("Fehler beim Löschen: " + error.message);
       return;
     }
-
     alert("Eintrag gelöscht.");
     resetForm();
     loadEntries();
   }
 
-  // Feinplanung rendern
+  // FEINPLANUNG: BOARD RENDERN (Mo–Fr, KW als Spalten)
   function renderFinePlan() {
     const fineContainer = document.getElementById("fineView");
     fineContainer.innerHTML = "";
 
-    const monday = startOfWeekMonday(anchorDate);
-    const weeks = weekSpan; // 1, 2, 4
+    const monday = startOfWeekMonday(anchorDate); // Start-KW Montag
 
     const table = document.createElement("table");
-    table.className = "fine-grid";
+    table.className = "board-table";
 
-    // Kopfzeile: Mo-Fr
+    // Kopfzeile: KW-Spalten
     const thead = document.createElement("thead");
     const headRow = document.createElement("tr");
-    for (let d = 0; d < 5; d++) {
-      const dayDate = addDays(monday, d);
+
+    const emptyTh = document.createElement("th");
+    emptyTh.textContent = "Tag / KW";
+    headRow.appendChild(emptyTh);
+
+    for (let w = 0; w < weeksShown; w++) {
+      const weekMonday = addDays(monday, w * 7);
+      const { week, year } = getWeekNumber(weekMonday);
+      const weekEnd = addDays(weekMonday, 4); // Mo–Fr
+
       const th = document.createElement("th");
-      th.textContent = dayDate.toLocaleDateString("de-DE", {
-        weekday: "short",
-        day: "2-digit",
-        month: "2-digit"
-      });
+      th.innerHTML =
+        "KW " + week +
+        "<br>" +
+        weekMonday.toLocaleDateString("de-DE", { day:"2-digit", month:"2-digit" }) +
+        " - " +
+        weekEnd.toLocaleDateString("de-DE", { day:"2-digit", month:"2-digit" }) +
+        "<br>(" + year + ")";
       headRow.appendChild(th);
     }
     thead.appendChild(headRow);
     table.appendChild(thead);
 
+    // Wochentage-Zeilen (Mo–Fr)
     const tbody = document.createElement("tbody");
+    const weekdayNames = ["Mo","Di","Mi","Do","Fr"];
 
-    for (let w = 0; w < weeks; w++) {
+    for (let d = 0; d < 5; d++) {
       const row = document.createElement("tr");
-      for (let d = 0; d < 5; d++) {
+
+      const dayTh = document.createElement("th");
+      dayTh.textContent = weekdayNames[d];
+      row.appendChild(dayTh);
+
+      for (let w = 0; w < weeksShown; w++) {
         const cellDate = addDays(monday, w * 7 + d);
         const cellIso = iso(cellDate);
+
         const td = document.createElement("td");
 
-        // passende Einträge finden (tag/von/bis)
+        // passende Einträge für diesen Tag
         const todaysEntries = allEntries.filter(e => {
           const start = e.von || e.tag;
           const end = e.bis || e.von || e.tag;
@@ -432,11 +448,12 @@
           const div = document.createElement("div");
           div.className = "fine-entry";
 
-          // Klick → Formular laden & Anker auf diese Woche setzen
+          // Klick → Formular laden & Anker auf diese KW setzen
           div.addEventListener("click", () => {
             loadIntoForm(e);
             anchorDate = cellDate;
             renderFinePlan();
+            window.scrollTo({ top: document.querySelector("#container").offsetTop, behavior:"smooth" });
           });
 
           const title = document.createElement("div");
@@ -445,11 +462,11 @@
 
           const lineVeh = document.createElement("div");
           lineVeh.className = "fine-entry-line";
-          lineVeh.textContent = "Fahrzeug: " + (e.fahrzeug || "-");
+          lineVeh.textContent = "Fzg: " + (e.fahrzeug || "-");
 
           const lineMit = document.createElement("div");
           lineMit.className = "fine-entry-line";
-          lineMit.textContent = "Mitarbeiter: " + (e.mitarbeiter || "-");
+          lineMit.textContent = "MA: " + (e.mitarbeiter || "-");
 
           div.appendChild(title);
           div.appendChild(lineVeh);
@@ -459,6 +476,7 @@
 
         row.appendChild(td);
       }
+
       tbody.appendChild(row);
     }
 
@@ -466,7 +484,7 @@
     fineContainer.appendChild(table);
   }
 
-  // Grobplanung (12 Monate)
+  // GROBPLANUNG – MONATE
   function renderYearPlan() {
     const yearContainer = document.getElementById("yearView");
     yearContainer.innerHTML = "";
@@ -476,19 +494,17 @@
       return;
     }
 
-    // nach Monaten gruppieren
     const byMonth = {};
     allEntries.forEach(e => {
       const ref = e.von || e.tag || e.bis;
       if (!ref) return;
       const d = parseDate(ref);
       if (!d) return;
-      const key = d.getFullYear() + "-" + (d.getMonth() + 1); // z.B. 2025-12
+      const key = d.getFullYear() + "-" + (d.getMonth() + 1);
       if (!byMonth[key]) byMonth[key] = [];
       byMonth[key].push(e);
     });
 
-    // sortierte Keys
     const keys = Object.keys(byMonth).sort((a,b) => {
       const [ay,am] = a.split("-").map(Number);
       const [byy,bm] = b.split("-").map(Number);
@@ -505,8 +521,7 @@
       title.className = "month-title";
       const tempDate = new Date(year, month - 1, 1);
       title.textContent = tempDate.toLocaleDateString("de-DE", {
-        month: "long",
-        year: "numeric"
+        month:"long", year:"numeric"
       });
       box.appendChild(title);
 
@@ -516,16 +531,15 @@
         const div = document.createElement("div");
         div.className = "month-entry";
         div.textContent =
-          (d ? d.toLocaleDateString("de-DE", { day: "2-digit", month: "2-digit" }) + " – " : "") +
+          (d ? d.toLocaleDateString("de-DE", { day:"2-digit", month:"2-digit" }) + " – " : "") +
           (e.titel || e.baustelle || "(ohne Titel)");
 
-        // Klick → Feinplanung auf diese Woche
         div.addEventListener("click", () => {
           anchorDate = d || new Date();
-          weekSpan = 2; // z.B. 2 Wochen, damit gleich etwas Kontext da ist
+          weeksShown = 3;           // beim Sprung typische Ansicht
           renderFinePlan();
           loadIntoForm(e);
-          window.scrollTo({ top: document.querySelector("#container").offsetTop, behavior: "smooth" });
+          window.scrollTo({ top: document.querySelector("#container").offsetTop, behavior:"smooth" });
         });
 
         box.appendChild(div);
@@ -535,7 +549,7 @@
     });
   }
 
-  // Urlaubsübersicht
+  // URLAUBSÜBERSICHT
   function renderUrlaub() {
     const urlaubDiv = document.getElementById("urlaubView");
     urlaubDiv.innerHTML = "";
@@ -549,10 +563,9 @@
       return;
     }
 
-    // nach Mitarbeiter gruppieren
     const byMit = {};
     urlaubEntries.forEach(e => {
-      const mit = (e.mitarbeiter || "Unbekannt").split(",").map(s => s.trim());
+      const mit = (e.mitarbeiter || "Unbekannt").split(",").map(s => s.trim()).filter(Boolean);
       mit.forEach(m => {
         if (!byMit[m]) byMit[m] = [];
         byMit[m].push(e);
@@ -579,47 +592,47 @@
     });
   }
 
-  // Event-Handler
+  // EVENTS
   document.getElementById("saveBtn").addEventListener("click", e => {
-    e.preventDefault();
-    saveEntry();
+    e.preventDefault(); saveEntry();
   });
   document.getElementById("deleteBtn").addEventListener("click", e => {
-    e.preventDefault();
-    deleteEntry();
+    e.preventDefault(); deleteEntry();
   });
   document.getElementById("resetBtn").addEventListener("click", e => {
-    e.preventDefault();
-    resetForm();
+    e.preventDefault(); resetForm();
   });
 
-  // Feinplanung: Buttons
   document.getElementById("btnToday").addEventListener("click", () => {
     anchorDate = new Date();
     renderFinePlan();
   });
   document.getElementById("btnPrev").addEventListener("click", () => {
-    anchorDate = addDays(anchorDate, -7 * weekSpan);
+    anchorDate = addDays(anchorDate, -7 * weeksShown);
     renderFinePlan();
   });
   document.getElementById("btnNext").addEventListener("click", () => {
-    anchorDate = addDays(anchorDate, 7 * weekSpan);
+    anchorDate = addDays(anchorDate, 7 * weeksShown);
     renderFinePlan();
   });
   document.getElementById("btn1W").addEventListener("click", () => {
-    weekSpan = 1;
+    weeksShown = 1;
     renderFinePlan();
   });
   document.getElementById("btn2W").addEventListener("click", () => {
-    weekSpan = 2;
+    weeksShown = 2;
+    renderFinePlan();
+  });
+  document.getElementById("btn3W").addEventListener("click", () => {
+    weeksShown = 3;
     renderFinePlan();
   });
   document.getElementById("btn4W").addEventListener("click", () => {
-    weekSpan = 4;
+    weeksShown = 4;
     renderFinePlan();
   });
 
-  // Start
+  // START
   loadEntries();
 </script>
 
