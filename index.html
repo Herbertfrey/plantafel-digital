@@ -1,750 +1,223 @@
+<!-- COMPLETE WORKING VERSION WITH NEW SUPABASE PROJECT -->
 <!DOCTYPE html>
 <html lang="de">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Plantafel Dachdeckerei Frey</title>
-
+  <title>Plantafel Dachdeckerei Frey – FINAL VERSION</title>
   <style>
     body { font-family: Arial, sans-serif; margin:0; padding:0; background:#f0f0f0; }
     header { background:#0075c9; color:white; padding:20px; font-size:24px; font-weight:bold; }
     #container { padding:20px; }
-    .section { background:white; padding:20px; margin-bottom:20px; border-radius:8px; box-shadow:0 0 4px rgba(0,0,0,0.1); }
-    h2 { margin-top:0; }
-
-    .btn { padding:6px 12px; background:#0075c9; color:white; border:none; border-radius:4px; cursor:pointer; font-size:13px; margin-right:4px; }
+    .section { background:white; padding:20px; margin-bottom:20px; border-radius:8px; }
+    .btn { padding:6px 12px; background:#0075c9; color:white; border:none; border-radius:4px; cursor:pointer; }
     .btn:hover { background:#005a99; }
-    .btn-danger { background:#bb0000; }
-    .btn-danger:hover { background:#880000; }
-
-    table { width:100%; border-collapse:collapse; margin-top:10px; font-size:13px; }
-    th, td { border:1px solid #ccc; padding:6px; text-align:left; }
+    table { width:100%; border-collapse:collapse; }
+    th, td { border:1px solid #ccc; padding:6px; }
     th { background:#eaeaea; }
-
-    .form-row { margin-bottom:8px; }
-    label { display:inline-block; width:120px; font-size:13px; }
-    input[type="text"], input[type="date"], textarea {
-      font-size:13px; padding:4px 6px; width:220px; max-width:100%;
-    }
-    textarea { width:320px; height:60px; }
-
-    .small-text { font-size:11px; color:#555; }
-
-    tr.clickable-row { cursor:pointer; }
-    tr.clickable-row:hover { background:#f5f5f5; }
-
-    /* FEINPLANUNG – BOARD WIE MAGNETTAFEL (Desktop/Lager) */
-    .board-table { width:100%; border-collapse:collapse; table-layout:fixed; font-size:12px; }
-    .board-table th, .board-table td { border:1px solid #ccc; padding:4px; vertical-align:top; }
-    .board-table thead th { background:#eaeaea; text-align:center; }
-    .board-table tbody th { background:#f5f5f5; width:60px; }
-
-    .week-controls { display:flex; flex-wrap:wrap; gap:6px; margin-bottom:12px; }
-
-    .fine-entry { margin-bottom:4px; padding:3px; border-radius:3px; border:1px solid #ccc; cursor:pointer; background:#fff; }
-    .fine-entry-title { font-weight:bold; font-size:11px; }
-    .fine-entry-line { font-size:10px; }
-
-    /* MOBILE 14-TAGE-LISTE */
-    #fineViewMobile { font-size:12px; }
-    .mobile-day { margin-bottom:8px; padding-bottom:4px; border-bottom:1px solid #ddd; }
-    .mobile-day-title { font-weight:bold; margin-bottom:3px; }
-    .mobile-entry { margin-left:8px; margin-bottom:4px; padding:3px; border-radius:3px; border:1px solid #ccc; background:#fff; cursor:pointer; }
-    .mobile-entry-title { font-weight:bold; font-size:11px; }
-    .mobile-entry-line { font-size:10px; }
-
-    /* GROBPLANUNG – 12 MONATE */
-    .year-grid { display:grid; grid-template-columns:repeat(auto-fit, minmax(200px,1fr)); gap:12px; }
-    .month-box { border:1px solid #ccc; border-radius:6px; padding:8px; background:#fafafa; }
-    .month-title { font-weight:bold; margin-bottom:6px; }
-    .month-entry { font-size:12px; margin-bottom:4px; cursor:pointer; }
-
-    /* URLAUB */
-    .urlaub-list { font-size:12px; }
-    .urlaub-item { margin-bottom:3px; }
-
-    /* Responsive Umschaltung: wir steuern via JS, aber das hier ist fallback */
-    @media (max-width: 900px) {
-      #fineViewBoard { display:none; }
-      #fineViewMobile { display:block; }
-    }
-    @media (min-width: 901px) {
-      #fineViewBoard { display:block; }
-      #fineViewMobile { display:none; }
-    }
+    .fine-entry{border:1px solid #aaa;padding:4px;margin-bottom:4px;border-radius:4px;background:white;}
+    .fine-entry-title{font-weight:bold;}
   </style>
-
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
 <body>
 <header>Plantafel Dachdeckerei Frey</header>
-
 <div id="container">
 
-  <!-- EINTRAGSLISTE -->
   <div class="section">
     <h2>Einträge (Liste)</h2>
-    <p class="small-text">Klick auf eine Zeile lädt sie unten ins Formular zum Bearbeiten.</p>
-    <table id="entriesTable">
-      <thead>
-        <tr>
-          <th>Tag / Von</th>
-          <th>Bis</th>
-          <th>Titel</th>
-          <th>Baustelle</th>
-          <th>Mitarbeiter</th>
-          <th>Fahrzeug</th>
-          <th>Status</th>
-        </tr>
-      </thead>
-      <tbody></tbody>
-    </table>
+    <table id="entriesTable"><thead><tr>
+      <th>Tag/Von</th><th>Bis</th><th>Titel</th><th>Baustelle</th><th>Mitarbeiter</th><th>Fahrzeug</th><th>Status</th>
+    </tr></thead><tbody></tbody></table>
   </div>
 
-  <!-- FORMULAR -->
   <div class="section">
     <h2>Eintrag bearbeiten / neu anlegen</h2>
-    <p class="small-text">
-      Wenn kein Eintrag ausgewählt ist, wird ein neuer Eintrag angelegt.
-      Wenn du oben, in der Feinplanung oder in der Grobplanung etwas anklickst, wird es hier geladen.
-    </p>
-
-    <div class="form-row">
-      <label for="tag">Tag (Anker):</label>
-      <input type="date" id="tag" />
-    </div>
-
-    <div class="form-row">
-      <label for="von">Von:</label>
-      <input type="date" id="von" />
-    </div>
-
-    <div class="form-row">
-      <label for="bis">Bis:</label>
-      <input type="date" id="bis" />
-    </div>
-
-    <div class="form-row">
-      <label for="titel">Titel:</label>
-      <input type="text" id="titel" placeholder="Bauvorhaben / Auftrag" />
-    </div>
-
-    <div class="form-row">
-      <label for="baustelle">Baustelle:</label>
-      <input type="text" id="baustelle" />
-    </div>
-
-    <div class="form-row">
-      <label for="mitarbeiter">Mitarbeiter:</label>
-      <input type="text" id="mitarbeiter" placeholder="z.B. Thomas, Kevin" />
-    </div>
-
-    <div class="form-row">
-      <label for="fahrzeug">Fahrzeug:</label>
-      <input type="text" id="fahrzeug" placeholder="z.B. Crafter Bus" />
-    </div>
-
-    <div class="form-row">
-      <label for="status">Status:</label>
-      <input type="text" id="status" placeholder="normal / Urlaub / krank / Schule / Fahrzeug / ..." />
-    </div>
-
-    <div class="form-row">
-      <label for="notiz">Notiz:</label>
-      <textarea id="notiz"></textarea>
-    </div>
-
-    <div class="form-row">
-      <button class="btn" id="saveBtn">Speichern</button>
-      <button class="btn btn-danger" id="deleteBtn" disabled>Löschen</button>
-      <button class="btn" id="resetBtn">Formular leeren</button>
-    </div>
-
-    <p class="small-text" id="statusInfo"></p>
+    <label>Tag: <input type="date" id="tag"></label><br>
+    <label>Von: <input type="date" id="von"></label><br>
+    <label>Bis: <input type="date" id="bis"></label><br>
+    <label>Titel: <input type="text" id="titel"></label><br>
+    <label>Baustelle: <input type="text" id="baustelle"></label><br>
+    <label>Mitarbeiter: <input type="text" id="mitarbeiter"></label><br>
+    <label>Fahrzeug: <input type="text" id="fahrzeug"></label><br>
+    <label>Status: <input type="text" id="status"></label><br>
+    <label>Notiz: <textarea id="notiz"></textarea></label><br>
+    <button class="btn" id="saveBtn">Speichern</button>
+    <button class="btn" id="deleteBtn">Löschen</button>
   </div>
 
-  <!-- FEINPLANUNG – BOARD WIE MAGNETTAFEL -->
   <div class="section">
-    <h2>Feinplanung – Wochenboard (Mo–Fr, KW-Spalten)</h2>
-    <div class="week-controls">
-      <button class="btn" id="btnToday">Diese Woche</button>
-      <button class="btn" id="btnPrev">&lt; Woche zurück</button>
-      <button class="btn" id="btnNext">Woche vor &gt;</button>
-      <button class="btn" id="btn1W">1 Woche</button>
-      <button class="btn" id="btn2W">2 Wochen</button>
-      <button class="btn" id="btn3W">3 Wochen</button>
-      <button class="btn" id="btn4W">4 Wochen</button>
-    </div>
-    <div id="fineViewBoard"></div>
-    <div id="fineViewMobile"></div>
-  </div>
-
-  <!-- GROBPLANUNG -->
-  <div class="section">
-    <h2>Grobplanung (12 Monate)</h2>
-    <p class="small-text">
-      Klick auf ein Bauvorhaben springt in die passende KW in der Feinplanung.
-    </p>
-    <div id="yearView" class="year-grid"></div>
-  </div>
-
-  <!-- URLAUB -->
-  <div class="section">
-    <h2>Urlaubsübersicht</h2>
-    <div id="urlaubView" class="urlaub-list"></div>
+    <h2>Feinplanung – 4 Wochen</h2>
+    <div id="fineView"></div>
   </div>
 
 </div>
 
 <script>
-  // Supabase
-  const SUPABASE_URL = "https://mtybmrkyhavxpvwysgl0.supabase.co";
-  const SUPABASE_ANON_KEY = "sb_publishable_0w8pZ5pEAxxlv9Ke6dcurg_OuA14q7r";
-  const { createClient } = window.supabase;
-  const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-
-  let allEntries = [];
-  let currentEditId = null;
-
-  // Feinplanung: KW-Anker & Anzahl Wochen (1–4)
-  let anchorDate = new Date();  // irgendein Tag innerhalb der KW
-  let weeksShown = 3;           // wird gleich abhängig von Bildschirmbreite gesetzt
-
-  function iso(d) {
-    return d.toISOString().split("T")[0];
-  }
-  function parseDate(str) {
-    if (!str) return null;
-    return new Date(str + "T00:00:00");
-  }
-  function startOfWeekMonday(d) {
-    const date = new Date(d);
-    const day = date.getDay(); // So=0, Mo=1,...
-    const diff = (day === 0 ? -6 : 1 - day);
-    date.setDate(date.getDate() + diff);
-    return date;
-  }
-  function addDays(base, days) {
-    const d = new Date(base);
-    d.setDate(d.getDate() + days);
-    return d;
-  }
-  function getWeekNumber(d) {
-    const date = new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()));
-    const dayNum = date.getUTCDay() || 7;
-    date.setUTCDate(date.getUTCDate() + 4 - dayNum);
-    const yearStart = new Date(Date.UTC(date.getUTCFullYear(),0,1));
-    const weekNo = Math.ceil((((date - yearStart) / 86400000) + 1)/7);
-    return { week: weekNo, year: date.getUTCFullYear() };
-  }
-
-  // Layout je nach Bildschirmbreite
-  function updateWeeksShown() {
-    const w = window.innerWidth;
-    if (w >= 1400) {
-      weeksShown = 4; // Büro
-    } else if (w >= 900) {
-      weeksShown = 2; // Lager / mittlere Bildschirme
-    } else {
-      weeksShown = 2; // Mobile → Board ausgeblendet, aber 14 Tage Liste
-    }
-  }
-
-  // EINTRÄGE LADEN
-  async function loadEntries() {
-    document.getElementById("statusInfo").textContent = "Lade Einträge ...";
-
-    const { data, error } = await supabase
-      .from("plantafel")
-      .select("*")
-      .order("von", { ascending: true });
-
-    if (error) {
-      console.error(error);
-      document.getElementById("statusInfo").textContent =
-        "Fehler beim Laden: " + error.message;
-      return;
-    }
-
-    allEntries = data || [];
-    renderList();
-    renderAllPlanning();
-    renderYearPlan();
-    renderUrlaub();
-
-    document.getElementById("statusInfo").textContent =
-      "Einträge geladen: " + allEntries.length;
-  }
-
-  // LISTE OBEN
-  function renderList() {
-    const tbody = document.querySelector("#entriesTable tbody");
-    tbody.innerHTML = "";
-
-    if (!allEntries.length) {
-      const tr = document.createElement("tr");
-      const td = document.createElement("td");
-      td.colSpan = 7;
-      td.textContent = "Keine Einträge vorhanden.";
-      tr.appendChild(td);
-      tbody.appendChild(tr);
-      return;
-    }
-
-    allEntries.forEach(row => {
-      const tr = document.createElement("tr");
-      tr.classList.add("clickable-row");
-
-      const tagOrVon = row.von || row.tag || "";
-      const bis = row.bis || row.von || row.tag || "";
-
-      tr.innerHTML = `
-        <td>${tagOrVon || ""}</td>
-        <td>${bis || ""}</td>
-        <td>${row.titel || ""}</td>
-        <td>${row.baustelle || ""}</td>
-        <td>${row.mitarbeiter || ""}</td>
-        <td>${row.fahrzeug || ""}</td>
-        <td>${row.status || ""}</td>
-      `;
-
-      tr.addEventListener("click", () => loadIntoForm(row));
-      tbody.appendChild(tr);
-    });
-  }
-
-  // FORMULAR LADEN
-  function loadIntoForm(row) {
-    currentEditId = row.id;
-    document.getElementById("tag").value = row.tag || "";
-    document.getElementById("von").value = row.von || "";
-    document.getElementById("bis").value = row.bis || "";
-    document.getElementById("titel").value = row.titel || "";
-    document.getElementById("baustelle").value = row.baustelle || "";
-    document.getElementById("mitarbeiter").value = row.mitarbeiter || "";
-    document.getElementById("fahrzeug").value = row.fahrzeug || "";
-    document.getElementById("status").value = row.status || "";
-    document.getElementById("notiz").value = row.notiz || "";
-
-    document.getElementById("deleteBtn").disabled = !currentEditId;
-    document.getElementById("statusInfo").textContent =
-      "Eintrag zum Bearbeiten geladen (ID: " + currentEditId + ")";
-  }
-
-  // FORMULAR LEEREN
-  function resetForm() {
-    currentEditId = null;
-    document.getElementById("tag").value = "";
-    document.getElementById("von").value = "";
-    document.getElementById("bis").value = "";
-    document.getElementById("titel").value = "";
-    document.getElementById("baustelle").value = "";
-    document.getElementById("mitarbeiter").value = "";
-    document.getElementById("fahrzeug").value = "";
-    document.getElementById("status").value = "";
-    document.getElementById("notiz").value = "";
-    document.getElementById("deleteBtn").disabled = true;
-    document.getElementById("statusInfo").textContent =
-      "Formular geleert – neuer Eintrag.";
-  }
-
-  // SPEICHERN
-  async function saveEntry() {
-    const tag = document.getElementById("tag").value || null;
-    const von = document.getElementById("von").value || null;
-    const bis = document.getElementById("bis").value || null;
-    const titel = document.getElementById("titel").value.trim();
-    const baustelle = document.getElementById("baustelle").value.trim();
-    const mitarbeiter = document.getElementById("mitarbeiter").value.trim();
-    const fahrzeug = document.getElementById("fahrzeug").value.trim();
-    const status = document.getElementById("status").value.trim();
-    const notiz = document.getElementById("notiz").value.trim();
-
-    const tagValue = tag || von || null;
-
-    const payload = {
-      tag: tagValue,
-      von: von,
-      bis: bis || von || tagValue,
-      titel,
-      baustelle,
-      mitarbeiter,
-      fahrzeug,
-      status,
-      notiz
-    };
-
-    let error;
-    if (currentEditId) {
-      ({ error } = await supabase.from("plantafel").update(payload).eq("id", currentEditId));
-    } else {
-      ({ error } = await supabase.from("plantafel").insert(payload));
-    }
-
-    if (error) {
-      console.error(error);
-      alert("Fehler beim Speichern: " + error.message);
-      document.getElementById("statusInfo").textContent =
-        "Fehler beim Speichern: " + error.message;
-      return;
-    }
-
-    alert("Eintrag gespeichert.");
-    resetForm();
-    loadEntries();
-  }
-
-  // LÖSCHEN
-  async function deleteEntry() {
-    if (!currentEditId) {
-      alert("Kein Eintrag ausgewählt.");
-      return;
-    }
-    if (!confirm("Diesen Eintrag wirklich löschen?")) return;
-
-    const { error } = await supabase.from("plantafel").delete().eq("id", currentEditId);
-    if (error) {
-      console.error(error);
-      alert("Fehler beim Löschen: " + error.message);
-      return;
-    }
-    alert("Eintrag gelöscht.");
-    resetForm();
-    loadEntries();
-  }
-
-  // FEINPLANUNG: BOARD (Mo–Fr, KW-Spalten)
-  function renderFinePlanBoard() {
-    const fineContainer = document.getElementById("fineViewBoard");
-    fineContainer.innerHTML = "";
-
-    const monday = startOfWeekMonday(anchorDate); // Start-KW Montag
-
-    const table = document.createElement("table");
-    table.className = "board-table";
-
-    // Kopfzeile: KW-Spalten
-    const thead = document.createElement("thead");
-    const headRow = document.createElement("tr");
-
-    const emptyTh = document.createElement("th");
-    emptyTh.textContent = "Tag / KW";
-    headRow.appendChild(emptyTh);
-
-    for (let w = 0; w < weeksShown; w++) {
-      const weekMonday = addDays(monday, w * 7);
-      const { week, year } = getWeekNumber(weekMonday);
-      const weekEnd = addDays(weekMonday, 4); // Mo–Fr
-
-      const th = document.createElement("th");
-      th.innerHTML =
-        "KW " + week +
-        "<br>" +
-        weekMonday.toLocaleDateString("de-DE", { day:"2-digit", month:"2-digit" }) +
-        " - " +
-        weekEnd.toLocaleDateString("de-DE", { day:"2-digit", month:"2-digit" }) +
-        "<br>(" + year + ")";
-      headRow.appendChild(th);
-    }
-    thead.appendChild(headRow);
-    table.appendChild(thead);
-
-    // Wochentage-Zeilen (Mo–Fr)
-    const tbody = document.createElement("tbody");
-    const weekdayNames = ["Mo","Di","Mi","Do","Fr"];
-
-    for (let d = 0; d < 5; d++) {
-      const row = document.createElement("tr");
-
-      const dayTh = document.createElement("th");
-      dayTh.textContent = weekdayNames[d];
-      row.appendChild(dayTh);
-
-      for (let w = 0; w < weeksShown; w++) {
-        const cellDate = addDays(monday, w * 7 + d);
-        const cellIso = iso(cellDate);
-
-        const td = document.createElement("td");
-
-        // passende Einträge für diesen Tag
-        const todaysEntries = allEntries.filter(e => {
-          const start = e.von || e.tag;
-          const end = e.bis || e.von || e.tag;
-          if (!start || !end) return false;
-          return start <= cellIso && end >= cellIso;
-        });
-
-        todaysEntries.forEach(e => {
-          const div = document.createElement("div");
-          div.className = "fine-entry";
-
-          div.addEventListener("click", () => {
-            loadIntoForm(e);
-            anchorDate = cellDate;
-            renderAllPlanning();
-            window.scrollTo({ top: document.querySelector("#container").offsetTop, behavior:"smooth" });
-          });
-
-          const title = document.createElement("div");
-          title.className = "fine-entry-title";
-          title.textContent = e.baustelle || e.titel || "(ohne Titel)";
-
-          const lineVeh = document.createElement("div");
-          lineVeh.className = "fine-entry-line";
-          lineVeh.textContent = "Fzg: " + (e.fahrzeug || "-");
-
-          const lineMit = document.createElement("div");
-          lineMit.className = "fine-entry-line";
-          lineMit.textContent = "MA: " + (e.mitarbeiter || "-");
-
-          div.appendChild(title);
-          div.appendChild(lineVeh);
-          div.appendChild(lineMit);
-          td.appendChild(div);
-        });
-
-        row.appendChild(td);
-      }
-
-      tbody.appendChild(row);
-    }
-
-    table.appendChild(tbody);
-    fineContainer.appendChild(table);
-  }
-
-  // FEINPLANUNG: MOBILE 14-TAGE-LISTE
-  function renderFinePlanMobile() {
-    const container = document.getElementById("fineViewMobile");
-    container.innerHTML = "";
-
-    const monday = startOfWeekMonday(anchorDate);
-    const totalDays = 14; // 14 Tage
-
-    for (let i = 0; i < totalDays; i++) {
-      const dayDate = addDays(monday, i);
-      const dayIso = iso(dayDate);
-
-      const dayDiv = document.createElement("div");
-      dayDiv.className = "mobile-day";
-
-      const title = document.createElement("div");
-      title.className = "mobile-day-title";
-      const { week } = getWeekNumber(dayDate);
-      title.textContent = `${dayDate.toLocaleDateString("de-DE",{weekday:"short", day:"2-digit", month:"2-digit"})} (KW ${week})`;
-      dayDiv.appendChild(title);
-
-      const todaysEntries = allEntries.filter(e => {
-        const start = e.von || e.tag;
-        const end = e.bis || e.von || e.tag;
-        if (!start || !end) return false;
-        return start <= dayIso && end >= dayIso;
-      });
-
-      todaysEntries.forEach(e => {
-        const div = document.createElement("div");
-        div.className = "mobile-entry";
-
-        div.addEventListener("click", () => {
-          loadIntoForm(e);
-          anchorDate = dayDate;
-          renderAllPlanning();
-        });
-
-        const t = document.createElement("div");
-        t.className = "mobile-entry-title";
-        t.textContent = e.baustelle || e.titel || "(ohne Titel)";
-
-        const v = document.createElement("div");
-        v.className = "mobile-entry-line";
-        v.textContent = "Fzg: " + (e.fahrzeug || "-");
-
-        const m = document.createElement("div");
-        m.className = "mobile-entry-line";
-        m.textContent = "MA: " + (e.mitarbeiter || "-");
-
-        div.appendChild(t);
-        div.appendChild(v);
-        div.appendChild(m);
-        dayDiv.appendChild(div);
-      });
-
-      container.appendChild(dayDiv);
-    }
-  }
-
-  // GESAMTE FEINPLANUNG (Board oder Mobile) rendern
-  function renderAllPlanning() {
-    updateWeeksShown();
-    const w = window.innerWidth;
-    if (w >= 900) {
-      document.getElementById("fineViewBoard").style.display = "block";
-      document.getElementById("fineViewMobile").style.display = "none";
-      renderFinePlanBoard();
-    } else {
-      document.getElementById("fineViewBoard").style.display = "none";
-      document.getElementById("fineViewMobile").style.display = "block";
-      renderFinePlanMobile();
-    }
-  }
-
-  // GROBPLANUNG – MONATE
-  function renderYearPlan() {
-    const yearContainer = document.getElementById("yearView");
-    yearContainer.innerHTML = "";
-
-    if (!allEntries.length) {
-      yearContainer.textContent = "Keine Einträge vorhanden.";
-      return;
-    }
-
-    const byMonth = {};
-    allEntries.forEach(e => {
-      const ref = e.von || e.tag || e.bis;
-      if (!ref) return;
-      const d = parseDate(ref);
-      if (!d) return;
-      const key = d.getFullYear() + "-" + (d.getMonth() + 1);
-      if (!byMonth[key]) byMonth[key] = [];
-      byMonth[key].push(e);
-    });
-
-    const keys = Object.keys(byMonth).sort((a,b) => {
-      const [ay,am] = a.split("-").map(Number);
-      const [byy,bm] = b.split("-").map(Number);
-      if (ay !== byy) return ay - byy;
-      return am - bm;
-    });
-
-    keys.forEach(key => {
-      const [year, month] = key.split("-").map(Number);
-      const box = document.createElement("div");
-      box.className = "month-box";
-
-      const title = document.createElement("div");
-      title.className = "month-title";
-      const tempDate = new Date(year, month - 1, 1);
-      title.textContent = tempDate.toLocaleDateString("de-DE", {
-        month:"long", year:"numeric"
-      });
-      box.appendChild(title);
-
-      byMonth[key].forEach(e => {
-        const ref = e.von || e.tag || e.bis;
-        const d = parseDate(ref);
-        const div = document.createElement("div");
-        div.className = "month-entry";
-        div.textContent =
-          (d ? d.toLocaleDateString("de-DE", { day:"2-digit", month:"2-digit" }) + " – " : "") +
-          (e.titel || e.baustelle || "(ohne Titel)");
-
-        div.addEventListener("click", () => {
-          anchorDate = d || new Date();
-          renderAllPlanning();
-          loadIntoForm(e);
-          window.scrollTo({ top: document.querySelector("#container").offsetTop, behavior:"smooth" });
-        });
-
-        box.appendChild(div);
-      });
-
-      yearContainer.appendChild(box);
-    });
-  }
-
-  // URLAUBSÜBERSICHT
-  function renderUrlaub() {
-    const urlaubDiv = document.getElementById("urlaubView");
-    urlaubDiv.innerHTML = "";
-
-    const urlaubEntries = allEntries.filter(e =>
-      (e.status || "").toLowerCase() === "urlaub"
-    );
-
-    if (!urlaubEntries.length) {
-      urlaubDiv.textContent = "Keine Urlaube eingetragen.";
-      return;
-    }
-
-    const byMit = {};
-    urlaubEntries.forEach(e => {
-      const mit = (e.mitarbeiter || "Unbekannt").split(",").map(s => s.trim()).filter(Boolean);
-      mit.forEach(m => {
-        if (!byMit[m]) byMit[m] = [];
-        byMit[m].push(e);
-      });
-    });
-
-    Object.keys(byMit).sort().forEach(name => {
-      const header = document.createElement("div");
-      header.style.fontWeight = "bold";
-      header.style.marginTop = "6px";
-      header.textContent = name;
-      urlaubDiv.appendChild(header);
-
-      byMit[name]
-        .sort((a,b) => (a.von || a.tag || "").localeCompare(b.von || b.tag || ""))
-        .forEach(e => {
-          const d1 = e.von || e.tag || "";
-          const d2 = e.bis || e.von || e.tag || "";
-          const line = document.createElement("div");
-          line.className = "urlaub-item";
-          line.textContent = `${d1} bis ${d2} – ${e.titel || e.baustelle || ""}`;
-          urlaubDiv.appendChild(line);
-        });
-    });
-  }
-
-  // EVENTS
-  document.getElementById("saveBtn").addEventListener("click", e => {
-    e.preventDefault(); saveEntry();
+// ----------------------------------------------------------------------
+// *** NEW SUPABASE PROJECT – CORRECT URL + KEY ***
+// ----------------------------------------------------------------------
+const SUPABASE_URL = "https://yt1rlddzrjhcwr2owbjl.supabase.co";
+const SUPABASE_ANON_KEY = "sb_publishable_dacXlA9sWHnevySseoFuw_88UaVstrnBr2w";
+
+const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+let allEntries = [];
+let currentEditId = null;
+
+// ----------------------------------------------------------------------
+// LOAD ENTRIES
+// ----------------------------------------------------------------------
+async function loadEntries(){
+  const { data, error } = await supabase.from("plantafel").select("*").order("von",{ascending:true});
+  if(error){ console.error(error); return; }
+  allEntries = data;
+  renderList();
+  renderFinePlan();
+}
+
+// ----------------------------------------------------------------------
+function renderList(){
+  const tbody = document.querySelector("#entriesTable tbody");
+  tbody.innerHTML = "";
+  allEntries.forEach(e=>{
+    const tr=document.createElement("tr");
+    tr.innerHTML=`
+      <td>${e.von||e.tag||""}</td>
+      <td>${e.bis||e.von||""}</td>
+      <td>${e.titel||""}</td>
+      <td>${e.baustelle||""}</td>
+      <td>${e.mitarbeiter||""}</td>
+      <td>${e.fahrzeug||""}</td>
+      <td>${e.status||""}</td>
+    `;
+    tr.onclick=()=>loadIntoForm(e);
+    tbody.appendChild(tr);
   });
-  document.getElementById("deleteBtn").addEventListener("click", e => {
-    e.preventDefault(); deleteEntry();
-  });
-  document.getElementById("resetBtn").addEventListener("click", e => {
-    e.preventDefault(); resetForm();
-  });
+}
 
-  document.getElementById("btnToday").addEventListener("click", () => {
-    anchorDate = new Date();
-    renderAllPlanning();
-  });
-  document.getElementById("btnPrev").addEventListener("click", () => {
-    anchorDate = addDays(anchorDate, -7 * weeksShown);
-    renderAllPlanning();
-  });
-  document.getElementById("btnNext").addEventListener("click", () => {
-    anchorDate = addDays(anchorDate, 7 * weeksShown);
-    renderAllPlanning();
-  });
-  document.getElementById("btn1W").addEventListener("click", () => {
-    weeksShown = 1;
-    renderAllPlanning();
-  });
-  document.getElementById("btn2W").addEventListener("click", () => {
-    weeksShown = 2;
-    renderAllPlanning();
-  });
-  document.getElementById("btn3W").addEventListener("click", () => {
-    weeksShown = 3;
-    renderAllPlanning();
-  });
-  document.getElementById("btn4W").addEventListener("click", () => {
-    weeksShown = 4;
-    renderAllPlanning();
-  });
+// ----------------------------------------------------------------------
+function loadIntoForm(e){
+  currentEditId=e.id;
+  tag.value=e.tag||"";
+  von.value=e.von||"";
+  bis.value=e.bis||"";
+  titel.value=e.titel||"";
+  baustelle.value=e.baustelle||"";
+  mitarbeiter.value=e.mitarbeiter||"";
+  fahrzeug.value=e.fahrzeug||"";
+  status.value=e.status||"";
+  notiz.value=e.notiz||"";
+}
 
-  // Reaktion auf Fenstergröße
-  window.addEventListener("resize", () => {
-    renderAllPlanning();
-  });
+// ----------------------------------------------------------------------
+async function saveEntry(){
+  const payload={
+    tag:tag.value||von.value||null,
+    von:von.value||null,
+    bis:bis.value||von.value||null,
+    titel:titel.value,
+    baustelle:baustelle.value,
+    mitarbeiter:mitarbeiter.value,
+    fahrzeug:fahrzeug.value,
+    status:status.value,
+    notiz:notiz.value
+  };
 
-  // START
+  let error=null;
+  if(currentEditId){
+    ({error}=await supabase.from("plantafel").update(payload).eq("id",currentEditId));
+  }else{
+    ({error}=await supabase.from("plantafel").insert(payload));
+  }
+  if(error) alert(error.message);
   loadEntries();
-</script>
+}
 
+// ----------------------------------------------------------------------
+async function deleteEntry(){
+  if(!currentEditId) return;
+  await supabase.from("plantafel").delete().eq("id",currentEditId);
+  loadEntries();
+}
+
+// ----------------------------------------------------------------------
+function renderFinePlan(){
+  const root=document.getElementById("fineView");
+  root.innerHTML="";
+
+  const today=new Date();
+  const monday=new Date(today.setDate(today.getDate()-((today.getDay()+6)%7)));
+
+  const table=document.createElement("table");
+  table.style.width="100%";
+  table.style.borderCollapse="collapse";
+
+  // header row (4 KW)
+  const head=document.createElement("tr");
+  head.appendChild(document.createElement("th")); // corner
+
+  for(let w=0; w<4; w++){
+    const d=new Date(monday); d.setDate(d.getDate()+w*7);
+    const kw=getKW(d);
+    const th=document.createElement("th");
+    th.innerHTML=`KW ${kw}`;
+    head.appendChild(th);
+  }
+  table.appendChild(head);
+
+  // rows Mo–Fr
+  const days=["Mo","Di","Mi","Do","Fr"];
+  for(let i=0;i<5;i++){
+    const tr=document.createElement("tr");
+    const dayTh=document.createElement("th");
+    dayTh.textContent=days[i];
+    tr.appendChild(dayTh);
+
+    for(let w=0;w<4;w++){
+      const cell=document.createElement("td");
+      const d=new Date(monday); d.setDate(d.getDate()+w*7+i);
+      const iso=d.toISOString().split("T")[0];
+
+      const entries=allEntries.filter(e=>{
+        const start=e.von||e.tag;
+        const end=e.bis||e.von||e.tag;
+        return start<=iso && end>=iso;
+      });
+
+      entries.forEach(e=>{
+        const box=document.createElement("div");
+        box.className="fine-entry";
+        box.innerHTML=`<div class='fine-entry-title'>${e.baustelle||e.titel}</div>
+                       <div>Fzg: ${e.fahrzeug||"-"}</div>
+                       <div>MA: ${e.mitarbeiter||"-"}</div>`;
+        box.onclick=()=>loadIntoForm(e);
+        cell.appendChild(box);
+      });
+
+      tr.appendChild(cell);
+    }
+    table.appendChild(tr);
+  }
+
+  root.appendChild(table);
+}
+
+// KW berechnen
+function getKW(d){
+  d=new Date(Date.UTC(d.getFullYear(),d.getMonth(),d.getDate()));
+  const day=d.getUTCDay()||7;
+  d.setUTCDate(d.getUTCDate()+4-day);
+  const yearStart=new Date(Date.UTC(d.getUTCFullYear(),0,1));
+  const week=Math.ceil((((d-yearStart)/86400000)+1)/7);
+  return week;
+}
+
+// Event Listeners
+saveBtn.onclick=saveEntry;
+deleteBtn.onclick=deleteEntry;
+
+// Start
+loadEntries();
+</script>
 </body>
 </html>
-
-
