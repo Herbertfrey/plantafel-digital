@@ -2,7 +2,7 @@
 
 let allEntries = [];
 let allMitarbeiter = [];
-let allFahrzeuge = [];
+let allFahrzeug = [];
 let currentEditId = null;
 
 let baseKw = isoWeek(new Date()); // Start-KW für 4-Wochen-Brett
@@ -46,7 +46,7 @@ function getFahrzeugColor(fahrzeugStr) {
   if (!fahrzeugStr) return null;
   const val = normalizeName(fahrzeugStr);
   if (!val) return null;
-  const found = allFahrzeuge.find(fz =>
+  const found = allFahrzeug.find(fz =>
     normalizeName(fz.name) === val ||
     normalizeName(fz.kennzeichen || "") === val
   );
@@ -526,7 +526,7 @@ function renderFahrzeugTable() {
   if (!tbody) return;
   tbody.innerHTML = "";
 
-  allFahrzeuge.forEach(fz => {
+  allFahrzeug.forEach(fz => {
     const tr = document.createElement("tr");
     tr.innerHTML = `
       <td>${fz.name || ""}</td>
@@ -629,7 +629,7 @@ async function reloadAll() {
   try {
     allEntries = await fetchPlantafelEntries();
     allMitarbeiter = await fetchMitarbeiter();
-    allFahrzeuge = await fetchFahrzeuge();
+    allFahrzeug = await fetchFahrzeug();
 
     renderList();
     renderWeekView();
