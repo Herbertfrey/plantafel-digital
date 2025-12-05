@@ -1,575 +1,724 @@
-// app.js
-// Zentrale Logik für die Plantafel
+// Hauptlogik: Tabs, Listen, Jahresbrett, Wochenbrett (4 KW), Drag & Drop
 
-import { supabase } from "./supabase.js";
+let allEntries = [];
+let allMitarbeiter = [];
+let allFahrzeuge = [];
+let currentEditId = null;
 
-// --- STATE -------------------------------------------------------
+let baseKw = isoWeek(new Date()); // Start-KW für 4-Wochen-Brett
+const weekSpan = 4;               // IMMER 4 KW
 
-const state = {
-  baustellen: [],
-  mitarbeiter: [],
-  fahrzeuge: [],
-  plantafel: [],
-  startDate: getMonday(new Date()),
-  rangeDays: 7, // aktuell 1 Woche
-};
+let draggedEntryId = null;
 
-// --- DOM-ELEMENTE -----------------------------------------------
+// Monats-Definition für Jahresbrett
+const monthsDef = [
+  { key: "jan", label: "Jan" },
+  { key: "feb", label: "Feb" },
+  { key: "mar", label: "Mär" },
+  { key: "apr", label: "Apr" },
+  { key: "mai", label: "Mai" },
+  { key: "jun", label: "Jun" },
+  { key: "jul", label: "Jul" },
+  { key: "aug", label: "Aug" },
+  { key: "sep", label: "Sep" },
+  { key: "okt", label: "Okt" },
+  { key: "nov", label: "Nov" },
+  { key: "dez", label: "Dez" }
+];
 
-const statusBar = document.getElementById("statusBar");
-const boardGrid = document.getElementById("boardGrid");
-const startDateInput = document.getElementById("startDate");
+// Rechte Kategorien im Jahresbrett
+const yearCategoriesDef = [
+  { key: "kleinigkeiten", label: "Kleinigkeiten" },
+  { key: "sanierung", label: "Sanierungen" },
+  { key: "pv", label: "PV" },
+  { key: "flachdach", label: "Flachdach" },
+  { key: "sonst", label: "Sonstiges" }
+];
 
-const prevWeekBtn = document.getElementById("prevWeekBtn");
-const nextWeekBtn = document.getElementById("nextWeekBtn");
-const todayBtn = document.getElementById("todayBtn");
-const reloadBtn = document.getElementById("reloadBtn");
-const backupBtn = document.getElementById("backupBtn");
-const stammdatenBtn = document.getElementById("stammdatenBtn");
-const newEntryBtn = document.getElementById("newEntryBtn");
-
-const viewButtons = document.querySelectorAll(".view-btn");
-
-// Dialog: Eintrag
-const entryDialog = document.getElementById("entryDialog");
-const entryDialogTitle = document.getElementById("entryDialogTitle");
-const entryForm = document.getElementById("entryForm");
-const entryIdInput = document.getElementById("entryId");
-const entryDateInput = document.getElementById("entryDate");
-const entryVonInput = document.getElementById("entryVon");
-const entryBisInput = document.getElementById("entryBis");
-const entryTitelInput = document.getElementById("entryTitel");
-const entryBaustelleSelect = document.getElementById("entryBaustelle");
-const entryMitarbeiterSelect = document.getElementById("entryMitarbeiter");
-const entryFahrzeugSelect = document.getElementById("entryFahrzeug");
-const entryStatusSelect = document.getElementById("entryStatus");
-const entryNotizInput = document.getElementById("entryNotiz");
-const entryIsDetailedCheckbox = document.getElementById("entryIsDetailed");
-const entryCancelBtn = document.getElementById("entryCancelBtn");
-const entryDeleteBtn = document.getElementById("entryDeleteBtn");
-
-// Dialog: Stammdaten
-const stammdatenDialog = document.getElementById("stammdatenDialog");
-const stammdatenCloseBtn = document.getElementById("stammdatenCloseBtn");
-
-const baustellenList = document.getElementById("baustellenList");
-const mitarbeiterList = document.getElementById("mitarbeiterList");
-const fahrzeugeList = document.getElementById("fahrzeugeList");
-
-const newBaustelleNameInput = document.getElementById("newBaustelleName");
-const newMitarbeiterNameInput = document.getElementById("newMitarbeiterName");
-const newFahrzeugNameInput = document.getElementById("newFahrzeugName");
-
-const addBaustelleBtn = document.getElementById("addBaustelleBtn");
-const addMitarbeiterBtn = document.getElementById("addMitarbeiterBtn");
-const addFahrzeugBtn = document.getElementById("addFahrzeugBtn");
-
-// --- HILFSFUNKTIONEN DATUM --------------------------------------
-
-function toISODate(date) {
-  return date.toISOString().slice(0, 10);
+function getMitarbeiterColor(mitarbeiterStr) {
+  const name = normalizeFirstFromList(mitarbeiterStr);
+  if (!name) return null;
+  const found = allMitarbeiter.find(ma => normalizeName(ma.name) === name);
+  return found ? found.color : null;
 }
 
-function getMonday(date) {
-  const d = new Date(date);
-  const day = d.getDay(); // 0=So, 1=Mo, ...
-  const diff = (day === 0 ? -6 : 1) - day;
-  d.setDate(d.getDate() + diff);
-  d.setHours(0, 0, 0, 0);
-  return d;
+function getFahrzeugColor(fahrzeugStr) {
+  if (!fahrzeugStr) return null;
+  const val = normalizeName(fahrzeugStr);
+  if (!val) return null;
+  const found = allFahrzeuge.find(fz =>
+    normalizeName(fz.name) === val ||
+    normalizeName(fz.kennzeichen || "") === val
+  );
+  return found ? found.color : null;
 }
 
-function addDays(date, days) {
-  const d = new Date(date);
-  d.setDate(d.getDate() + days);
-  return d;
-}
+function createCardElement(entry) {
+  const card = document.createElement("div");
+  card.className = "card";
+  card.draggable = true;
+  card.dataset.entryId = entry.id;
 
-function formatDateDotted(date) {
-  const d = new Date(date);
-  const day = String(d.getDate()).padStart(2, "0");
-  const month = String(d.getMonth() + 1).padStart(2, "0");
-  const year = d.getFullYear();
-  return `${day}.${month}.${year}`;
-}
+  card.addEventListener("dragstart", () => { draggedEntryId = entry.id; });
+  card.addEventListener("dragend", () => { draggedEntryId = null; });
+  card.addEventListener("click", () => fillForm(entry));
 
-// --- SUPABASE CALLS ---------------------------------------------
+  const title = entry.baustelle || entry.titel || "Ohne Titel";
+  const fahr = entry.fahrzeug || "";
+  const mit = entry.mitarbeiter || "";
+  const stat = (entry.status || "").toLowerCase();
 
-async function loadTable(table) {
-  const { data, error } = await supabase
-    .from(table)
-    .select("*")
-    .order("id", { ascending: true });
+  const maColor = getMitarbeiterColor(mit);
+  const fzColor = getFahrzeugColor(fahr);
+  const stripeColor = maColor || fzColor || null;
 
-  if (error) {
-    console.error("Supabase Fehler:", table, error);
-    statusBar.textContent = `Fehler beim Laden der Tabelle ${table}: ${error.message}`;
-    return [];
-  }
-  return data || [];
-}
+  const inner = document.createElement("div");
+  inner.className = "card-inner";
 
-async function loadAllData() {
-  statusBar.textContent = "Lade Daten...";
+  const strip = document.createElement("div");
+  strip.className = "card-color-strip";
+  if (stripeColor) strip.style.background = stripeColor;
 
-  const [baustellen, mitarbeiter, fahrzeuge, plantafel] = await Promise.all([
-    loadTable("baustellen"),
-    loadTable("mitarbeiter"),
-    loadTable("fahrzeuge"),
-    loadTable("plantafel"),
-  ]);
-
-  state.baustellen = baustellen;
-  state.mitarbeiter = mitarbeiter;
-  state.fahrzeuge = fahrzeuge;
-  state.plantafel = plantafel;
-
-  console.log("BAUSTELLEN:", baustellen);
-  console.log("FAHRZEUGE:", fahrzeuge);
-  console.log("MITARBEITER:", mitarbeiter);
-  console.log("PLANTAFEL:", plantafel);
-
-  fillEntryDialogStammdaten();
-  renderBoard();
-  renderStatus();
-}
-
-// --- RENDERING --------------------------------------------------
-
-function renderStatus() {
-  if (state.plantafel.length === 0) {
-    statusBar.textContent = "Keine Daten vorhanden.";
-  } else {
-    const start = toISODate(state.startDate);
-    const end = toISODate(addDays(state.startDate, state.rangeDays - 1));
-    statusBar.textContent = `Zeitraum: ${formatDateDotted(start)} bis ${formatDateDotted(
-      end
-    )}, Einträge insgesamt: ${state.plantafel.length}`;
-  }
-}
-
-function renderBoard() {
-  boardGrid.innerHTML = "";
-
-  const monday = getMonday(state.startDate);
-  startDateInput.value = toISODate(monday);
-
-  // Für 5 Tage (Mo–Fr) Spalten erzeugen
-  for (let i = 0; i < 5; i++) {
-    const dayDate = addDays(monday, i);
-    const iso = toISODate(dayDate);
-
-    const column = document.createElement("div");
-    column.className = "day-column";
-    column.dataset.date = iso;
-
-    const header = document.createElement("div");
-    header.className = "day-column-header";
-    header.textContent = `${formatDateDotted(iso)}`;
-
-    const body = document.createElement("div");
-    body.className = "day-column-body";
-
-    // Doppelklick auf Tag -> neuer Eintrag für diesen Tag
-    body.addEventListener("dblclick", () => openEntryDialogForNew(iso));
-
-    // Einträge für diesen Tag
-    const entriesForDay = state.plantafel
-      .filter((e) => entryIsOnDate(e, iso))
-      .sort((a, b) => (a.sort || 0) - (b.sort || 0));
-
-    if (entriesForDay.length === 0) {
-      const empty = document.createElement("div");
-      empty.className = "entry empty";
-      empty.textContent = "— keine Einträge —";
-      body.appendChild(empty);
-    } else {
-      for (const entry of entriesForDay) {
-        const card = renderEntryCard(entry);
-        body.appendChild(card);
-      }
-    }
-
-    column.appendChild(header);
-    column.appendChild(body);
-    boardGrid.appendChild(column);
-  }
-}
-
-// Prüft, ob ein Eintrag an einem bestimmten Datum angezeigt werden soll
-function entryIsOnDate(entry, dateISO) {
-  // 1. falls tag gesetzt ist -> nur an diesem Tag
-  if (entry.tag) {
-    return entry.tag === dateISO;
-  }
-
-  const von = entry.von || null;
-  const bis = entry.bis || null;
-
-  if (von && bis) return dateISO >= von && dateISO <= bis;
-  if (von && !bis) return dateISO >= von;
-  if (!von && bis) return dateISO <= bis;
-
-  return false;
-}
-
-function renderEntryCard(entry) {
-  const div = document.createElement("div");
-  div.className = "entry";
-
-  const status = (entry.status || "normal").toLowerCase();
-
-  if (status === "urlaub") div.classList.add("status-urlaub");
-  else if (status === "krank") div.classList.add("status-krank");
-  else if (status === "schule") div.classList.add("status-schule");
-  else if (status === "fahrzeug") div.classList.add("status-fahrzeug");
-  else div.classList.add("status-normal");
-
-  const titel = entry.titel || "(kein Titel)";
-  const baustelle = entry.baustelle || "-";
-  const fahrzeug = entry.fahrzeug || "-";
-  const mitarbeiter = entry.mitarbeiter || "-";
-  const notiz = entry.notiz || "";
-
-  div.innerHTML = `
-    <div class="entry-title">${titel}</div>
-    <div class="entry-row"><span class="label">Baustelle:</span> ${baustelle}</div>
-    <div class="entry-row"><span class="label">Mitarbeiter:</span> ${mitarbeiter}</div>
-    <div class="entry-row"><span class="label">Fahrzeug:</span> ${fahrzeug}</div>
-    <div class="entry-row"><span class="label">Status:</span> ${status}</div>
-    ${
-      notiz
-        ? `<div class="entry-row"><span class="label">Notiz:</span> ${notiz}</div>`
-        : ""
-    }
+  const content = document.createElement("div");
+  content.className = "card-content";
+  content.innerHTML = `
+    <div class="card-title">${title}</div>
+    <div class="card-line card-meta">Fahrzeug: ${fahr}</div>
+    <div class="card-line card-meta">MA: ${mit}</div>
+    ${stat ? `<div class="card-line"><span class="status-badge">${stat}</span></div>` : ""}
   `;
 
-  div.addEventListener("click", () => openEntryDialogForEdit(entry));
+  inner.appendChild(strip);
+  inner.appendChild(content);
+  card.appendChild(inner);
 
-  return div;
+  return card;
 }
 
-// --- EINTRAG-DIALOG ---------------------------------------------
+// --------------------- LISTE & FORMULAR ------------------------
 
-function fillEntryDialogStammdaten() {
-  // Baustellen
-  entryBaustelleSelect.innerHTML = `<option value="">(keine)</option>`;
-  for (const b of state.baustellen) {
-    const opt = document.createElement("option");
-    opt.value = b.name;
-    opt.textContent = b.name;
-    entryBaustelleSelect.appendChild(opt);
-  }
+function renderList() {
+  const tbody = document.querySelector("#listTable tbody");
+  if (!tbody) return;
+  tbody.innerHTML = "";
 
-  // Mitarbeiter
-  entryMitarbeiterSelect.innerHTML = "";
-  for (const m of state.mitarbeiter) {
-    const opt = document.createElement("option");
-    opt.value = m.name;
-    opt.textContent = m.name;
-    entryMitarbeiterSelect.appendChild(opt);
-  }
-
-  // Fahrzeuge
-  entryFahrzeugSelect.innerHTML = `<option value="">(kein Fahrzeug)</option>`;
-  for (const f of state.fahrzeuge) {
-    const opt = document.createElement("option");
-    opt.value = f.name;
-    opt.textContent = f.name;
-    entryFahrzeugSelect.appendChild(opt);
-  }
+  allEntries.forEach(entry => {
+    const tr = document.createElement("tr");
+    tr.innerHTML = `
+      <td>${formatDate(entry.tag || entry.von)}</td>
+      <td>${formatDate(entry.bis)}</td>
+      <td>${entry.titel || ""}</td>
+      <td>${entry.baustelle || ""}</td>
+      <td>${entry.mitarbeiter || ""}</td>
+      <td>${entry.fahrzeug || ""}</td>
+      <td>${entry.status || ""}</td>
+    `;
+    tr.addEventListener("click", () => fillForm(entry));
+    tbody.appendChild(tr);
+  });
 }
 
-function openEntryDialogForNew(dateISO) {
-  const d = dateISO || toISODate(new Date());
+function fillForm(entry) {
+  currentEditId = entry.id;
 
-  entryDialogTitle.textContent = "Neuer Eintrag";
-  entryIdInput.value = "";
-  entryDateInput.value = d;
-  entryVonInput.value = d;
-  entryBisInput.value = d;
-  entryTitelInput.value = "";
-  entryBaustelleSelect.value = "";
-  entryMitarbeiterSelect.selectedIndex = -1;
-  entryFahrzeugSelect.value = "";
-  entryStatusSelect.value = "normal";
-  entryNotizInput.value = "";
-  entryIsDetailedCheckbox.checked = false;
-  entryDeleteBtn.style.display = "none";
+  document.getElementById("tagInput").value = entry.tag || "";
+  document.getElementById("bereichInput").value = entry.bereich || "";
+  document.getElementById("vonInput").value = entry.von || "";
+  document.getElementById("bisInput").value = entry.bis || "";
+  document.getElementById("kwInput").value = entry.kw || "";
+  document.getElementById("weekdayInput").value = entry.weekday || "";
+  document.getElementById("titelInput").value = entry.titel || "";
+  document.getElementById("baustelleInput").value = entry.baustelle || "";
+  document.getElementById("mitarbeiterInput").value = entry.mitarbeiter || "";
+  document.getElementById("fahrzeugInput").value = entry.fahrzeug || "";
+  document.getElementById("statusInput").value = entry.status || "";
+  document.getElementById("notizInput").value = entry.notiz || "";
 
-  entryDialog.classList.remove("hidden");
+  document.getElementById("statusInfo").textContent =
+    "Eintrag geladen – Änderungen nicht vergessen zu speichern.";
 }
 
-function openEntryDialogForEdit(entry) {
-  entryDialogTitle.textContent = "Eintrag bearbeiten";
-  entryIdInput.value = entry.id;
-  entryDateInput.value = entry.tag || entry.von || toISODate(new Date());
-  entryVonInput.value = entry.von || entry.tag || "";
-  entryBisInput.value = entry.bis || entry.tag || "";
+function resetForm() {
+  currentEditId = null;
+  document.getElementById("tagInput").value = "";
+  document.getElementById("bereichInput").value = "";
+  document.getElementById("vonInput").value = "";
+  document.getElementById("bisInput").value = "";
+  document.getElementById("kwInput").value = "";
+  document.getElementById("weekdayInput").value = "";
+  document.getElementById("titelInput").value = "";
+  document.getElementById("baustelleInput").value = "";
+  document.getElementById("mitarbeiterInput").value = "";
+  document.getElementById("fahrzeugInput").value = "";
+  document.getElementById("statusInput").value = "";
+  document.getElementById("notizInput").value = "";
+  const si = document.getElementById("statusInfo");
+  if (si) si.textContent = "Neuer Eintrag.";
+}
 
-  entryTitelInput.value = entry.titel || "";
-  entryBaustelleSelect.value = entry.baustelle || "";
+async function saveEntry() {
+  const tag = document.getElementById("tagInput").value || null;
+  const bereich = document.getElementById("bereichInput").value.trim() || null;
+  const von = document.getElementById("vonInput").value || null;
+  const bis = document.getElementById("bisInput").value || null;
+  let kw = parseInt(document.getElementById("kwInput").value, 10);
+  let weekday = document.getElementById("weekdayInput").value || null;
+  const titel = document.getElementById("titelInput").value.trim();
+  const baustelle = document.getElementById("baustelleInput").value.trim();
+  const mitarbeiter = document.getElementById("mitarbeiterInput").value.trim();
+  const fahrzeug = document.getElementById("fahrzeugInput").value.trim();
+  const status = document.getElementById("statusInput").value.trim();
+  const notiz = document.getElementById("notizInput").value.trim();
 
-  // Mitarbeiter (als Text, durch Komma getrennt)
-  const mitarbeiter = (entry.mitarbeiter || "")
-    .split(",")
-    .map((s) => s.trim())
-    .filter(Boolean);
-
-  for (const option of entryMitarbeiterSelect.options) {
-    option.selected = mitarbeiter.includes(option.value);
+  // Falls KW/Wochentag leer, aber Tag gesetzt → automatisch berechnen
+  if ((!kw || kw < 1 || kw > 53) && tag) {
+    kw = isoWeek(new Date(tag));
+    document.getElementById("kwInput").value = kw;
+  }
+  if (!weekday && tag) {
+    const d = new Date(tag);
+    const wd = d.getDay(); // So=0
+    const map = ["so","mo","di","mi","do","fr","sa"];
+    weekday = map[wd];
+    if (!["mo","di","mi","do","fr"].includes(weekday)) {
+      weekday = null;
+    } else {
+      document.getElementById("weekdayInput").value = weekday;
+    }
   }
 
-  entryFahrzeugSelect.value = entry.fahrzeug || "";
-  entryStatusSelect.value = (entry.status || "normal").toLowerCase();
-  entryNotizInput.value = entry.notiz || "";
-  entryIsDetailedCheckbox.checked = !!entry.is_detailed;
-
-  entryDeleteBtn.style.display = "inline-block";
-  entryDialog.classList.remove("hidden");
-}
-
-function closeEntryDialog() {
-  entryDialog.classList.add("hidden");
-}
-
-entryCancelBtn.addEventListener("click", closeEntryDialog);
-
-entryDeleteBtn.addEventListener("click", async () => {
-  const id = entryIdInput.value;
-  if (!id) return;
-
-  if (!confirm("Diesen Eintrag wirklich löschen?")) return;
-
-  const { error } = await supabase.from("plantafel").delete().eq("id", id);
-  if (error) {
-    alert("Fehler beim Löschen: " + error.message);
-    return;
-  }
-
-  // Aus lokalem State entfernen
-  state.plantafel = state.plantafel.filter((e) => e.id !== id);
-  closeEntryDialog();
-  renderBoard();
-  renderStatus();
-});
-
-entryForm.addEventListener("submit", async (ev) => {
-  ev.preventDefault();
-
-  const id = entryIdInput.value || null;
-  const tag = entryDateInput.value;
-  let von = entryVonInput.value;
-  let bis = entryBisInput.value;
-
-  if (!von) von = tag;
-  if (!bis) bis = tag;
-
-  const titel = entryTitelInput.value.trim();
-  const baustelle = entryBaustelleSelect.value || null;
-
-  const mitarbeiterValues = Array.from(entryMitarbeiterSelect.selectedOptions).map(
-    (o) => o.value
-  );
-  const mitarbeiter =
-    mitarbeiterValues.length > 0 ? mitarbeiterValues.join(", ") : null;
-
-  const fahrzeug = entryFahrzeugSelect.value || null;
-  const status = entryStatusSelect.value || "normal";
-  const notiz = entryNotizInput.value.trim() || null;
-  const is_detailed = entryIsDetailedCheckbox.checked;
-
-  const payload = {
+  const entry = {
     tag,
+    bereich,
     von,
     bis,
+    kw: kw || null,
+    weekday,
     titel,
     baustelle,
     mitarbeiter,
     fahrzeug,
     status,
-    notiz,
-    is_detailed,
+    notiz
   };
 
-  let error;
+  try {
+    await upsertPlantafelEntry(entry, currentEditId);
+    document.getElementById("statusInfo").textContent = "Gespeichert.";
+    await reloadAll();
+    resetForm();
+  } catch (err) {
+    alert("Fehler beim Speichern (Supabase). Siehe Konsole.");
+  }
+}
 
-  if (id) {
-    // Update
-    ({ error } = await supabase.from("plantafel").update(payload).eq("id", id));
-  } else {
-    // Sort: einfache Reihenfolge
-    payload.sort = (state.plantafel[state.plantafel.length - 1]?.sort || 0) + 1;
-    const { data, error: insertError } = await supabase
-      .from("plantafel")
-      .insert(payload)
-      .select()
-      .single();
-    error = insertError;
-    if (!error && data) {
-      state.plantafel.push(data);
+async function deleteEntry() {
+  if (!currentEditId) {
+    alert("Kein Eintrag ausgewählt.");
+    return;
+  }
+  if (!confirm("Diesen Eintrag wirklich löschen?")) return;
+
+  try {
+    await deletePlantafelEntry(currentEditId);
+    document.getElementById("statusInfo").textContent = "Eintrag gelöscht.";
+    await reloadAll();
+    resetForm();
+  } catch (err) {
+    alert("Fehler beim Löschen (Supabase). Siehe Konsole.");
+  }
+}
+
+// --------------------- WOCHENBRETT (4 KW) ------------------------
+
+async function moveEntryToKwWeekday(entryId, kw, weekday) {
+  try {
+    await patchPlantafelEntry(entryId, { kw, weekday });
+    await reloadAll();
+  } catch (err) {
+    alert("Fehler beim Verschieben im Wochenbrett.");
+  }
+}
+
+function renderWeekView() {
+  const table = document.getElementById("weekTable");
+  if (!table) return;
+  table.innerHTML = "";
+
+  const year = new Date().getFullYear();
+
+  const cap = document.getElementById("weekCaption");
+  const kwList = [];
+  for (let i = 0; i < weekSpan; i++) kwList.push(baseKw + i);
+  cap.textContent = "KW " + kwList.join(" – ");
+
+  const weekdays = [
+    { key: "mo", label: "Mo" },
+    { key: "di", label: "Di" },
+    { key: "mi", label: "Mi" },
+    { key: "do", label: "Do" },
+    { key: "fr", label: "Fr" }
+  ];
+
+  // Kopfzeile
+  const thead = document.createElement("thead");
+  const headRow = document.createElement("tr");
+
+  const emptyTh = document.createElement("th");
+  emptyTh.textContent = "Tag / KW";
+  headRow.appendChild(emptyTh);
+
+  for (let i = 0; i < weekSpan; i++) {
+    const kw = baseKw + i;
+    const th = document.createElement("th");
+    th.className = "week-head";
+    const startDate = dateFromIsoWeek(kw, year);
+    const endDate = addDays(startDate, 4);
+    th.innerHTML = `KW ${kw}<br>${formatDate(startDate)} – ${formatDate(endDate)}`;
+    headRow.appendChild(th);
+  }
+
+  thead.appendChild(headRow);
+  table.appendChild(thead);
+
+  const tbody = document.createElement("tbody");
+
+  weekdays.forEach(wd => {
+    const tr = document.createElement("tr");
+
+    const labelTd = document.createElement("td");
+    labelTd.className = "week-day-label";
+    labelTd.textContent = wd.label;
+    tr.appendChild(labelTd);
+
+    for (let i = 0; i < weekSpan; i++) {
+      const kw = baseKw + i;
+      const td = document.createElement("td");
+      td.className = "week-cell";
+      td.dataset.kw = kw;
+      td.dataset.weekday = wd.key;
+
+      td.addEventListener("dragover", ev => {
+        ev.preventDefault();
+        td.classList.add("dragover");
+      });
+      td.addEventListener("dragleave", () => {
+        td.classList.remove("dragover");
+      });
+      td.addEventListener("drop", async ev => {
+        ev.preventDefault();
+        td.classList.remove("dragover");
+        if (draggedEntryId) {
+          await moveEntryToKwWeekday(draggedEntryId, kw, wd.key);
+        }
+      });
+
+      const entries = allEntries.filter(e => e.kw === kw && e.weekday === wd.key);
+      entries.forEach(e => td.appendChild(createCardElement(e)));
+
+      tr.appendChild(td);
     }
+
+    tbody.appendChild(tr);
+  });
+
+  table.appendChild(tbody);
+}
+
+// --------------------- JAHRESÜBERSICHT ------------------------
+
+async function moveEntryToBereich(entryId, bereichKey) {
+  try {
+    await patchPlantafelEntry(entryId, { bereich: bereichKey });
+    await reloadAll();
+  } catch (err) {
+    alert("Fehler beim Verschieben im Jahresbrett.");
+  }
+}
+
+function makeYearDropTarget(el, bereichKey) {
+  el.addEventListener("dragover", ev => {
+    ev.preventDefault();
+    el.classList.add("dragover");
+  });
+  el.addEventListener("dragleave", () => {
+    el.classList.remove("dragover");
+  });
+  el.addEventListener("drop", async ev => {
+    ev.preventDefault();
+    el.classList.remove("dragover");
+    if (draggedEntryId) {
+      await moveEntryToBereich(draggedEntryId, bereichKey);
+    }
+  });
+}
+
+function renderYearView() {
+  const yearTable = document.getElementById("yearTable");
+  const catContainer = document.getElementById("yearCategories");
+  if (!yearTable || !catContainer) return;
+
+  yearTable.innerHTML = "";
+  catContainer.innerHTML = "";
+
+  const year = new Date().getFullYear();
+
+  for (let r = 0; r < 4; r++) {
+    const headerRow = document.createElement("tr");
+    const row = document.createElement("tr");
+
+    const firstMonthIndex = r * 3;
+    const lastMonthIndex = r * 3 + 2;
+
+    const monthStart = new Date(year, firstMonthIndex, 1);
+    const monthEnd = new Date(year, lastMonthIndex + 1, 0);
+
+    const kwStart = isoWeek(monthStart);
+    const kwEnd = isoWeek(monthEnd);
+
+    const kwCellHeader = document.createElement("th");
+    kwCellHeader.className = "year-kw-cell";
+    kwCellHeader.innerHTML = `
+      <div class="year-kw-main">KW ${kwStart} – ${kwEnd}</div>
+      <div class="year-kw-sub">${formatDate(monthStart)} – ${formatDate(monthEnd)}</div>
+    `;
+    headerRow.appendChild(kwCellHeader);
+
+    const kwCellRow = document.createElement("td");
+    kwCellRow.className = "year-kw-cell";
+    row.appendChild(kwCellRow);
+
+    for (let c = 0; c < 3; c++) {
+      const monthIndex = r * 3 + c;
+      const mDef = monthsDef[monthIndex];
+
+      const th = document.createElement("th");
+      th.className = "year-month-header";
+      th.textContent = mDef.label;
+      headerRow.appendChild(th);
+
+      const td = document.createElement("td");
+      td.className = "year-month-cell";
+
+      const title = document.createElement("div");
+      title.className = "year-month-title";
+      title.textContent = mDef.label;
+
+      const drop = document.createElement("div");
+      drop.className = "year-month-drop";
+      drop.dataset.bereich = mDef.key;
+
+      makeYearDropTarget(drop, mDef.key);
+
+      const entries = allEntries.filter(e => (e.bereich || "").toLowerCase() === mDef.key);
+      entries.forEach(e => drop.appendChild(createCardElement(e)));
+
+      td.appendChild(title);
+      td.appendChild(drop);
+      row.appendChild(td);
+    }
+
+    yearTable.appendChild(headerRow);
+    yearTable.appendChild(row);
   }
 
-  if (error) {
-    alert("Fehler beim Speichern: " + error.message);
+  // rechte Kategorien
+  yearCategoriesDef.forEach(cat => {
+    const box = document.createElement("div");
+    box.className = "year-cat-box";
+
+    const title = document.createElement("div");
+    title.className = "year-cat-title";
+    title.textContent = cat.label;
+    box.appendChild(title);
+
+    const drop = document.createElement("div");
+    drop.className = "year-cat-drop";
+    drop.dataset.bereich = cat.key;
+
+    makeYearDropTarget(drop, cat.key);
+
+    const entries = allEntries.filter(e => (e.bereich || "").toLowerCase() === cat.key);
+    entries.forEach(e => drop.appendChild(createCardElement(e)));
+
+    box.appendChild(drop);
+    catContainer.appendChild(box);
+  });
+}
+
+// --------------------- URLAUB ------------------------
+
+function renderUrlaub() {
+  const container = document.getElementById("urlaubView");
+  if (!container) return;
+  container.innerHTML = "";
+
+  const urlaubEntries = allEntries.filter(e =>
+    (e.status || "").toLowerCase().includes("urlaub")
+  );
+
+  if (urlaubEntries.length === 0) {
+    container.textContent = "Noch keine Urlaube erfasst.";
     return;
   }
 
-  // Bei Update: Daten neu laden, damit alles stimmt
-  await loadAllData();
-  closeEntryDialog();
-});
+  const byMA = {};
+  urlaubEntries.forEach(e => {
+    const name = (e.mitarbeiter || "Unbekannt").trim() || "Unbekannt";
+    if (!byMA[name]) byMA[name] = [];
+    byMA[name].push(e);
+  });
 
-// --- STAMMDATEN-DIALOG ------------------------------------------
+  const table = document.createElement("table");
+  const thead = document.createElement("thead");
+  thead.innerHTML = `
+    <tr>
+      <th>Mitarbeiter</th>
+      <th>Von</th>
+      <th>Bis</th>
+      <th>Titel / Baustelle</th>
+    </tr>`;
+  table.appendChild(thead);
 
-function openStammdatenDialog() {
-  renderStammdatenLists();
-  stammdatenDialog.classList.remove("hidden");
+  const tbody = document.createElement("tbody");
+  Object.keys(byMA).sort().forEach(name => {
+    byMA[name].forEach(e => {
+      const tr = document.createElement("tr");
+      tr.innerHTML = `
+        <td>${name}</td>
+        <td>${formatDate(e.von || e.tag)}</td>
+        <td>${formatDate(e.bis || e.von || e.tag)}</td>
+        <td>${(e.baustelle || e.titel || "").slice(0,60)}</td>
+      `;
+      tbody.appendChild(tr);
+    });
+  });
+  table.appendChild(tbody);
+  container.appendChild(table);
 }
 
-function closeStammdatenDialog() {
-  stammdatenDialog.classList.add("hidden");
+// --------------------- STAMMDATEN ------------------------
+
+function renderMitarbeiterTable() {
+  const tbody = document.querySelector("#maTable tbody");
+  if (!tbody) return;
+  tbody.innerHTML = "";
+
+  allMitarbeiter.forEach(ma => {
+    const tr = document.createElement("tr");
+    tr.innerHTML = `
+      <td>${ma.name || ""}</td>
+      <td>
+        <span class="color-dot" style="background:${ma.color || "#ffffff"}"></span>
+        ${ma.color || ""}
+      </td>`;
+    tr.addEventListener("click", () => {
+      document.getElementById("maIdHidden").value = ma.id || "";
+      document.getElementById("maNameInput").value = ma.name || "";
+      document.getElementById("maColorInput").value = ma.color || "#ffcc00";
+    });
+    tbody.appendChild(tr);
+  });
 }
 
-stammdatenCloseBtn.addEventListener("click", closeStammdatenDialog);
+function renderFahrzeugTable() {
+  const tbody = document.querySelector("#fzTable tbody");
+  if (!tbody) return;
+  tbody.innerHTML = "";
 
-function renderStammdatenLists() {
-  // Baustellen
-  baustellenList.innerHTML = "";
-  for (const b of state.baustellen) {
-    const li = document.createElement("li");
-    li.textContent = b.name;
-    baustellenList.appendChild(li);
-  }
-
-  // Mitarbeiter
-  mitarbeiterList.innerHTML = "";
-  for (const m of state.mitarbeiter) {
-    const li = document.createElement("li");
-    li.textContent = m.name;
-    mitarbeiterList.appendChild(li);
-  }
-
-  // Fahrzeuge
-  fahrzeugeList.innerHTML = "";
-  for (const f of state.fahrzeuge) {
-    const li = document.createElement("li");
-    li.textContent = f.name;
-    fahrzeugeList.appendChild(li);
-  }
+  allFahrzeuge.forEach(fz => {
+    const tr = document.createElement("tr");
+    tr.innerHTML = `
+      <td>${fz.name || ""}</td>
+      <td>${fz.kennzeichen || ""}</td>
+      <td>
+        <span class="color-dot" style="background:${fz.color || "#ffffff"}"></span>
+        ${fz.color || ""}
+      </td>`;
+    tr.addEventListener("click", () => {
+      document.getElementById("fzIdHidden").value = fz.id || "";
+      document.getElementById("fzNameInput").value = fz.name || "";
+      document.getElementById("fzKennzInput").value = fz.kennzeichen || "";
+      document.getElementById("fzColorInput").value = fz.color || "#ff0000";
+    });
+    tbody.appendChild(tr);
+  });
 }
 
-async function addSimpleRow(table, name) {
-  if (!name.trim()) return;
+function clearMitarbeiterForm() {
+  document.getElementById("maIdHidden").value = "";
+  document.getElementById("maNameInput").value = "";
+  document.getElementById("maColorInput").value = "#ffcc00";
+}
 
-  const { data, error } = await supabase
-    .from(table)
-    .insert({ name })
-    .select()
-    .single();
-  if (error) {
-    alert(`Fehler beim Anlegen in ${table}: ` + error.message);
+function clearFahrzeugForm() {
+  document.getElementById("fzIdHidden").value = "";
+  document.getElementById("fzNameInput").value = "";
+  document.getElementById("fzKennzInput").value = "";
+  document.getElementById("fzColorInput").value = "#ff0000";
+}
+
+async function saveMitarbeiter() {
+  const id = document.getElementById("maIdHidden").value || null;
+  const name = document.getElementById("maNameInput").value.trim();
+  const color = document.getElementById("maColorInput").value;
+  if (!name) {
+    alert("Name darf nicht leer sein.");
     return;
   }
-
-  state[table] = [...state[table], data];
-  renderStammdatenLists();
-  fillEntryDialogStammdaten();
+  try {
+    await upsertMitarbeiter({ name, color }, id);
+    await reloadAll();
+  } catch (err) {
+    alert("Fehler beim Speichern Mitarbeiter.");
+  }
 }
 
-addBaustelleBtn.addEventListener("click", () => {
-  addSimpleRow("baustellen", newBaustelleNameInput.value);
-  newBaustelleNameInput.value = "";
-});
+async function deleteMitarbeiter() {
+  const id = document.getElementById("maIdHidden").value;
+  if (!id) {
+    alert("Kein Mitarbeiter ausgewählt.");
+    return;
+  }
+  if (!confirm("Mitarbeiter wirklich löschen?")) return;
+  try {
+    await deleteMitarbeiterRow(id);
+    clearMitarbeiterForm();
+    await reloadAll();
+  } catch (err) {
+    alert("Fehler beim Löschen Mitarbeiter.");
+  }
+}
 
-addMitarbeiterBtn.addEventListener("click", () => {
-  addSimpleRow("mitarbeiter", newMitarbeiterNameInput.value);
-  newMitarbeiterNameInput.value = "";
-});
+async function saveFahrzeug() {
+  const id = document.getElementById("fzIdHidden").value || null;
+  const name = document.getElementById("fzNameInput").value.trim();
+  const kennzeichen = document.getElementById("fzKennzInput").value.trim();
+  const color = document.getElementById("fzColorInput").value;
+  if (!name) {
+    alert("Bezeichnung darf nicht leer sein.");
+    return;
+  }
+  try {
+    await upsertFahrzeug({ name, kennzeichen, color }, id);
+    await reloadAll();
+  } catch (err) {
+    alert("Fehler beim Speichern Fahrzeug.");
+  }
+}
 
-addFahrzeugBtn.addEventListener("click", () => {
-  addSimpleRow("fahrzeuge", newFahrzeugNameInput.value);
-  newFahrzeugNameInput.value = "";
-});
+async function deleteFahrzeug() {
+  const id = document.getElementById("fzIdHidden").value;
+  if (!id) {
+    alert("Kein Fahrzeug ausgewählt.");
+    return;
+  }
+  if (!confirm("Fahrzeug wirklich löschen?")) return;
+  try {
+    await deleteFahrzeugRow(id);
+    clearFahrzeugForm();
+    await reloadAll();
+  } catch (err) {
+    alert("Fehler beim Löschen Fahrzeug.");
+  }
+}
 
-// --- BACKUP -----------------------------------------------------
+// --------------------- TABS & INIT ------------------------
 
-backupBtn.addEventListener("click", () => {
-  const backup = {
-    created_at: new Date().toISOString(),
-    baustellen: state.baustellen,
-    mitarbeiter: state.mitarbeiter,
-    fahrzeuge: state.fahrzeuge,
-    plantafel: state.plantafel,
-  };
+async function reloadAll() {
+  try {
+    allEntries = await fetchPlantafelEntries();
+    allMitarbeiter = await fetchMitarbeiter();
+    allFahrzeuge = await fetchFahrzeuge();
 
-  const blob = new Blob([JSON.stringify(backup, null, 2)], {
-    type: "application/json",
+    renderList();
+    renderWeekView();
+    renderYearView();
+    renderUrlaub();
+    renderMitarbeiterTable();
+    renderFahrzeugTable();
+
+    const si = document.getElementById("statusInfo");
+    if (si) si.textContent = "Einträge geladen.";
+  } catch (err) {
+    console.error("Fehler beim Laden der Daten:", err);
+    const si = document.getElementById("statusInfo");
+    if (si) si.textContent = "Fehler beim Laden der Daten.";
+  }
+}
+
+document.addEventListener("DOMContentLoaded", () => {
+  // Tabs
+  const tabButtons = document.querySelectorAll(".tab-btn");
+  const tabContents = document.querySelectorAll(".tab-content");
+  tabButtons.forEach(btn => {
+    btn.addEventListener("click", () => {
+      tabButtons.forEach(b => b.classList.remove("active"));
+      tabContents.forEach(c => c.classList.remove("active"));
+      btn.classList.add("active");
+      document.getElementById("tab-" + btn.dataset.tab).classList.add("active");
+    });
   });
 
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement("a");
-  a.href = url;
-  a.download = `plantafel-backup-${new Date().toISOString().slice(0, 10)}.json`;
-  document.body.appendChild(a);
-  a.click();
-  document.body.removeChild(a);
-  URL.revokeObjectURL(url);
-});
-
-// --- TOOLBAR EVENTS ---------------------------------------------
-
-prevWeekBtn.addEventListener("click", () => {
-  state.startDate = addDays(state.startDate, -7);
-  renderBoard();
-  renderStatus();
-});
-
-nextWeekBtn.addEventListener("click", () => {
-  state.startDate = addDays(state.startDate, 7);
-  renderBoard();
-  renderStatus();
-});
-
-todayBtn.addEventListener("click", () => {
-  state.startDate = getMonday(new Date());
-  renderBoard();
-  renderStatus();
-});
-
-startDateInput.addEventListener("change", () => {
-  const val = startDateInput.value;
-  if (!val) return;
-  state.startDate = getMonday(new Date(val));
-  renderBoard();
-  renderStatus();
-});
-
-reloadBtn.addEventListener("click", loadAllData);
-
-stammdatenBtn.addEventListener("click", openStammdatenDialog);
-
-newEntryBtn.addEventListener("click", () => openEntryDialogForNew());
-
-// Ansicht-Schalter
-viewButtons.forEach((btn) => {
-  btn.addEventListener("click", () => {
-    viewButtons.forEach((b) => b.classList.remove("active"));
-    btn.classList.add("active");
-    state.rangeDays = Number(btn.dataset.range) || 7;
-    renderStatus();
+  // Form-Buttons
+  document.getElementById("saveBtn").addEventListener("click", e => {
+    e.preventDefault();
+    saveEntry();
   });
-});
-
-// --- START ------------------------------------------------------
-
-(async function init() {
-  // Standard: 1 Woche aktiv
-  viewButtons.forEach((b) => {
-    if (Number(b.dataset.range) === 7) b.classList.add("active");
+  document.getElementById("deleteBtn").addEventListener("click", e => {
+    e.preventDefault();
+    deleteEntry();
+  });
+  document.getElementById("resetBtn").addEventListener("click", e => {
+    e.preventDefault();
+    resetForm();
   });
 
-  state.startDate = getMonday(new Date());
-  await loadAllData();
-})();
+  // Wochenbrett Buttons
+  document.getElementById("weekPrevBtn").addEventListener("click", () => {
+    baseKw = Math.max(1, baseKw - weekSpan);
+    renderWeekView();
+  });
+  document.getElementById("weekNextBtn").addEventListener("click", () => {
+    baseKw = baseKw + weekSpan;
+    if (baseKw > 53) baseKw = 53;
+    renderWeekView();
+  });
+  document.getElementById("weekTodayBtn").addEventListener("click", () => {
+    baseKw = isoWeek(new Date());
+    renderWeekView();
+  });
+
+  // Stammdaten-Buttons
+  document.getElementById("maSaveBtn").addEventListener("click", e => {
+    e.preventDefault();
+    saveMitarbeiter();
+  });
+  document.getElementById("maNewBtn").addEventListener("click", e => {
+    e.preventDefault();
+    clearMitarbeiterForm();
+  });
+  document.getElementById("maDeleteBtn").addEventListener("click", e => {
+    e.preventDefault();
+    deleteMitarbeiter();
+  });
+
+  document.getElementById("fzSaveBtn").addEventListener("click", e => {
+    e.preventDefault();
+    saveFahrzeug();
+  });
+  document.getElementById("fzNewBtn").addEventListener("click", e => {
+    e.preventDefault();
+    clearFahrzeugForm();
+  });
+  document.getElementById("fzDeleteBtn").addEventListener("click", e => {
+    e.preventDefault();
+    deleteFahrzeug();
+  });
+
+  // Start
+  resetForm();
+  clearMitarbeiterForm();
+  clearFahrzeugForm();
+  reloadAll();
+});
