@@ -110,6 +110,7 @@
 
     input[type="text"],
     input[type="date"],
+    input[type="number"],
     input[type="color"],
     textarea {
       width: 100%;
@@ -185,9 +186,7 @@
       margin-right: 4px;
     }
 
-    .card-content {
-      flex: 1;
-    }
+    .card-content { flex: 1; }
 
     .card-title {
       font-weight: bold;
@@ -208,30 +207,45 @@
       font-size: 10px;
     }
 
-    /* Feinplanung-Tabelle */
-    .fine-table {
+    /* Wochenbrett */
+    .week-table {
       width: 100%;
       border-collapse: collapse;
       table-layout: fixed;
       font-size: 11px;
     }
 
-    .fine-table th,
-    .fine-table td {
-      border: 1px solid #d0d0d0;
+    .week-table th,
+    .week-table td {
+      border: 2px solid #777;
       vertical-align: top;
       padding: 3px;
     }
 
-    .fine-table th {
-      background: #f5f5f5;
+    .week-head {
+      background: #f3f3f3;
       text-align: center;
-      font-weight: 600;
+      font-weight: bold;
+      font-size: 12px;
     }
 
-    .fine-day-cell { min-height: 60px; }
+    .week-day-label {
+      font-weight: bold;
+      width: 60px;
+      text-align: center;
+      background: #f7f7f7;
+    }
 
-    .fine-controls { margin-bottom: 8px; }
+    .week-cell {
+      min-height: 80px;
+      background: #fff;
+    }
+
+    .week-cell.dragover {
+      outline: 2px dashed #0075c9;
+    }
+
+    .week-controls { margin-bottom: 8px; }
 
     /* Jahresübersicht */
     .year-layout {
@@ -364,7 +378,7 @@
     @media (max-width: 900px) {
       .form-grid { grid-template-columns: 1fr; }
       header { font-size: 18px; padding: 12px; }
-      .fine-table { font-size: 10px; }
+      .week-table { font-size: 10px; }
       .card { font-size: 10px; }
       .year-layout { flex-direction: column; }
     }
@@ -430,11 +444,11 @@
     <div class="section">
       <h2>Eintrag bearbeiten / neu anlegen</h2>
       <p class="small-text">
-        Wenn kein Eintrag ausgewählt ist, wird ein neuer Eintrag angelegt. „Bereich“ steuert das Jahresbrett (Monat/Kategorie).
+        KW + Wochentag steuern das Wochen-Board. Bereich steuert das Jahresbrett (Monat / Kategorie).
       </p>
       <div class="form-grid">
         <div>
-          <label>Tag (Anker):
+          <label>Tag (optional, nur Info):
             <input type="date" id="tagInput">
           </label>
         </div>
@@ -445,13 +459,31 @@
         </div>
 
         <div>
-          <label>Von:
+          <label>Von (optional):
             <input type="date" id="vonInput">
           </label>
         </div>
         <div>
-          <label>Bis:
+          <label>Bis (optional):
             <input type="date" id="bisInput">
+          </label>
+        </div>
+
+        <div>
+          <label>KW (für Wochenbrett):
+            <input type="number" id="kwInput" min="1" max="53" placeholder="z.B. 49">
+          </label>
+        </div>
+        <div>
+          <label>Wochentag (für Wochenbrett):
+            <select id="weekdayInput">
+              <option value="">– bitte wählen –</option>
+              <option value="mo">Montag</option>
+              <option value="di">Dienstag</option>
+              <option value="mi">Mittwoch</option>
+              <option value="do">Donnerstag</option>
+              <option value="fr">Freitag</option>
+            </select>
           </label>
         </div>
 
@@ -497,23 +529,20 @@
       </div>
     </div>
 
-    <!-- FEINPLANUNG -->
+    <!-- WOCHENBRETT -->
     <div class="section">
       <div class="section-header">
-        <h2>Feinplanung – Magnettafel (Mo–Fr, KW-Spalten)</h2>
-        <span class="small-text">Drag & Drop verschiebt die Baustelle im Zeitraum.</span>
+        <h2>Feinplanung – Magnettafel (KW / Mo–Fr)</h2>
+        <span class="small-text">Drag & Drop verschiebt die Karte – KW / Wochentag werden gespeichert, Datum bleibt unverändert.</span>
       </div>
-      <div class="fine-controls">
-        <button class="btn" id="btn1w">1 Woche</button>
-        <button class="btn" id="btn2w">2 Wochen</button>
-        <button class="btn" id="btn4w">4 Wochen</button>
-        <button class="btn secondary" id="btnPrev">Zurück</button>
-        <button class="btn secondary" id="btnToday">Diese Woche</button>
-        <button class="btn secondary" id="btnNext">Weiter</button>
-        <span class="small-text" id="fineCaption"></span>
+      <div class="week-controls">
+        <button class="btn secondary" id="weekPrevBtn">Zurück</button>
+        <button class="btn secondary" id="weekTodayBtn">Diese KW</button>
+        <button class="btn secondary" id="weekNextBtn">Weiter</button>
+        <span class="small-text" id="weekCaption"></span>
       </div>
       <div style="overflow-x:auto;">
-        <table class="fine-table" id="fineTable"></table>
+        <table class="week-table" id="weekTable"></table>
       </div>
     </div>
 
@@ -619,15 +648,15 @@
   let allFahrzeuge = [];
   let currentEditId = null;
 
-  // Feinplanung
-  let fineStartDate = mondayOf(new Date());
-  let fineSpanDays = window.innerWidth < 800 ? 14 : 28; // mobil 14, sonst 4 Wochen
+  // Wochenbrett: Basis-KW und wie viele KW-Spalten
+  let baseKw = isoWeek(new Date());
+  const weekSpan = 3; // 3 KW nebeneinander wie auf deinem Brett
 
   // Drag & Drop
   let draggedEntryId = null;
 
   // -------------------------------------------------------------------
-  //  TAB-Umschaltung
+  //  Tabs
   // -------------------------------------------------------------------
   const tabButtons = document.querySelectorAll(".tab-btn");
   const tabContents = document.querySelectorAll(".tab-content");
@@ -651,37 +680,9 @@
     return dt.toLocaleDateString("de-DE");
   }
 
-  function formatDateShort(d) {
-    const dt = (d instanceof Date) ? d : new Date(d);
-    if (isNaN(dt)) return "";
-    const day = dt.getDate();
-    const month = dt.getMonth() + 1;
-    return `${day}.${month.toString().padStart(2,"0")}.`;
-  }
-
   function toISODate(str) {
     if (!str) return null;
     return str;
-  }
-
-  function mondayOf(d) {
-    const dt = new Date(d.getFullYear(), d.getMonth(), d.getDate());
-    const day = dt.getDay(); // So=0, Mo=1...
-    const diff = (day === 0 ? -6 : 1 - day);
-    dt.setDate(dt.getDate() + diff);
-    dt.setHours(0,0,0,0);
-    return dt;
-  }
-
-  function addDays(d, days) {
-    const dt = new Date(d.getTime());
-    dt.setDate(dt.getDate() + days);
-    return dt;
-  }
-
-  function diffInDays(a, b) {
-    const ms = a.getTime() - b.getTime();
-    return Math.round(ms / 86400000);
   }
 
   function isoWeek(date) {
@@ -690,6 +691,24 @@
     d.setUTCDate(d.getUTCDate() + 4 - dayNum);
     const yearStart = new Date(Date.UTC(d.getUTCFullYear(),0,1));
     return Math.ceil((((d - yearStart) / 86400000) + 1)/7);
+  }
+
+  function dateFromIsoWeek(week, year) {
+    const simple = new Date(year, 0, 1 + (week - 1) * 7);
+    const dow = simple.getDay();
+    const ISOweekStart = simple;
+    if (dow <= 4 && dow > 0)
+      ISOweekStart.setDate(simple.getDate() - simple.getDay() + 1);
+    else
+      ISOweekStart.setDate(simple.getDate() + 8 - simple.getDay());
+    ISOweekStart.setHours(0,0,0,0);
+    return ISOweekStart;
+  }
+
+  function addDays(d, days) {
+    const dt = new Date(d.getTime());
+    dt.setDate(dt.getDate() + days);
+    return dt;
   }
 
   function normalizeName(name) {
@@ -704,7 +723,7 @@
   }
 
   // -------------------------------------------------------------------
-  //  Stammdaten: Mitarbeiter + Fahrzeuge
+  //  Stammdaten
   // -------------------------------------------------------------------
   async function loadMitarbeiter() {
     const { data, error } = await supabase
@@ -807,7 +826,7 @@
     }
 
     await loadMitarbeiter();
-    renderFineView();
+    renderWeekView();
     renderYearView();
   }
 
@@ -828,7 +847,7 @@
 
     clearMitarbeiterForm();
     await loadMitarbeiter();
-    renderFineView();
+    renderWeekView();
     renderYearView();
   }
 
@@ -876,7 +895,7 @@
     }
 
     await loadFahrzeuge();
-    renderFineView();
+    renderWeekView();
     renderYearView();
   }
 
@@ -897,7 +916,7 @@
 
     clearFahrzeugForm();
     await loadFahrzeuge();
-    renderFineView();
+    renderWeekView();
     renderYearView();
   }
 
@@ -937,9 +956,8 @@
 
     allEntries = data || [];
     renderList();
-    renderFineView();
+    renderWeekView();
     renderYearView();
-    renderGrobView();
     renderUrlaub();
 
     const si = document.getElementById("statusInfo");
@@ -974,6 +992,8 @@
     document.getElementById("bereichInput").value = entry.bereich || "";
     document.getElementById("vonInput").value = entry.von || "";
     document.getElementById("bisInput").value = entry.bis || "";
+    document.getElementById("kwInput").value = entry.kw || "";
+    document.getElementById("weekdayInput").value = entry.weekday || "";
     document.getElementById("titelInput").value = entry.titel || "";
     document.getElementById("baustelleInput").value = entry.baustelle || "";
     document.getElementById("mitarbeiterInput").value = entry.mitarbeiter || "";
@@ -991,6 +1011,8 @@
     document.getElementById("bereichInput").value = "";
     document.getElementById("vonInput").value = "";
     document.getElementById("bisInput").value = "";
+    document.getElementById("kwInput").value = "";
+    document.getElementById("weekdayInput").value = "";
     document.getElementById("titelInput").value = "";
     document.getElementById("baustelleInput").value = "";
     document.getElementById("mitarbeiterInput").value = "";
@@ -1003,6 +1025,8 @@
 
   async function saveEntry() {
     const tag = toISODate(document.getElementById("tagInput").value);
+    let kw = parseInt(document.getElementById("kwInput").value, 10);
+    let weekday = document.getElementById("weekdayInput").value || null;
     const bereich = document.getElementById("bereichInput").value.trim() || null;
     const von = toISODate(document.getElementById("vonInput").value);
     const bis = toISODate(document.getElementById("bisInput").value);
@@ -1013,7 +1037,27 @@
     const status = document.getElementById("statusInput").value.trim();
     const notiz = document.getElementById("notizInput").value.trim();
 
-    const payload = { tag, bereich, von, bis, titel, baustelle, mitarbeiter, fahrzeug, status, notiz };
+    // Wenn KW/Wochentag leer, aber Tag gesetzt → automatisch berechnen
+    if ((!kw || kw < 1 || kw > 53) && tag) {
+      kw = isoWeek(new Date(tag));
+      document.getElementById("kwInput").value = kw;
+    }
+    if (!weekday && tag) {
+      const d = new Date(tag);
+      const wd = d.getDay(); // So = 0, Mo=1...
+      const map = ["so","mo","di","mi","do","fr","sa"];
+      weekday = map[wd];
+      if (["mo","di","mi","do","fr"].includes(weekday)) {
+        document.getElementById("weekdayInput").value = weekday;
+      } else {
+        weekday = null; // Wochenende → kein Wochentag
+      }
+    }
+
+    const payload = {
+      tag, bereich, von, bis, kw: kw || null, weekday,
+      titel, baustelle, mitarbeiter, fahrzeug, status, notiz
+    };
 
     let error;
     if (currentEditId) {
@@ -1054,128 +1098,130 @@
   }
 
   // -------------------------------------------------------------------
-  //  FEINPLANUNG (Wochenansicht)
+  //  Karten-Erzeugung (für beide Boards)
   // -------------------------------------------------------------------
-  function entriesForDay(date) {
-    return allEntries.filter(e => {
-      const von = e.von ? new Date(e.von) : null;
-      const bis = e.bis ? new Date(e.bis) : null;
-      if (!von && !bis) return false;
+  function createCardElement(entry) {
+    const card = document.createElement("div");
+    card.className = "card";
+    card.draggable = true;
+    card.dataset.entryId = entry.id;
 
-      const start = von || bis;
-      const end = bis || von;
+    card.addEventListener("dragstart", () => { draggedEntryId = entry.id; });
+    card.addEventListener("dragend", () => { draggedEntryId = null; });
+    card.addEventListener("click", () => fillForm(entry));
 
-      const d = new Date(date.getFullYear(), date.getMonth(), date.getDate());
-      start.setHours(0,0,0,0);
-      end.setHours(0,0,0,0);
+    const title = entry.baustelle || entry.titel || "Ohne Titel";
+    const fahr = entry.fahrzeug || "";
+    const mit = entry.mitarbeiter || "";
+    const stat = (entry.status || "").toLowerCase();
 
-      return d >= start && d <= end;
-    });
+    const maColor = getMitarbeiterColor(mit);
+    const fzColor = getFahrzeugColor(fahr);
+    const stripeColor = maColor || fzColor || null;
+
+    const inner = document.createElement("div");
+    inner.className = "card-inner";
+
+    const strip = document.createElement("div");
+    strip.className = "card-color-strip";
+    if (stripeColor) strip.style.background = stripeColor;
+
+    const content = document.createElement("div");
+    content.className = "card-content";
+    content.innerHTML = `
+      <div class="card-title">${title}</div>
+      <div class="card-line card-meta">Fahrzeug: ${fahr}</div>
+      <div class="card-line card-meta">MA: ${mit}</div>
+      ${stat ? `<div class="card-line"><span class="status-badge">${stat}</span></div>` : ""}`;
+
+    inner.appendChild(strip);
+    inner.appendChild(content);
+    card.appendChild(inner);
+    return card;
   }
 
-  function renderFineView() {
-    const table = document.getElementById("fineTable");
+  // -------------------------------------------------------------------
+  //  WOCHENBRETT – KW & Mo–Fr, rein visuell
+  // -------------------------------------------------------------------
+  function renderWeekView() {
+    const table = document.getElementById("weekTable");
     if (!table) return;
     table.innerHTML = "";
 
-    const days = [];
-    for (let i = 0; i < fineSpanDays; i++) {
-      days.push(addDays(fineStartDate, i));
-    }
+    // Caption
+    const cap = document.getElementById("weekCaption");
+    const kwList = [];
+    for (let i = 0; i < weekSpan; i++) kwList.push(baseKw + i);
+    cap.textContent = "KW " + kwList.join(", ");
 
-    const caption = document.getElementById("fineCaption");
-    const first = days[0];
-    const last = days[days.length - 1];
-    caption.textContent = `Zeitraum: ${formatDate(first)} – ${formatDate(last)} (${fineSpanDays} Tage)`;
+    const year = new Date().getFullYear();
 
+    const weekdays = [
+      { key: "mo", label: "Mo" },
+      { key: "di", label: "Di" },
+      { key: "mi", label: "Mi" },
+      { key: "do", label: "Do" },
+      { key: "fr", label: "Fr" }
+    ];
+
+    // Kopfzeile
     const thead = document.createElement("thead");
     const headRow = document.createElement("tr");
-    headRow.innerHTML = `<th style="width:70px;">Tag / KW</th>`;
-    days.forEach(d => {
-      const kw = isoWeek(d);
-      headRow.innerHTML += `<th data-date="${d.toISOString().slice(0,10)}">KW ${kw}<br>${formatDate(d)}</th>`;
-    });
+    const emptyTh = document.createElement("th");
+    emptyTh.textContent = "Tag / KW";
+    headRow.appendChild(emptyTh);
+
+    for (let i = 0; i < weekSpan; i++) {
+      const kw = baseKw + i;
+      const th = document.createElement("th");
+      th.className = "week-head";
+      const startDate = dateFromIsoWeek(kw, year);
+      const endDate = addDays(startDate, 4);
+      th.innerHTML = `KW ${kw}<br>${formatDate(startDate)} – ${formatDate(endDate)}`;
+      headRow.appendChild(th);
+    }
+
     thead.appendChild(headRow);
     table.appendChild(thead);
 
     const tbody = document.createElement("tbody");
-    const weekdays = ["Mo","Di","Mi","Do","Fr"];
 
-    weekdays.forEach((wdName, wdIndex) => {
+    weekdays.forEach(wd => {
       const tr = document.createElement("tr");
-      const labelCell = document.createElement("td");
-      labelCell.innerHTML = `<strong>${wdName}</strong>`;
-      tr.appendChild(labelCell);
 
-      days.forEach(d => {
-        const cell = document.createElement("td");
-        cell.className = "fine-day-cell";
-        const weekday = d.getDay() === 0 ? 7 : d.getDay(); // So=7
+      const labelTd = document.createElement("td");
+      labelTd.className = "week-day-label";
+      labelTd.textContent = wd.label;
+      tr.appendChild(labelTd);
 
-        const cellDateISO = d.toISOString().slice(0,10);
-        cell.dataset.date = cellDateISO;
+      for (let i = 0; i < weekSpan; i++) {
+        const kw = baseKw + i;
+        const td = document.createElement("td");
+        td.className = "week-cell";
+        td.dataset.kw = kw;
+        td.dataset.weekday = wd.key;
 
-        // Dropziel
-        cell.addEventListener("dragover", ev => {
+        td.addEventListener("dragover", ev => {
           ev.preventDefault();
+          td.classList.add("dragover");
         });
-        cell.addEventListener("drop", ev => {
+        td.addEventListener("dragleave", () => {
+          td.classList.remove("dragover");
+        });
+        td.addEventListener("drop", async ev => {
           ev.preventDefault();
+          td.classList.remove("dragover");
           if (draggedEntryId) {
-            moveEntryToDate(draggedEntryId, cellDateISO);
+            await moveEntryToKwWeekday(draggedEntryId, kw, wd.key);
           }
         });
 
-        if (weekday === wdIndex + 1) {
-          const cellDate = new Date(d.getFullYear(), d.getMonth(), d.getDate());
-          const cards = entriesForDay(cellDate);
+        // Einträge für diese KW + Wochentag
+        const entries = allEntries.filter(e => e.kw === kw && e.weekday === wd.key);
+        entries.forEach(e => td.appendChild(createCardElement(e)));
 
-          cards.forEach(entry => {
-            const card = document.createElement("div");
-            card.className = "card";
-            card.draggable = true;
-            card.dataset.entryId = entry.id;
-
-            card.addEventListener("dragstart", () => {
-              draggedEntryId = entry.id;
-            });
-            card.addEventListener("dragend", () => {
-              draggedEntryId = null;
-            });
-
-            const title = entry.baustelle || entry.titel || "Ohne Titel";
-            const fahr = entry.fahrzeug || "";
-            const mit = entry.mitarbeiter || "";
-            const stat = (entry.status || "").toLowerCase();
-
-            const maColor = getMitarbeiterColor(mit);
-            const fzColor = getFahrzeugColor(fahr);
-            const stripeColor = maColor || fzColor || null;
-
-            const inner = document.createElement("div");
-            inner.className = "card-inner";
-
-            const strip = document.createElement("div");
-            strip.className = "card-color-strip";
-            if (stripeColor) strip.style.background = stripeColor;
-
-            const content = document.createElement("div");
-            content.className = "card-content";
-            content.innerHTML = `
-              <div class="card-title">${title}</div>
-              <div class="card-line card-meta">Fahrzeug: ${fahr}</div>
-              <div class="card-line card-meta">MA: ${mit}</div>
-              ${stat ? `<div class="card-line"><span class="status-badge">${stat}</span></div>` : ""}`;
-
-            inner.appendChild(strip);
-            inner.appendChild(content);
-            card.appendChild(inner);
-            cell.appendChild(card);
-          });
-        }
-
-        tr.appendChild(cell);
-      });
+        tr.appendChild(td);
+      }
 
       tbody.appendChild(tr);
     });
@@ -1183,49 +1229,22 @@
     table.appendChild(tbody);
   }
 
-  async function moveEntryToDate(entryId, targetISO) {
-    const entry = allEntries.find(e => e.id === entryId);
-    if (!entry) return;
+  async function moveEntryToKwWeekday(entryId, kw, weekday) {
+    const { error } = await supabase
+      .from("plantafel")
+      .update({ kw, weekday })
+      .eq("id", entryId);
 
-    const oldStart = entry.von ? new Date(entry.von)
-      : (entry.tag ? new Date(entry.tag)
-      : (entry.bis ? new Date(entry.bis) : null));
-    const oldEnd = entry.bis ? new Date(entry.bis)
-      : (entry.von ? new Date(entry.von)
-      : (entry.tag ? new Date(entry.tag) : null));
-
-    if (!oldStart || !oldEnd) return;
-
-    oldStart.setHours(0,0,0,0);
-    oldEnd.setHours(0,0,0,0);
-
-    const targetDate = new Date(targetISO);
-    targetDate.setHours(0,0,0,0);
-
-    const diff = diffInDays(targetDate, oldStart);
-
-    const newVon = entry.von ? addDays(oldStart, diff) : null;
-    const newBis = entry.bis ? addDays(oldEnd, diff) : null;
-    const newTag = entry.tag ? targetISO : null;
-
-    const payload = {
-      von: newVon ? newVon.toISOString().slice(0,10) : entry.von,
-      bis: newBis ? newBis.toISOString().slice(0,10) : entry.bis,
-      tag: newTag || entry.tag
-    };
-
-    const { error } = await supabase.from("plantafel").update(payload).eq("id", entryId);
     if (error) {
-      console.error("Fehler beim Verschieben:", error);
+      console.error("Fehler beim Verschieben im Wochenbrett:", error);
       alert("Fehler beim Verschieben.");
       return;
     }
-
     await loadEntries();
   }
 
   // -------------------------------------------------------------------
-  //  JAHRESÜBERSICHT (4x3 Monate + rechte Spalten)
+  //  JAHRESÜBERSICHT (wie dein Board)
   // -------------------------------------------------------------------
   const monthsDef = [
     { key: "jan", label: "Jan" },
@@ -1259,7 +1278,6 @@
 
     const year = new Date().getFullYear();
 
-    // 4 Reihen, je 3 Monate
     for (let r = 0; r < 4; r++) {
       const headerRow = document.createElement("tr");
       const row = document.createElement("tr");
@@ -1277,7 +1295,7 @@
       kwCellHeader.className = "year-kw-cell";
       kwCellHeader.innerHTML = `
         <div class="year-kw-main">KW ${kwStart} – ${kwEnd}</div>
-        <div class="year-kw-sub">${formatDateShort(monthStart)} – ${formatDateShort(monthEnd)}</div>
+        <div class="year-kw-sub">${formatDate(monthStart)} – ${formatDate(monthEnd)}</div>
       `;
       headerRow.appendChild(kwCellHeader);
 
@@ -1285,7 +1303,6 @@
       kwCellRow.className = "year-kw-cell";
       row.appendChild(kwCellRow);
 
-      // Monatszellen
       for (let c = 0; c < 3; c++) {
         const monthIndex = r * 3 + c;
         const mDef = monthsDef[monthIndex];
@@ -1306,12 +1323,10 @@
         drop.className = "year-month-drop";
         drop.dataset.bereich = mDef.key;
 
-        makeDropTarget(drop, mDef.key);
+        makeYearDropTarget(drop, mDef.key);
 
         const entries = allEntries.filter(e => (e.bereich || "").toLowerCase() === mDef.key);
-        entries.forEach(e => {
-          drop.appendChild(createCardElement(e));
-        });
+        entries.forEach(e => drop.appendChild(createCardElement(e)));
 
         td.appendChild(title);
         td.appendChild(drop);
@@ -1322,7 +1337,6 @@
       yearTable.appendChild(row);
     }
 
-    // Rechte Kategorien-Spalten
     catContainer.innerHTML = "";
     yearCategoriesDef.forEach(cat => {
       const box = document.createElement("div");
@@ -1337,7 +1351,7 @@
       drop.className = "year-cat-drop";
       drop.dataset.bereich = cat.key;
 
-      makeDropTarget(drop, cat.key);
+      makeYearDropTarget(drop, cat.key);
 
       const entries = allEntries.filter(e => (e.bereich || "").toLowerCase() === cat.key);
       entries.forEach(e => drop.appendChild(createCardElement(e)));
@@ -1347,7 +1361,7 @@
     });
   }
 
-  function makeDropTarget(el, bereichKey) {
+  function makeYearDropTarget(el, bereichKey) {
     el.addEventListener("dragover", ev => {
       ev.preventDefault();
       el.classList.add("dragover");
@@ -1364,45 +1378,6 @@
     });
   }
 
-  function createCardElement(entry) {
-    const card = document.createElement("div");
-    card.className = "card";
-    card.draggable = true;
-    card.dataset.entryId = entry.id;
-
-    card.addEventListener("dragstart", () => { draggedEntryId = entry.id; });
-    card.addEventListener("dragend", () => { draggedEntryId = null; });
-
-    const title = entry.baustelle || entry.titel || "Ohne Titel";
-    const fahr = entry.fahrzeug || "";
-    const mit = entry.mitarbeiter || "";
-    const stat = (entry.status || "").toLowerCase();
-
-    const maColor = getMitarbeiterColor(mit);
-    const fzColor = getFahrzeugColor(fahr);
-    const stripeColor = maColor || fzColor || null;
-
-    const inner = document.createElement("div");
-    inner.className = "card-inner";
-
-    const strip = document.createElement("div");
-    strip.className = "card-color-strip";
-    if (stripeColor) strip.style.background = stripeColor;
-
-    const content = document.createElement("div");
-    content.className = "card-content";
-    content.innerHTML = `
-      <div class="card-title">${title}</div>
-      <div class="card-line card-meta">Fahrzeug: ${fahr}</div>
-      <div class="card-line card-meta">MA: ${mit}</div>
-      ${stat ? `<div class="card-line"><span class="status-badge">${stat}</span></div>` : ""}`;
-
-    inner.appendChild(strip);
-    inner.appendChild(content);
-    card.appendChild(inner);
-    return card;
-  }
-
   async function moveEntryToBereich(entryId, bereichKey) {
     const { error } = await supabase
       .from("plantafel")
@@ -1415,13 +1390,6 @@
       return;
     }
     await loadEntries();
-  }
-
-  // -------------------------------------------------------------------
-  //  Grobplanung (Platzhalter)
-  // -------------------------------------------------------------------
-  function renderGrobView() {
-    // Noch nicht genutzt – könnte später weitere Ansichten bekommen.
   }
 
   // -------------------------------------------------------------------
@@ -1492,32 +1460,19 @@
     resetForm();
   });
 
-  document.getElementById("btnToday").addEventListener("click", () => {
-    fineStartDate = mondayOf(new Date());
-    renderFineView();
+  // Wochenbrett Buttons
+  document.getElementById("weekPrevBtn").addEventListener("click", () => {
+    baseKw = Math.max(1, baseKw - weekSpan);
+    renderWeekView();
   });
-  document.getElementById("btnPrev").addEventListener("click", () => {
-    fineStartDate = addDays(fineStartDate, -fineSpanDays);
-    renderFineView();
+  document.getElementById("weekNextBtn").addEventListener("click", () => {
+    baseKw = baseKw + weekSpan;
+    if (baseKw > 53) baseKw = 53;
+    renderWeekView();
   });
-  document.getElementById("btnNext").addEventListener("click", () => {
-    fineStartDate = addDays(fineStartDate, fineSpanDays);
-    renderFineView();
-  });
-  document.getElementById("btn1w").addEventListener("click", () => {
-    fineSpanDays = 7;
-    fineStartDate = mondayOf(new Date());
-    renderFineView();
-  });
-  document.getElementById("btn2w").addEventListener("click", () => {
-    fineSpanDays = 14;
-    fineStartDate = mondayOf(new Date());
-    renderFineView();
-  });
-  document.getElementById("btn4w").addEventListener("click", () => {
-    fineSpanDays = 28;
-    fineStartDate = mondayOf(new Date());
-    renderFineView();
+  document.getElementById("weekTodayBtn").addEventListener("click", () => {
+    baseKw = isoWeek(new Date());
+    renderWeekView();
   });
 
   // Stammdaten-Buttons
