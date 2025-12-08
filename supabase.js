@@ -12,10 +12,7 @@ async function fetchPlantafelEntries() {
     .select("*")
     .order("von", { ascending: true });
 
-  if (error) {
-    console.error("Supabase Fehler (fetchPlantafelEntries):", error);
-    throw error;
-  }
+  if (error) throw error;
   return data || [];
 }
 
@@ -26,27 +23,18 @@ async function upsertPlantafelEntry(entry, id = null) {
   } else {
     resp = await supa.from("plantafel").insert(entry);
   }
-  if (resp.error) {
-    console.error("Supabase Fehler (upsertPlantafelEntry):", resp.error);
-    throw resp.error;
-  }
+  if (resp.error) throw resp.error;
   return resp.data;
 }
 
 async function deletePlantafelEntry(id) {
   const { error } = await supa.from("plantafel").delete().eq("id", id);
-  if (error) {
-    console.error("Supabase Fehler (deletePlantafelEntry):", error);
-    throw error;
-  }
+  if (error) throw error;
 }
 
 async function patchPlantafelEntry(id, patch) {
   const { error } = await supa.from("plantafel").update(patch).eq("id", id);
-  if (error) {
-    console.error("Supabase Fehler (patchPlantafelEntry):", error);
-    throw error;
-  }
+  if (error) throw error;
 }
 
 // MITARBEITER
@@ -56,10 +44,7 @@ async function fetchMitarbeiter() {
     .select("*")
     .order("name", { ascending: true });
 
-  if (error) {
-    console.error("Supabase Fehler (fetchMitarbeiter):", error);
-    throw error;
-  }
+  if (error) throw error;
   return data || [];
 }
 
@@ -70,18 +55,12 @@ async function upsertMitarbeiter(row, id = null) {
   } else {
     resp = await supa.from("mitarbeiter").insert(row);
   }
-  if (resp.error) {
-    console.error("Supabase Fehler (upsertMitarbeiter):", resp.error);
-    throw resp.error;
-  }
+  if (resp.error) throw resp.error;
 }
 
 async function deleteMitarbeiterRow(id) {
   const { error } = await supa.from("mitarbeiter").delete().eq("id", id);
-  if (error) {
-    console.error("Supabase Fehler (deleteMitarbeiter):", error);
-    throw error;
-  }
+  if (error) throw error;
 }
 
 // FAHRZEUGE
@@ -91,10 +70,7 @@ async function fetchFahrzeuge() {
     .select("*")
     .order("name", { ascending: true });
 
-  if (error) {
-    console.error("Supabase Fehler (fetchFahrzeuge):", error);
-    throw error;
-  }
+  if (error) throw error;
   return data || [];
 }
 
@@ -105,16 +81,10 @@ async function upsertFahrzeug(row, id = null) {
   } else {
     resp = await supa.from("fahrzeuge").insert(row);
   }
-  if (resp.error) {
-    console.error("Supabase Fehler (upsertFahrzeug):", resp.error);
-    throw resp.error;
-  }
+  if (resp.error) throw resp.error;
 }
 
 async function deleteFahrzeugRow(id) {
   const { error } = await supa.from("fahrzeuge").delete().eq("id", id);
-  if (error) {
-    console.error("Supabase Fehler (deleteFahrzeug):", error);
-    throw error;
-  }
+  if (error) throw error;
 }
