@@ -5,241 +5,145 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Plantafel Dachdeckerei Frey</title>
 
-  <!-- Supabase Library (Edge-sicher, funktioniert IMMER) -->
-  <script src="https://unpkg.com/@supabase/supabase-js@2.39.4/dist/umd/supabase.min.js"></script>
+  <!-- Favicon verhindern 404 -->
+  <link rel="icon" href="data:," />
 
-  <!-- Stylesheet -->
+  <!-- Supabase CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" defer></script>
+
+  <!-- Styles -->
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
+  <header>Plantafel Dachdeckerei Frey</header>
 
-<header>Plantafel Dachdeckerei Frey</header>
+  <div id="page">
+    <!-- Tabs -->
+    <nav class="tabs">
+      <button class="tab-btn active" data-tab="jahr">Jahresplanung</button>
+      <button class="tab-btn" data-tab="woche">Wochenplan (4 KW)</button>
+    </nav>
 
-<div id="page">
+    <!-- TAB: JAHRESPLANUNG -->
+    <div id="tab-jahr" class="tab-content active">
+      <div class="section">
+        <div class="section-header">
+          <h2>Jahresübersicht (12 Monate)</h2>
+          <span class="small-text">Karten per Drag &amp; Drop verschieben – Datum bleibt unverändert.</span>
+        </div>
 
-  <!-- Tabs -->
-  <nav class="tabs">
-    <button class="tab-btn active" data-tab="jahr">Jahresplanung</button>
-    <button class="tab-btn" data-tab="woche">Wochenplan (4 KW)</button>
-  </nav>
+        <div id="year-board" class="year-layout">
+          <!-- Wird per JS gefüllt -->
+        </div>
+      </div>
+    </div>
 
-  <!-- JAHRESPLANUNG -->
-  <div id="tab-jahr" class="tab-content active">
-    <div class="section">
-      <div class="section-header">
-        <h2>Jahresübersicht (12 Monate)</h2>
-        <span class="small-text">Karten per Drag & Drop verschieben.</span>
+    <!-- TAB: WOCHENPLAN -->
+    <div id="tab-woche" class="tab-content">
+      <div class="section">
+        <div class="section-header">
+          <h2>Eintrag bearbeiten / neu anlegen</h2>
+          <span class="small-text">
+            KW + Wochentag steuern das Wochen-Board (4 KW).
+          </span>
+        </div>
+
+        <form id="entry-form">
+          <input type="hidden" id="entryId" />
+
+          <div class="form-grid">
+            <div>
+              <label>Von (Datum)</label>
+              <input type="date" id="vonInput" />
+            </div>
+
+            <div>
+              <label>Bis (optional)</label>
+              <input type="date" id="bisInput" />
+            </div>
+
+            <div>
+              <label>KW (für Wochenbrett)</label>
+              <input type="number" id="kwInput" min="1" max="53" placeholder="z.B. 49" />
+            </div>
+
+            <div>
+              <label>Wochentag (für Wochenbrett)</label>
+              <select id="weekdayInput">
+                <option value="">bitte wählen …</option>
+                <option value="Mo">Montag</option>
+                <option value="Di">Dienstag</option>
+                <option value="Mi">Mittwoch</option>
+                <option value="Do">Donnerstag</option>
+                <option value="Fr">Freitag</option>
+              </select>
+            </div>
+
+            <div>
+              <label>Titel</label>
+              <input type="text" id="titelInput" placeholder="z.B. Dachsanierung Muster" />
+            </div>
+
+            <div>
+              <label>Baustelle</label>
+              <input type="text" id="baustelleInput" placeholder="Adresse / Kunde" />
+            </div>
+
+            <div>
+              <label>Mitarbeiter</label>
+              <input type="text" id="mitarbeiterInput" placeholder="z.B. Thomas, Kevin" />
+            </div>
+
+            <div>
+              <label>Fahrzeug</label>
+              <input type="text" id="fahrzeugInput" placeholder="z.B. Crafter Bus" />
+            </div>
+
+            <div>
+              <label>Status</label>
+              <input type="text" id="statusInput" placeholder="normal / Urlaub / krank / Schule / …" />
+            </div>
+
+            <div class="full-width">
+              <label>Notiz</label>
+              <input type="text" id="notizInput" placeholder="Optionale Zusatzinfos" />
+            </div>
+          </div>
+
+          <div class="form-actions">
+            <button type="submit" class="btn primary" id="saveBtn">Speichern</button>
+            <button type="button" class="btn danger" id="deleteBtn">Löschen</button>
+            <button type="button" class="btn secondary" id="resetBtn">Formular leeren</button>
+            <span id="statusText" class="small-text"></span>
+          </div>
+        </form>
       </div>
 
-      <div class="year-layout">
-        <table class="year-table" id="yearTable"></table>
-        <div class="year-right-cols" id="yearCategories"></div>
+      <!-- WOCHENBRETT (4 KW, A-Layout) -->
+      <div class="section">
+        <div class="section-header">
+          <h2>Wochenplan – Magnettafel (4 Kalenderwochen)</h2>
+          <span class="small-text">
+            Drag &amp; Drop verschiebt die Karte – es werden nur KW + Wochentag gespeichert, Datum bleibt unverändert.
+          </span>
+        </div>
+
+        <div class="week-controls">
+          <button class="btn secondary" id="prev4Btn">&laquo; 4 KW zurück</button>
+          <button class="btn secondary" id="thisWeekBtn">Aktuelle KW</button>
+          <button class="btn secondary" id="next4Btn">4 KW vor &raquo;</button>
+          <span id="weekRangeText" class="small-text"></span>
+        </div>
+
+        <div id="week-board" class="week-board">
+          <!-- Wird per JS gefüllt -->
+        </div>
       </div>
     </div>
   </div>
 
-  <!-- WOCHENPLAN -->
-  <div id="tab-woche" class="tab-content">
-
-    <!-- LISTE -->
-    <div class="section">
-      <div class="section-header">
-        <h2>Einträge (Liste)</h2>
-        <span class="small-text">Zum Bearbeiten auf eine Zeile klicken.</span>
-      </div>
-
-      <div style="overflow-x:auto;">
-        <table id="listTable">
-          <thead>
-            <tr>
-              <th>Tag/Von</th>
-              <th>Bis</th>
-              <th>Titel</th>
-              <th>Baustelle</th>
-              <th>Mitarbeiter</th>
-              <th>Fahrzeug</th>
-              <th>Status</th>
-            </tr>
-          </thead>
-          <tbody></tbody>
-        </table>
-      </div>
-    </div>
-
-    <!-- FORMULAR -->
-    <div class="section">
-      <h2>Eintrag bearbeiten / neu anlegen</h2>
-
-      <div class="form-grid">
-        <div>
-          <label>Tag:
-            <input type="date" id="tagInput">
-          </label>
-        </div>
-
-        <div>
-          <label>Bereich (Jahr):
-            <input type="text" id="bereichInput" placeholder="jan, feb, mär, pv …">
-          </label>
-        </div>
-
-        <div>
-          <label>Von:
-            <input type="date" id="vonInput">
-          </label>
-        </div>
-
-        <div>
-          <label>Bis:
-            <input type="date" id="bisInput">
-          </label>
-        </div>
-
-        <div>
-          <label>KW:
-            <input type="number" id="kwInput" min="1" max="53">
-          </label>
-        </div>
-
-        <div>
-          <label>Wochentag:
-            <select id="weekdayInput">
-              <option value="">–</option>
-              <option value="mo">Montag</option>
-              <option value="di">Dienstag</option>
-              <option value="mi">Mittwoch</option>
-              <option value="do">Donnerstag</option>
-              <option value="fr">Freitag</option>
-            </select>
-          </label>
-        </div>
-
-        <div>
-          <label>Titel:
-            <input type="text" id="titelInput">
-          </label>
-        </div>
-
-        <div>
-          <label>Baustelle:
-            <input type="text" id="baustelleInput">
-          </label>
-        </div>
-
-        <div>
-          <label>Mitarbeiter:
-            <input type="text" id="mitarbeiterInput">
-          </label>
-        </div>
-
-        <div>
-          <label>Fahrzeug:
-            <input type="text" id="fahrzeugInput">
-          </label>
-        </div>
-
-        <div>
-          <label>Status:
-            <input type="text" id="statusInput">
-          </label>
-        </div>
-
-        <div>
-          <label>Notiz:
-            <textarea id="notizInput"></textarea>
-          </label>
-        </div>
-      </div>
-
-      <div class="form-actions">
-        <button class="btn" id="saveBtn">Speichern</button>
-        <button class="btn danger" id="deleteBtn">Löschen</button>
-        <button class="btn secondary" id="resetBtn">Formular leeren</button>
-        <span id="statusInfo" class="small-text"></span>
-      </div>
-    </div>
-
-    <!-- WOCHENBRETT 4 KW -->
-    <div class="section">
-      <div class="section-header">
-        <h2>Wochenplan – 4 Kalenderwochen</h2>
-      </div>
-
-      <div class="week-controls">
-        <button class="btn secondary" id="weekPrevBtn">4 KW zurück</button>
-        <button class="btn secondary" id="weekTodayBtn">Aktuelle KW</button>
-        <button class="btn secondary" id="weekNextBtn">4 KW vor</button>
-        <span id="weekCaption" class="small-text"></span>
-      </div>
-
-      <div style="overflow-x:auto;">
-        <table class="week-table" id="weekTable"></table>
-      </div>
-    </div>
-
-    <!-- URLAUB -->
-    <div class="section">
-      <div class="section-header">
-        <h2>Urlaubsübersicht</h2>
-      </div>
-      <div id="urlaubView"></div>
-    </div>
-
-    <!-- STAMMDATEN -->
-    <div class="section">
-      <div class="section-header">
-        <h2>Stammdaten</h2>
-      </div>
-
-      <div class="stamm-grid">
-        <!-- Mitarbeiter -->
-        <div>
-          <h3>Mitarbeiter</h3>
-          <div class="form-grid">
-            <div><label>Name:<input type="text" id="maNameInput"></label></div>
-            <div><label>Farbe:<input type="color" id="maColorInput" value="#ffcc00"></label></div>
-          </div>
-          <div class="form-actions">
-            <button class="btn" id="maSaveBtn">Speichern</button>
-            <button class="btn secondary" id="maNewBtn">Neu</button>
-            <button class="btn danger" id="maDeleteBtn">Löschen</button>
-            <input type="hidden" id="maIdHidden">
-          </div>
-          <table id="maTable" class="stamm-table">
-            <thead><tr><th>Name</th><th>Farbe</th></tr></thead>
-            <tbody></tbody>
-          </table>
-        </div>
-
-        <!-- Fahrzeuge -->
-        <div>
-          <h3>Fahrzeuge</h3>
-          <div class="form-grid">
-            <div><label>Bezeichnung:<input type="text" id="fzNameInput"></label></div>
-            <div><label>Kennzeichen:<input type="text" id="fzKennzInput"></label></div>
-            <div><label>Farbe:<input type="color" id="fzColorInput" value="#ff0000"></label></div>
-          </div>
-          <div class="form-actions">
-            <button class="btn" id="fzSaveBtn">Speichern</button>
-            <button class="btn secondary" id="fzNewBtn">Neu</button>
-            <button class="btn danger" id="fzDeleteBtn">Löschen</button>
-            <input type="hidden" id="fzIdHidden">
-          </div>
-          <table id="fzTable" class="stamm-table">
-            <thead><tr><th>Bezeichnung</th><th>Kennzeichen</th><th>Farbe</th></tr></thead>
-            <tbody></tbody>
-          </table>
-        </div>
-      </div>
-    </div>
-
-  </div>
-</div>
-
-<!-- SCRIPT FILES -->
-<script src="utils.js" defer></script>
-<script src="supabase.js" defer></script>
-<script src="app.js" defer></script>
-
+  <!-- Skripte -->
+  <script src="supabase.js" defer></script>
+  <script src="app.js" defer></script>
 </body>
 </html>
