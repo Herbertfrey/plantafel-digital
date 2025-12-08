@@ -5,13 +5,11 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Plantafel Dachdeckerei Frey</title>
 
-  <!-- Supabase CDN -->
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-
   <!-- Styles -->
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
+
 <header>Plantafel Dachdeckerei Frey</header>
 
 <div id="page">
@@ -31,10 +29,7 @@
       </div>
 
       <div class="year-layout">
-        <!-- Raster 4x3 Monate -->
         <table class="year-table" id="yearTable"></table>
-
-        <!-- Rechte Kategorien-Spalte -->
         <div class="year-right-cols" id="yearCategories"></div>
       </div>
     </div>
@@ -52,15 +47,15 @@
       <div style="overflow-x:auto;">
         <table id="listTable">
           <thead>
-          <tr>
-            <th>Tag/Von</th>
-            <th>Bis</th>
-            <th>Titel</th>
-            <th>Baustelle</th>
-            <th>Mitarbeiter</th>
-            <th>Fahrzeug</th>
-            <th>Status</th>
-          </tr>
+            <tr>
+              <th>Tag/Von</th>
+              <th>Bis</th>
+              <th>Titel</th>
+              <th>Baustelle</th>
+              <th>Mitarbeiter</th>
+              <th>Fahrzeug</th>
+              <th>Status</th>
+            </tr>
           </thead>
           <tbody></tbody>
         </table>
@@ -71,38 +66,43 @@
     <div class="section">
       <h2>Eintrag bearbeiten / neu anlegen</h2>
       <p class="small-text">
-        KW + Wochentag steuern das Wochen-Board (4 KW). Bereich steuert das Jahresbrett (Monat / Kategorie).
+        KW + Wochentag steuern das Wochenbrett (4 KW). Bereich steuert das Jahresbrett (Monat / Kategorie).
       </p>
+
       <div class="form-grid">
+
         <div>
-          <label>Tag (Info, optional):
-            <input type="date" id="tagInput">
+          <label>Tag (optional):
+            <input type="date" id="tagInput" />
           </label>
         </div>
+
         <div>
           <label>Bereich (für Jahresbrett):
-            <input type="text" id="bereichInput" placeholder="z.B. jan, pv, kleinigkeiten">
+            <input type="text" id="bereichInput" placeholder="z.B. jan, pv, kleinigkeiten" />
           </label>
         </div>
 
         <div>
           <label>Von (optional):
-            <input type="date" id="vonInput">
+            <input type="date" id="vonInput" />
           </label>
         </div>
+
         <div>
           <label>Bis (optional):
-            <input type="date" id="bisInput">
+            <input type="date" id="bisInput" />
           </label>
         </div>
 
         <div>
           <label>KW (für Wochenbrett):
-            <input type="number" id="kwInput" min="1" max="53" placeholder="z.B. 49">
+            <input type="number" id="kwInput" min="1" max="53" placeholder="z.B. 49" />
           </label>
         </div>
+
         <div>
-          <label>Wochentag (für Wochenbrett):
+          <label>Wochentag:
             <select id="weekdayInput">
               <option value="">– bitte wählen –</option>
               <option value="mo">Montag</option>
@@ -116,31 +116,34 @@
 
         <div>
           <label>Titel:
-            <input type="text" id="titelInput" placeholder="z.B. Dachsanierung Muster">
+            <input type="text" id="titelInput" placeholder="z.B. Dachsanierung Muster" />
           </label>
         </div>
+
         <div>
           <label>Baustelle:
-            <input type="text" id="baustelleInput" placeholder="Adresse / Kunde">
+            <input type="text" id="baustelleInput" placeholder="Adresse / Kunde" />
           </label>
         </div>
 
         <div>
           <label>Mitarbeiter:
-            <input type="text" id="mitarbeiterInput" placeholder="z.B. Thomas, Kevin">
+            <input type="text" id="mitarbeiterInput" placeholder="z.B. Thomas, Kevin" />
           </label>
         </div>
+
         <div>
           <label>Fahrzeug:
-            <input type="text" id="fahrzeugInput" placeholder="z.B. Crafter Bus">
+            <input type="text" id="fahrzeugInput" placeholder="z.B. Crafter Bus" />
           </label>
         </div>
 
         <div>
           <label>Status:
-            <input type="text" id="statusInput" placeholder="normal / Urlaub / krank / Schule / Fahr / ...">
+            <input type="text" id="statusInput" placeholder="normal / Urlaub / krank / Schule / Fahr / ..." />
           </label>
         </div>
+
         <div>
           <label>Notiz:
             <textarea id="notizInput" placeholder="Optionale Zusatzinfos"></textarea>
@@ -156,18 +159,20 @@
       </div>
     </div>
 
-    <!-- WOCHENBRETT (4 KW) -->
+    <!-- WOCHENPLAN (4 KW) -->
     <div class="section">
       <div class="section-header">
         <h2>Wochenplan – Magnettafel (4 Kalenderwochen)</h2>
-        <span class="small-text">Drag & Drop verschiebt die Karte – es werden nur KW + Wochentag gespeichert, Datum bleibt unverändert.</span>
+        <span class="small-text">Drag & Drop verschiebt die Karte – KW + Wochentag werden gespeichert, Datum bleibt unverändert.</span>
       </div>
+
       <div class="week-controls">
         <button class="btn secondary" id="weekPrevBtn">4 KW zurück</button>
         <button class="btn secondary" id="weekTodayBtn">Aktuelle KW</button>
         <button class="btn secondary" id="weekNextBtn">4 KW vor</button>
         <span class="small-text" id="weekCaption"></span>
       </div>
+
       <div style="overflow-x:auto;">
         <table class="week-table" id="weekTable"></table>
       </div>
@@ -188,32 +193,36 @@
         <h2>Stammdaten</h2>
         <span class="small-text">Farben steuern Farbstreifen auf den Magnetkarten.</span>
       </div>
+
       <div class="stamm-grid">
+
         <!-- Mitarbeiter -->
         <div>
           <h3>Mitarbeiter</h3>
+
           <div class="form-grid">
             <div>
               <label>Name:
-                <input type="text" id="maNameInput" placeholder="z.B. Thomas">
+                <input type="text" id="maNameInput" />
               </label>
             </div>
             <div>
               <label>Farbe:
-                <input type="color" id="maColorInput" value="#ffcc00">
+                <input type="color" id="maColorInput" value="#ffcc00" />
               </label>
             </div>
           </div>
+
           <div class="form-actions">
             <button class="btn" id="maSaveBtn">Mitarbeiter speichern</button>
             <button class="btn secondary" id="maNewBtn">Neu</button>
             <button class="btn danger" id="maDeleteBtn">Löschen</button>
-            <input type="hidden" id="maIdHidden">
+            <input type="hidden" id="maIdHidden" />
           </div>
 
           <table class="stamm-table" id="maTable">
             <thead>
-            <tr><th>Name</th><th>Farbe</th></tr>
+              <tr><th>Name</th><th>Farbe</th></tr>
             </thead>
             <tbody></tbody>
           </table>
@@ -222,45 +231,46 @@
         <!-- Fahrzeuge -->
         <div>
           <h3>Fahrzeuge</h3>
+
           <div class="form-grid">
             <div>
               <label>Bezeichnung:
-                <input type="text" id="fzNameInput" placeholder="z.B. Crafter Bus">
+                <input type="text" id="fzNameInput" />
               </label>
             </div>
             <div>
               <label>Kennzeichen:
-                <input type="text" id="fzKennzInput" placeholder="z.B. EI-XY 123">
+                <input type="text" id="fzKennzInput" />
               </label>
             </div>
             <div>
               <label>Farbe:
-                <input type="color" id="fzColorInput" value="#ff0000">
+                <input type="color" id="fzColorInput" value="#ff0000" />
               </label>
             </div>
           </div>
+
           <div class="form-actions">
             <button class="btn" id="fzSaveBtn">Fahrzeug speichern</button>
             <button class="btn secondary" id="fzNewBtn">Neu</button>
             <button class="btn danger" id="fzDeleteBtn">Löschen</button>
-            <input type="hidden" id="fzIdHidden">
+            <input type="hidden" id="fzIdHidden" />
           </div>
 
           <table class="stamm-table" id="fzTable">
             <thead>
-            <tr><th>Bezeichnung</th><th>Kennzeichen</th><th>Farbe</th></tr>
+              <tr><th>Bezeichnung</th><th>Kennzeichen</th><th>Farbe</th></tr>
             </thead>
             <tbody></tbody>
           </table>
         </div>
       </div>
+
     </div>
+  </div>
+</div>
 
-  </div><!-- /tab-woche -->
-
-</div><!-- /page -->
-
-<!-- Skripte -->
+<!-- SCRIPTS -->
 <script src="utils.js" defer></script>
 <script src="supabase.js" defer></script>
 <script src="app.js" defer></script>
