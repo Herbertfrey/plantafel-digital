@@ -618,4 +618,117 @@ async function deleteMitarbeiter() {
   try {
     await deleteMitarbeiterRow(id);
     c
+// --------------------- ALLES NEU LADEN ------------------------
+
+async function reloadAll() {
+  try {
+    allEntries = await fetchPlantafelEntries();
+    allMitarbeiter = await fetchMitarbeiter();
+    allFahrzeuge = await fetchFahrzeuge();
+
+    renderList();
+    renderWeekView();
+    renderYearView();
+    renderUrlaub();
+    renderMitarbeiterTable();
+    renderFahrzeugTable();
+
+    const si = document.getElementById("statusInfo");
+    if (si) si.textContent = "Einträge geladen.";
+  } catch (err) {
+    console.error("Fehler beim Laden der Daten:", err);
+    const si = document.getElementById("statusInfo");
+    if (si) si.textContent = "Fehler beim Laden der Daten.";
+  }
+}
+
+// --------------------- INITIALISIERUNG + TABS ------------------------
+
+document.addEventListener("DOMContentLoaded", () => {
+
+  // Tabs aktivieren
+  const tabButtons = document.querySelectorAll(".tab-btn");
+  const tabContents = document.querySelectorAll(".tab-content");
+
+  tabButtons.forEach(btn => {
+    btn.addEventListener("click", () => {
+      tabButtons.forEach(b => b.classList.remove("active"));
+      tabContents.forEach(c => c.classList.remove("active"));
+
+      btn.classList.add("active");
+      document.getElementById("tab-" + btn.dataset.tab).classList.add("active");
+    });
+  });
+
+  // FORM-Buttons
+  document.getElementById("saveBtn").addEventListener("click", e => {
+    e.preventDefault();
+    saveEntry();
+  });
+
+  document.getElementById("deleteBtn").addEventListener("click", e => {
+    e.preventDefault();
+    deleteEntry();
+  });
+
+  document.getElementById("resetBtn").addEventListener("click", e => {
+    e.preventDefault();
+    resetForm();
+  });
+
+  // Wochenbrett Navigation
+  document.getElementById("weekPrevBtn").addEventListener("click", () => {
+    baseKw = Math.max(1, baseKw - weekSpan);
+    renderWeekView();
+  });
+
+  document.getElementById("weekNextBtn").addEventListener("click", () => {
+    baseKw = baseKw + weekSpan;
+    if (baseKw > 53) baseKw = 53;
+    renderWeekView();
+  });
+
+  document.getElementById("weekTodayBtn").addEventListener("click", () => {
+    baseKw = isoWeek(new Date());
+    renderWeekView();
+  });
+
+  // Stammdaten Buttons
+  document.getElementById("maSaveBtn").addEventListener("click", e => {
+    e.preventDefault();
+    saveMitarbeiter();
+  });
+
+  document.getElementById("maNewBtn").addEventListener("click", e => {
+    e.preventDefault();
+    clearMitarbeiterForm();
+  });
+
+  document.getElementById("maDeleteBtn").addEventListener("click", e => {
+    e.preventDefault();
+    deleteMitarbeiter();
+  });
+
+  document.getElementById("fzSaveBtn").addEventListener("click", e => {
+    e.preventDefault();
+    saveFahrzeug();
+  });
+
+  document.getElementById("fzNewBtn").addEventListener("click", e => {
+    e.preventDefault();
+    clearFahrzeugForm();
+  });
+
+  document.getElementById("fzDeleteBtn").addEventListener("click", e => {
+    e.preventDefault();
+    deleteFahrzeug();
+  });
+
+  // Startzustand
+  resetForm();
+  clearMitarbeiterForm();
+  clearFahrzeugForm();
+
+  reloadAll();
+});
 
