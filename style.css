@@ -1,239 +1,95 @@
-:root {
-  --blue: #0075c9;
-  --blue-dark: #005a99;
-  --bg: #f0f0f0;
-  --card-border: #bbbbbb;
-  --text-main: #222;
-  --danger: #c62828;
-  --success: #2e7d32;
-}
-
-* {
-  box-sizing: border-box;
-}
-
 body {
-  margin: 0;
   font-family: Arial, sans-serif;
-  background: var(--bg);
-  color: var(--text-main);
+  margin: 0;
+  background: #f0f2f5;
 }
 
 header {
-  background: var(--blue);
+  background: #1f5fbf;
   color: #fff;
-  padding: 14px 18px;
-  font-size: 22px;
-  font-weight: bold;
+  padding: 15px;
 }
 
-#page {
-  max-width: 1400px;
-  margin: 0 auto;
-  padding: 10px;
-}
-
-/* Tabs */
-
-.tabs {
-  display: flex;
-  gap: 8px;
-  margin-bottom: 10px;
-}
-
-.tab-btn {
-  border: none;
-  padding: 8px 14px;
-  cursor: pointer;
-  background: #ddd;
-  border-radius: 4px 4px 0 0;
-  font-weight: bold;
-}
-
-.tab-btn.active {
-  background: #fff;
-  border-bottom: 2px solid #fff;
-}
-
-/* Sections */
-
-.section {
-  background: #fff;
-  border-radius: 4px;
-  padding: 10px 12px;
-  box-shadow: 0 1px 3px rgba(0,0,0,0.15);
-  margin-bottom: 10px;
-}
-
-.section-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: baseline;
-  gap: 8px;
-  margin-bottom: 8px;
-}
-
-.section-header h2 {
+header h1 {
   margin: 0;
-  font-size: 18px;
 }
 
-.small-text {
-  font-size: 12px;
-  color: #555;
+#form-section {
+  padding: 15px;
+  background: #ffffff;
 }
 
-/* Tab Content */
-
-.tab-content {
-  display: none;
-}
-
-.tab-content.active {
+label {
   display: block;
+  margin-bottom: 8px;
+  font-size: 14px;
 }
 
-/* Form */
-
-.form-grid {
-  display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 8px 10px;
+input, select, textarea {
+  width: 260px;
+  padding: 4px;
+  margin-top: 2px;
 }
 
-.form-grid label {
-  display: block;
-  font-size: 12px;
-  margin-bottom: 2px;
-}
-
-.form-grid input,
-.form-grid select {
-  width: 100%;
-  padding: 4px 6px;
-}
-
-.form-grid .full-width {
-  grid-column: 1 / -1;
-}
-
-.form-actions {
+button {
   margin-top: 10px;
-  display: flex;
-  gap: 8px;
-  align-items: center;
+  padding: 6px 12px;
 }
 
-/* Buttons */
-
-.btn {
-  border: none;
-  padding: 6px 10px;
-  cursor: pointer;
-  border-radius: 3px;
-  font-size: 13px;
+#board {
+  display: grid;
+  grid-template-columns: 80px repeat(4, 1fr);
+  gap: 6px;
+  padding: 15px;
 }
 
-.btn.primary {
-  background: var(--blue);
-  color: #fff;
+.header {
+  font-weight: bold;
+  text-align: center;
 }
 
-.btn.secondary {
-  background: #e0e0e0;
+.day {
+  font-weight: bold;
 }
 
-.btn.danger {
-  background: var(--danger);
-  color: #fff;
-}
-
-.btn:disabled {
-  opacity: 0.6;
-  cursor: default;
-}
-
-/* Week controls */
-
-.week-controls {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  margin-bottom: 6px;
-}
-
-/* Wochen-Board */
-
-.week-board {
-  overflow-x: auto;
-}
-
-.week-table {
-  border-collapse: collapse;
-  width: 100%;
-  min-width: 900px;
-}
-
-.week-table th,
-.week-table td {
+.cell {
+  min-height: 80px;
+  background: #ffffff;
   border: 1px solid #ccc;
   padding: 4px;
-  vertical-align: top;
 }
 
-.week-table thead th {
-  background: #f5f5f5;
-  text-align: center;
-}
-
-.week-table .weekday-cell {
-  width: 60px;
-  font-weight: bold;
-  text-align: center;
-  background: #fafafa;
-}
-
-.dropzone {
-  min-height: 60px;
-}
-
-/* Karten im Board */
+/* =========================
+   MAGNETKARTEN
+   ========================= */
 
 .card {
-  border: 1px solid var(--card-border);
-  border-radius: 3px;
-  background: #fff;
-  padding: 3px 4px;
-  margin-bottom: 3px;
-  font-size: 11px;
-  cursor: move;
+  border-left: 6px solid #999;
+  background: #eee;
+  margin-bottom: 6px;
+  padding: 6px;
+  border-radius: 6px;
+  cursor: grab;
+  font-size: 12px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.3);
 }
 
 .card-header {
   font-weight: bold;
 }
 
-.card-meta {
-  font-size: 10px;
-  color: #555;
+/* STATUS */
+.card[data-status="normal"] {
+  border-left-color: #1f5fbf;
+  background: #e7effa;
 }
 
-/* Jahresboard – vorerst simple Boxen */
-
-.year-layout {
-  display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 8px;
+.card[data-status="wichtig"] {
+  border-left-color: #c40000;
+  background: #fdeaea;
 }
 
-.year-month {
-  border: 1px solid #ccc;
-  border-radius: 3px;
-  padding: 6px;
-  background: #fafafa;
-}
-
-.year-month h3 {
-  margin: 0 0 4px 0;
-  font-size: 14px;
+.card[data-status="urlaub"] {
+  border-left-color: #2c8c2c;
+  background: #e9f6e9;
 }
