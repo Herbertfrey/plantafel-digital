@@ -1,95 +1,41 @@
 body {
   font-family: Arial, sans-serif;
+  background: #f2f2f2;
   margin: 0;
-  background: #f0f2f5;
 }
 
 header {
-  background: #1f5fbf;
-  color: #fff;
+  background: #1e73be;
+  color: white;
   padding: 15px;
 }
 
-header h1 {
-  margin: 0;
+main {
+  padding: 20px;
 }
 
-#form-section {
-  padding: 15px;
-  background: #ffffff;
-}
-
-label {
+form label {
   display: block;
-  margin-bottom: 8px;
-  font-size: 14px;
+  margin-bottom: 10px;
 }
 
 input, select, textarea {
-  width: 260px;
-  padding: 4px;
-  margin-top: 2px;
+  width: 100%;
+  padding: 6px;
 }
 
 button {
-  margin-top: 10px;
-  padding: 6px 12px;
+  padding: 8px 14px;
+  cursor: pointer;
 }
 
 #board {
-  display: grid;
-  grid-template-columns: 80px repeat(4, 1fr);
-  gap: 6px;
-  padding: 15px;
+  margin-top: 20px;
 }
 
-.header {
-  font-weight: bold;
-  text-align: center;
-}
-
-.day {
-  font-weight: bold;
-}
-
-.cell {
-  min-height: 80px;
-  background: #ffffff;
+.board-item {
+  background: white;
+  padding: 10px;
   border: 1px solid #ccc;
-  padding: 4px;
-}
-
-/* =========================
-   MAGNETKARTEN
-   ========================= */
-
-.card {
-  border-left: 6px solid #999;
-  background: #eee;
   margin-bottom: 6px;
-  padding: 6px;
-  border-radius: 6px;
-  cursor: grab;
-  font-size: 12px;
-  box-shadow: 0 1px 3px rgba(0,0,0,0.3);
-}
-
-.card-header {
-  font-weight: bold;
-}
-
-/* STATUS */
-.card[data-status="normal"] {
-  border-left-color: #1f5fbf;
-  background: #e7effa;
-}
-
-.card[data-status="wichtig"] {
-  border-left-color: #c40000;
-  background: #fdeaea;
-}
-
-.card[data-status="urlaub"] {
-  border-left-color: #2c8c2c;
-  background: #e9f6e9;
 }
