@@ -1,9 +1,12 @@
 <!DOCTYPE html>
 <html lang="de">
 <head>
-  <meta charset="UTF-8" />
+  <meta charset="UTF-8">
   <title>Plantafel Dachdeckerei Frey</title>
-  <link rel="stylesheet" href="style.css" />
+  <link rel="stylesheet" href="style.css">
+
+  <!-- ✅ SUPABASE CLIENT (PFLICHT!) -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
 <body>
 
@@ -15,13 +18,11 @@
   <h2>Wochenplan – Magnettafel (4 Kalenderwochen)</h2>
 
   <form id="auftrag-form">
-    <label>
-      KW
-      <input type="number" id="kw" required />
+    <label>KW
+      <input type="number" id="kw" required>
     </label>
 
-    <label>
-      Wochentag
+    <label>Wochentag
       <select id="weekday" required>
         <option value="">bitte wählen</option>
         <option value="Mo">Mo</option>
@@ -32,36 +33,30 @@
       </select>
     </label>
 
-    <label>
-      Titel
-      <input type="text" id="titel" />
+    <label>Titel
+      <input type="text" id="titel">
     </label>
 
-    <label>
-      Baustelle
-      <input type="text" id="baustelle" />
+    <label>Baustelle
+      <input type="text" id="baustelle">
     </label>
 
-    <label>
-      Mitarbeiter
-      <input type="text" id="mitarbeiter" />
+    <label>Mitarbeiter
+      <input type="text" id="mitarbeiter">
     </label>
 
-    <label>
-      Fahrzeug
-      <input type="text" id="fahrzeug" />
+    <label>Fahrzeug
+      <input type="text" id="fahrzeug">
     </label>
 
-    <label>
-      Status
+    <label>Status
       <select id="status">
         <option value="normal">normal</option>
         <option value="wichtig">wichtig</option>
       </select>
     </label>
 
-    <label>
-      Notiz
+    <label>Notiz
       <textarea id="notiz"></textarea>
     </label>
 
