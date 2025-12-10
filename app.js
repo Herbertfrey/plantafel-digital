@@ -1,30 +1,41 @@
-document.getElementById("auftrag-form")
-  .addEventListener("submit", async (e) => {
-
+document.getElementById("auftrag-form").addEventListener("submit", async (e) => {
   e.preventDefault();
 
   const data = {
     kw: Number(document.getElementById("kw").value),
-    wochentag: document.getElementById("wochentag").value,
-    titel: document.getElementById("titel").value,
-    baustelle: document.getElementById("baustelle").value,
-    mitarbeiter: document.getElementById("mitarbeiter").value,
-    fahrzeug: document.getElementById("fahrzeug").value,
+    weekday: document.getElementById("weekday").value,
+    titel: document.getElementById("titel").value || null,
+    baustelle: document.getElementById("baustelle").value || null,
+    mitarbeiter: document.getElementById("mitarbeiter").value || null,
+    fahrzeug: document.getElementById("fahrzeug").value || null,
     status: document.getElementById("status").value,
-    notiz: document.getElementById("notiz").value
+    notiz: document.getElementById("notiz").value || null
   };
 
-  if (!data.kw || !data.wochentag) {
-    alert("KW und Wochentag müssen gesetzt sein");
+  // Pflichtfelder prüfen
+  if (!data.kw || !data.weekday) {
+    alert("KW und Wochentag müssen gesetzt sein.");
     return;
   }
 
   try {
-    await createEintrag(data);
+    const { error } = await supabase
+      .from("plantafel")
+      .insert([data]);
+
+    // ✅ NUR hier wird ein Fehler angezeigt
+    if (error) {
+      console.error("Supabase-Fehler:", error);
+      alert("Fehler beim Speichern ❌");
+      return;
+    }
+
+    // ✅ Erfolgsfall
     alert("Gespeichert ✅");
-    loadWeek(data.kw);
     e.target.reset();
-  } catch {
-    alert("Fehler beim Speichern ❌");
+
+  } catch (err) {
+    console.error("Unerwarteter Fehler:", err);
+    alert("Technischer Fehler ❌ (siehe Konsole)");
   }
 });
