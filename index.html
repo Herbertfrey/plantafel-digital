@@ -4,32 +4,31 @@
   <meta charset="UTF-8">
   <title>Plantafel Dachdeckerei Frey</title>
   <link rel="stylesheet" href="style.css">
-
-  <!-- Supabase CDN -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
 <body>
 
-<header>
-  <h1>Plantafel Dachdeckerei Frey</h1>
+<header class="header">
+  Plantafel Dachdeckerei Frey
 </header>
 
 <main>
   <h2>Wochenplan – Magnettafel (4 Kalenderwochen)</h2>
 
-  <form id="auftrag-form">
+  <form id="plantafel-form">
+
     <label>KW
       <input type="number" id="kw" required>
     </label>
 
     <label>Wochentag
-      <select id="wochentag" required>
+      <select id="weekday" required>
         <option value="">bitte wählen</option>
-        <option>Mo</option>
-        <option>Di</option>
-        <option>Mi</option>
-        <option>Do</option>
-        <option>Fr</option>
+        <option value="Mo">Mo</option>
+        <option value="Di">Di</option>
+        <option value="Mi">Mi</option>
+        <option value="Do">Do</option>
+        <option value="Fr">Fr</option>
       </select>
     </label>
 
@@ -62,15 +61,9 @@
 
     <button type="submit">Speichern</button>
   </form>
-
-  <h3>Wochenübersicht</h3>
-  <div id="board"></div>
 </main>
 
 <script src="supabase.js"></script>
-<script src="plantafelApi.js"></script>
-<script src="board.js"></script>
 <script src="app.js"></script>
-
 </body>
 </html>
