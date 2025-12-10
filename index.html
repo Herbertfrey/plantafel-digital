@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="de">
 <head>
-  <meta charset="UTF-8" />
+  <meta charset="UTF-8">
   <title>Plantafel Dachdeckerei Frey</title>
   <link rel="stylesheet" href="style.css">
 
@@ -10,8 +10,8 @@
 </head>
 <body>
 
-<header class="header">
-  Plantafel Dachdeckerei Frey
+<header>
+  <h1>Plantafel Dachdeckerei Frey</h1>
 </header>
 
 <main>
@@ -23,13 +23,13 @@
     </label>
 
     <label>Wochentag
-      <select id="weekday" required>
+      <select id="wochentag" required>
         <option value="">bitte wählen</option>
-        <option value="Mo">Mo</option>
-        <option value="Di">Di</option>
-        <option value="Mi">Mi</option>
-        <option value="Do">Do</option>
-        <option value="Fr">Fr</option>
+        <option>Mo</option>
+        <option>Di</option>
+        <option>Mi</option>
+        <option>Do</option>
+        <option>Fr</option>
       </select>
     </label>
 
@@ -62,10 +62,14 @@
 
     <button type="submit">Speichern</button>
   </form>
+
+  <h3>Wochenübersicht</h3>
+  <div id="board"></div>
 </main>
 
 <script src="supabase.js"></script>
 <script src="plantafelApi.js"></script>
+<script src="board.js"></script>
 <script src="app.js"></script>
 
 </body>
