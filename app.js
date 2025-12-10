@@ -1,20 +1,62 @@
-// app.js – STABIL & EINFACH
+// app.js – komplett neu, stabil, ohne Nebenabhängigkeiten
+// Erwartet: window.supabase aus supabase.js
 
-document.addEventListener("DOMContentLoaded", () => {
-  const form = document.getElementById("plantafel-form");
+const form = document.getElementById("plantafel-form");
+const overview = document.getElementById("wochenuebersicht") || (() => {
+  const d = document.createElement("div");
+  d.id = "wochenuebersicht";
+  const h = document.createElement("h3");
+  h.textContent = "Wochenübersicht";
+  d.appendChild(h);
+  document.querySelector("main").appendChild(d);
+  return d;
+})();
 
-  if (!form) {
-    console.error("Formular plantafel-form nicht gefunden");
+function createTable() {
+  const table = document.createElement("table");
+  table.style.width = "100%";
+  table.border = "1";
+  const head = document.createElement("tr");
+  ["Tag", "Titel", "Baustelle", "Mitarbeiter", "Fahrzeug", "Status"].forEach(t => {
+    const th = document.createElement("th");
+    th.textContent = t;
+    head.appendChild(th);
+  });
+  table.appendChild(head);
+  return table;
+}
+
+async function loadWeek(kw) {
+  overview.querySelectorAll("table").forEach(t => t.remove());
+  const table = createTable();
+  overview.appendChild(table);
+
+  const { data, error } = await window.supabase
+    .from("plantafel")
+    .select("weekday,titel,baustelle,mitarbeiter,fahrzeug,status")
+    .eq("kw", kw)
+    .order("weekday");
+
+  if (error) {
+    console.error(error);
     return;
   }
 
-  form.addEventListener("submit", speichern);
-});
+  data.forEach(r => {
+    const tr = document.createElement("tr");
+    [r.weekday, r.titel, r.baustelle, r.mitarbeiter, r.fahrzeug, r.status].forEach(v => {
+      const td = document.createElement("td");
+      td.textContent = v || "";
+      tr.appendChild(td);
+    });
+    table.appendChild(tr);
+  });
+}
 
-async function speichern(e) {
+form.addEventListener("submit", async e => {
   e.preventDefault();
 
-  const data = {
+  const payload = {
     kw: Number(document.getElementById("kw").value),
     weekday: document.getElementById("weekday").value,
     titel: document.getElementById("titel").value,
@@ -22,23 +64,22 @@ async function speichern(e) {
     mitarbeiter: document.getElementById("mitarbeiter").value,
     fahrzeug: document.getElementById("fahrzeug").value,
     status: document.getElementById("status").value,
-    notiz: document.getElementById("notiz").value,
+    notiz: document.getElementById("notiz").value
   };
 
-  if (!data.kw || !data.weekday) {
-    alert("KW und Wochentag sind Pflicht");
+  const { error } = await window.supabase.from("plantafel").insert(payload);
+
+  if (error) {
+    alert("Fehler beim Speichern");
+    console.error(error);
     return;
   }
 
-  const { error } = await supabase
-    .from("plantafel")
-    .insert([data]);
+  alert("Gespeichert ✅");
+  loadWeek(payload.kw);
+  form.reset();
+});
 
-  if (error) {
-    console.error(error);
-    alert("Fehler beim Speichern ❌");
-  } else {
-    alert("Gespeichert ✅");
-    e.target.reset();
-  }
-}
+// Initial laden, falls KW eingetragen
+const kwInput = document.getElementById("kw");
+kwInput.addEventListener("change", () => loadWeek(Number(kwInput.value)));
