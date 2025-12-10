@@ -17,7 +17,7 @@ async function loadWeek(kw) {
     const div = document.createElement("div");
     div.className = "board-item";
     div.textContent =
-      `${e.wochentag} – ${e.titel} | ${e.baustelle} | ${e.mitarbeiter} | ${e.fahrzeug}`;
+      `${e.wochentag} | ${e.titel} | ${e.baustelle} | ${e.mitarbeiter} | ${e.fahrzeug}`;
     board.appendChild(div);
   });
 }
