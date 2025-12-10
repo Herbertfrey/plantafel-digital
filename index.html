@@ -1,69 +1,93 @@
 <!DOCTYPE html>
 <html lang="de">
 <head>
-  <meta charset="UTF-8">
+  <meta charset="UTF-8" />
   <title>Plantafel Dachdeckerei Frey</title>
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
   <link rel="stylesheet" href="style.css">
+
+  <!-- Supabase CDN -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
 <body>
 
-<header class="header">
-  Plantafel Dachdeckerei Frey
-</header>
+  <header class="header">
+    <h1>Plantafel Dachdeckerei Frey</h1>
+  </header>
 
-<main>
-  <h2>Wochenplan – Magnettafel (4 Kalenderwochen)</h2>
+  <main>
 
-  <form id="plantafel-form">
+    <h2>Wochenplan – Magnettafel (4 Kalenderwochen)</h2>
 
-    <label>KW
-      <input type="number" id="kw" required>
-    </label>
+    <form id="plantafel-form">
 
-    <label>Wochentag
-      <select id="weekday" required>
-        <option value="">bitte wählen</option>
-        <option value="Mo">Mo</option>
-        <option value="Di">Di</option>
-        <option value="Mi">Mi</option>
-        <option value="Do">Do</option>
-        <option value="Fr">Fr</option>
-      </select>
-    </label>
+      <label>
+        KW
+        <input type="number" id="kw" required>
+      </label>
 
-    <label>Titel
-      <input type="text" id="titel">
-    </label>
+      <label>
+        Wochentag
+        <select id="weekday" required>
+          <option value="">bitte wählen</option>
+          <option value="Mo">Mo</option>
+          <option value="Di">Di</option>
+          <option value="Mi">Mi</option>
+          <option value="Do">Do</option>
+          <option value="Fr">Fr</option>
+        </select>
+      </label>
 
-    <label>Baustelle
-      <input type="text" id="baustelle">
-    </label>
+      <label>
+        Titel
+        <input type="text" id="titel">
+      </label>
 
-    <label>Mitarbeiter
-      <input type="text" id="mitarbeiter">
-    </label>
+      <label>
+        Baustelle
+        <input type="text" id="baustelle">
+      </label>
 
-    <label>Fahrzeug
-      <input type="text" id="fahrzeug">
-    </label>
+      <label>
+        Mitarbeiter
+        <input type="text" id="mitarbeiter">
+      </label>
 
-    <label>Status
-      <select id="status">
-        <option value="normal">normal</option>
-        <option value="wichtig">wichtig</option>
-      </select>
-    </label>
+      <label>
+        Fahrzeug
+        <input type="text" id="fahrzeug">
+      </label>
 
-    <label>Notiz
-      <textarea id="notiz"></textarea>
-    </label>
+      <label>
+        Status
+        <select id="status">
+          <option value="normal">normal</option>
+          <option value="wichtig">wichtig</option>
+        </select>
+      </label>
 
-    <button type="submit">Speichern</button>
-  </form>
-</main>
+      <label>
+        Notiz
+        <textarea id="notiz"></textarea>
+      </label>
 
-<script src="supabase.js"></script>
-<script src="app.js"></script>
+      <button type="submit">Speichern</button>
+    </form>
+
+    <hr>
+
+    <h3>Wochenübersicht</h3>
+
+    <!-- HIER WIRD DIE TABELLE GERENDERT -->
+    <div id="wochenuebersicht"></div>
+
+  </main>
+
+  <!-- Deine Scripts -->
+  <script src="supabase.js"></script>
+  <script src="app.js"></script>
+
 </body>
 </html>
