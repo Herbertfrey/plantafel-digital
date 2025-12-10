@@ -1,9 +1,5 @@
 document.addEventListener("DOMContentLoaded", () => {
-  const form = document.querySelector("form");
-  if (!form) {
-    console.error("Formular nicht gefunden");
-    return;
-  }
+  const form = document.getElementById("plantafel-form");
 
   form.addEventListener("submit", async (e) => {
     e.preventDefault();
@@ -16,11 +12,11 @@ document.addEventListener("DOMContentLoaded", () => {
       mitarbeiter: document.getElementById("mitarbeiter").value || null,
       fahrzeug: document.getElementById("fahrzeug").value || null,
       status: document.getElementById("status").value,
-      notiz: document.getElementById("notiz").value || null
+      notiz: document.getElementById("notiz").value || null,
     };
 
     if (!data.kw || !data.weekday) {
-      alert("KW und Wochentag müssen gesetzt sein.");
+      alert("KW und Wochentag fehlen");
       return;
     }
 
