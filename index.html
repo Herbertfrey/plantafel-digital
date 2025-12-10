@@ -1,122 +1,71 @@
 <!DOCTYPE html>
 <html lang="de">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta charset="UTF-8">
   <title>Plantafel Dachdeckerei Frey</title>
-  <link rel="stylesheet" href="style.css" />
+  <link rel="stylesheet" href="style.css">
 </head>
-
 <body>
 
-  <header>
-    <h1>Plantafel Dachdeckerei Frey</h1>
-  </header>
+<header>
+  <h1>Plantafel Dachdeckerei Frey</h1>
+  <nav>
+    <button onclick="showWeek()">Wochenplan (4 KW)</button>
+  </nav>
+</header>
 
-  <div class="tabs">
-    <button class="tab-btn active" data-tab="year">Jahresplanung</button>
-    <button class="tab-btn" data-tab="week">Wochenplan (4 KW)</button>
-  </div>
+<section id="form-section">
+  <h2>Wochenplan – Magnettafel (4 Kalenderwochen)</h2>
 
-  <!-- TAB: JAHR -->
-  <div id="tab-year" class="tab-content active">
-    <h2>Jahresübersicht (12 Monate)</h2>
-    <p>Karten per Drag & Drop verschieben — Datum bleibt unverändert.</p>
-    <div id="year-board" class="year-board"></div>
-  </div>
+  <label>KW (für Wochenbrett)
+    <input type="number" id="kw" min="1" max="53">
+  </label>
 
-  <!-- TAB: WOCHE -->
-  <div id="tab-week" class="tab-content">
-    <h2>Wochenplan – Magnettafel (4 Kalenderwochen)</h2>
+  <label>Wochentag
+    <select id="weekday">
+      <option value="">bitte wählen</option>
+      <option value="mo">Mo</option>
+      <option value="di">Di</option>
+      <option value="mi">Mi</option>
+      <option value="do">Do</option>
+      <option value="fr">Fr</option>
+    </select>
+  </label>
 
-    <div class="week-controls">
-      <button id="prev4Btn">« 4 KW zurück</button>
-      <button id="thisWeekBtn">Aktuelle KW</button>
-      <button id="next4Btn">4 KW vor »</button>
-      <span id="weekRangeText"></span>
-    </div>
+  <label>Titel
+    <input type="text" id="titel">
+  </label>
 
-    <form id="entry-form">
-      <input type="hidden" id="entryId" />
+  <label>Baustelle
+    <input type="text" id="baustelle">
+  </label>
 
-      <div class="form-row">
-        <label>Von (Datum)</label>
-        <input type="date" id="vonInput" />
-      </div>
+  <label>Mitarbeiter
+    <input type="text" id="mitarbeiter">
+  </label>
 
-      <div class="form-row">
-        <label>Bis (optional)</label>
-        <input type="date" id="bisInput" />
-      </div>
+  <label>Fahrzeug
+    <input type="text" id="fahrzeug">
+  </label>
 
-      <div class="form-row">
-        <label>KW (für Wochenbrett)</label>
-        <input type="number" id="kwInput" placeholder="z.B. 49" />
-      </div>
+  <label>Status
+    <select id="status">
+      <option value="normal">normal</option>
+      <option value="wichtig">wichtig</option>
+      <option value="urlaub">urlaub</option>
+    </select>
+  </label>
 
-      <div class="form-row">
-        <label>Wochentag</label>
-        <select id="weekdayInput">
-          <option value="">bitte wählen</option>
-          <option value="Mo">Mo</option>
-          <option value="Di">Di</option>
-          <option value="Mi">Mi</option>
-          <option value="Do">Do</option>
-          <option value="Fr">Fr</option>
-        </select>
-      </div>
+  <label>Notiz
+    <textarea id="notiz"></textarea>
+  </label>
 
-      <div class="form-row">
-        <label>Titel</label>
-        <input type="text" id="titelInput" placeholder="z.B. Dachsanierung" />
-      </div>
+  <button onclick="saveEntry()">Speichern</button>
+</section>
 
-      <div class="form-row">
-        <label>Baustelle</label>
-        <input type="text" id="baustelleInput" placeholder="Adresse" />
-      </div>
+<section id="board"></section>
 
-      <div class="form-row">
-        <label>Mitarbeiter</label>
-        <input type="text" id="mitarbeiterInput" placeholder="z.B. Thomas" />
-      </div>
-
-      <div class="form-row">
-        <label>Fahrzeug</label>
-        <input type="text" id="fahrzeugInput" placeholder="z.B. Crafter" />
-      </div>
-
-      <div class="form-row">
-        <label>Status</label>
-        <input type="text" id="statusInput" placeholder="normal / wichtig" />
-      </div>
-
-      <div class="form-row">
-        <label>Notiz</label>
-        <textarea id="notizInput" placeholder="Optionale Zusatzinfos"></textarea>
-      </div>
-
-      <div class="btn-row">
-        <button type="submit" class="btn-save">Speichern</button>
-        <button type="button" id="deleteBtn" class="btn-delete">Löschen</button>
-        <button type="button" id="resetBtn">Formular leeren</button>
-      </div>
-    </form>
-
-    <div id="statusText" class="status"></div>
-
-    <div id="week-board"></div>
-  </div>
-
-  <!-- SCRIPTS -->
-
-  <!-- Supabase CDN -->
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-
-  <!-- UNBEDINGT IN DIESER REIHENFOLGE -->
-  <script src="plantafelApi.js"></script>
-  <script src="utils.js"></script>
-  <script src="app.js"></script>
-
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="app.js"></script>
 </body>
 </html>
