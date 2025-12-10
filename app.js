@@ -1,7 +1,6 @@
 document.getElementById("auftrag-form").addEventListener("submit", async (e) => {
   e.preventDefault();
 
-  // ✅ ZENTRAL, EINMAL, SAUBER
   const data = {
     kw: Number(document.getElementById("kw").value),
     weekday: document.getElementById("weekday").value,
@@ -13,7 +12,6 @@ document.getElementById("auftrag-form").addEventListener("submit", async (e) => 
     notiz: document.getElementById("notiz").value
   };
 
-  // ✅ HARTE VALIDIERUNG
   if (!data.kw || !data.weekday) {
     alert("KW und Wochentag müssen gesetzt sein.");
     return;
@@ -23,7 +21,8 @@ document.getElementById("auftrag-form").addEventListener("submit", async (e) => 
     await createEintrag(data);
     alert("Gespeichert ✅");
     e.target.reset();
-  } catch {
+  } catch (err) {
     alert("Fehler beim Speichern ❌");
+    console.error(err);
   }
 });
