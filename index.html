@@ -4,146 +4,119 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Plantafel Dachdeckerei Frey</title>
-
-  <!-- Favicon verhindern 404 -->
-  <link rel="icon" href="data:," />
-
-  <!-- Supabase CDN -->
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" defer></script>
-
-  <!-- Styles -->
   <link rel="stylesheet" href="style.css" />
 </head>
+
 <body>
-  <header>Plantafel Dachdeckerei Frey</header>
 
-  <div id="page">
-    <!-- Tabs -->
-    <nav class="tabs">
-      <button class="tab-btn active" data-tab="jahr">Jahresplanung</button>
-      <button class="tab-btn" data-tab="woche">Wochenplan (4 KW)</button>
-    </nav>
+  <header>
+    <h1>Plantafel Dachdeckerei Frey</h1>
+  </header>
 
-    <!-- TAB: JAHRESPLANUNG -->
-    <div id="tab-jahr" class="tab-content active">
-      <div class="section">
-        <div class="section-header">
-          <h2>Jahresübersicht (12 Monate)</h2>
-          <span class="small-text">Karten per Drag &amp; Drop verschieben – Datum bleibt unverändert.</span>
-        </div>
-
-        <div id="year-board" class="year-layout">
-          <!-- Wird per JS gefüllt -->
-        </div>
-      </div>
-    </div>
-
-    <!-- TAB: WOCHENPLAN -->
-    <div id="tab-woche" class="tab-content">
-      <div class="section">
-        <div class="section-header">
-          <h2>Eintrag bearbeiten / neu anlegen</h2>
-          <span class="small-text">
-            KW + Wochentag steuern das Wochen-Board (4 KW).
-          </span>
-        </div>
-
-        <form id="entry-form">
-          <input type="hidden" id="entryId" />
-
-          <div class="form-grid">
-            <div>
-              <label>Von (Datum)</label>
-              <input type="date" id="vonInput" />
-            </div>
-
-            <div>
-              <label>Bis (optional)</label>
-              <input type="date" id="bisInput" />
-            </div>
-
-            <div>
-              <label>KW (für Wochenbrett)</label>
-              <input type="number" id="kwInput" min="1" max="53" placeholder="z.B. 49" />
-            </div>
-
-            <div>
-              <label>Wochentag (für Wochenbrett)</label>
-              <select id="weekdayInput">
-                <option value="">bitte wählen …</option>
-                <option value="Mo">Montag</option>
-                <option value="Di">Dienstag</option>
-                <option value="Mi">Mittwoch</option>
-                <option value="Do">Donnerstag</option>
-                <option value="Fr">Freitag</option>
-              </select>
-            </div>
-
-            <div>
-              <label>Titel</label>
-              <input type="text" id="titelInput" placeholder="z.B. Dachsanierung Muster" />
-            </div>
-
-            <div>
-              <label>Baustelle</label>
-              <input type="text" id="baustelleInput" placeholder="Adresse / Kunde" />
-            </div>
-
-            <div>
-              <label>Mitarbeiter</label>
-              <input type="text" id="mitarbeiterInput" placeholder="z.B. Thomas, Kevin" />
-            </div>
-
-            <div>
-              <label>Fahrzeug</label>
-              <input type="text" id="fahrzeugInput" placeholder="z.B. Crafter Bus" />
-            </div>
-
-            <div>
-              <label>Status</label>
-              <input type="text" id="statusInput" placeholder="normal / Urlaub / krank / Schule / …" />
-            </div>
-
-            <div class="full-width">
-              <label>Notiz</label>
-              <input type="text" id="notizInput" placeholder="Optionale Zusatzinfos" />
-            </div>
-          </div>
-
-          <div class="form-actions">
-            <button type="submit" class="btn primary" id="saveBtn">Speichern</button>
-            <button type="button" class="btn danger" id="deleteBtn">Löschen</button>
-            <button type="button" class="btn secondary" id="resetBtn">Formular leeren</button>
-            <span id="statusText" class="small-text"></span>
-          </div>
-        </form>
-      </div>
-
-      <!-- WOCHENBRETT (4 KW, A-Layout) -->
-      <div class="section">
-        <div class="section-header">
-          <h2>Wochenplan – Magnettafel (4 Kalenderwochen)</h2>
-          <span class="small-text">
-            Drag &amp; Drop verschiebt die Karte – es werden nur KW + Wochentag gespeichert, Datum bleibt unverändert.
-          </span>
-        </div>
-
-        <div class="week-controls">
-          <button class="btn secondary" id="prev4Btn">&laquo; 4 KW zurück</button>
-          <button class="btn secondary" id="thisWeekBtn">Aktuelle KW</button>
-          <button class="btn secondary" id="next4Btn">4 KW vor &raquo;</button>
-          <span id="weekRangeText" class="small-text"></span>
-        </div>
-
-        <div id="week-board" class="week-board">
-          <!-- Wird per JS gefüllt -->
-        </div>
-      </div>
-    </div>
+  <div class="tabs">
+    <button class="tab-btn active" data-tab="year">Jahresplanung</button>
+    <button class="tab-btn" data-tab="week">Wochenplan (4 KW)</button>
   </div>
 
-  <!-- Skripte -->
-  <script src="supabase.js" defer></script>
-  <script src="app.js" defer></script>
+  <!-- TAB: JAHR -->
+  <div id="tab-year" class="tab-content active">
+    <h2>Jahresübersicht (12 Monate)</h2>
+    <p>Karten per Drag & Drop verschieben — Datum bleibt unverändert.</p>
+    <div id="year-board" class="year-board"></div>
+  </div>
+
+  <!-- TAB: WOCHE -->
+  <div id="tab-week" class="tab-content">
+    <h2>Wochenplan – Magnettafel (4 Kalenderwochen)</h2>
+
+    <div class="week-controls">
+      <button id="prev4Btn">« 4 KW zurück</button>
+      <button id="thisWeekBtn">Aktuelle KW</button>
+      <button id="next4Btn">4 KW vor »</button>
+      <span id="weekRangeText"></span>
+    </div>
+
+    <form id="entry-form">
+      <input type="hidden" id="entryId" />
+
+      <div class="form-row">
+        <label>Von (Datum)</label>
+        <input type="date" id="vonInput" />
+      </div>
+
+      <div class="form-row">
+        <label>Bis (optional)</label>
+        <input type="date" id="bisInput" />
+      </div>
+
+      <div class="form-row">
+        <label>KW (für Wochenbrett)</label>
+        <input type="number" id="kwInput" placeholder="z.B. 49" />
+      </div>
+
+      <div class="form-row">
+        <label>Wochentag</label>
+        <select id="weekdayInput">
+          <option value="">bitte wählen</option>
+          <option value="Mo">Mo</option>
+          <option value="Di">Di</option>
+          <option value="Mi">Mi</option>
+          <option value="Do">Do</option>
+          <option value="Fr">Fr</option>
+        </select>
+      </div>
+
+      <div class="form-row">
+        <label>Titel</label>
+        <input type="text" id="titelInput" placeholder="z.B. Dachsanierung" />
+      </div>
+
+      <div class="form-row">
+        <label>Baustelle</label>
+        <input type="text" id="baustelleInput" placeholder="Adresse" />
+      </div>
+
+      <div class="form-row">
+        <label>Mitarbeiter</label>
+        <input type="text" id="mitarbeiterInput" placeholder="z.B. Thomas" />
+      </div>
+
+      <div class="form-row">
+        <label>Fahrzeug</label>
+        <input type="text" id="fahrzeugInput" placeholder="z.B. Crafter" />
+      </div>
+
+      <div class="form-row">
+        <label>Status</label>
+        <input type="text" id="statusInput" placeholder="normal / wichtig" />
+      </div>
+
+      <div class="form-row">
+        <label>Notiz</label>
+        <textarea id="notizInput" placeholder="Optionale Zusatzinfos"></textarea>
+      </div>
+
+      <div class="btn-row">
+        <button type="submit" class="btn-save">Speichern</button>
+        <button type="button" id="deleteBtn" class="btn-delete">Löschen</button>
+        <button type="button" id="resetBtn">Formular leeren</button>
+      </div>
+    </form>
+
+    <div id="statusText" class="status"></div>
+
+    <div id="week-board"></div>
+  </div>
+
+  <!-- SCRIPTS -->
+
+  <!-- Supabase CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+  <!-- UNBEDINGT IN DIESER REIHENFOLGE -->
+  <script src="plantafelApi.js"></script>
+  <script src="utils.js"></script>
+  <script src="app.js"></script>
+
 </body>
 </html>
