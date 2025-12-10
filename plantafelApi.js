@@ -1,4 +1,4 @@
-async function createEintrag(data) {
+window.createEintrag = async function (data) {
   const { error } = await supabase
     .from("plantafel")
     .insert([data]);
@@ -7,4 +7,4 @@ async function createEintrag(data) {
     console.error("Supabase Fehler:", error);
     throw error;
   }
-}
+};
