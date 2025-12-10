@@ -1,71 +1,77 @@
 <!DOCTYPE html>
 <html lang="de">
 <head>
-  <meta charset="UTF-8">
+  <meta charset="UTF-8" />
   <title>Plantafel Dachdeckerei Frey</title>
-  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="style.css" />
 </head>
 <body>
 
-<header>
-  <h1>Plantafel Dachdeckerei Frey</h1>
-  <nav>
-    <button onclick="showWeek()">Wochenplan (4 KW)</button>
-  </nav>
+<header class="header">
+  Plantafel Dachdeckerei Frey
 </header>
 
-<section id="form-section">
+<main>
   <h2>Wochenplan – Magnettafel (4 Kalenderwochen)</h2>
 
-  <label>KW (für Wochenbrett)
-    <input type="number" id="kw" min="1" max="53">
-  </label>
+  <form id="auftrag-form">
+    <label>
+      KW
+      <input type="number" id="kw" required />
+    </label>
 
-  <label>Wochentag
-    <select id="weekday">
-      <option value="">bitte wählen</option>
-      <option value="mo">Mo</option>
-      <option value="di">Di</option>
-      <option value="mi">Mi</option>
-      <option value="do">Do</option>
-      <option value="fr">Fr</option>
-    </select>
-  </label>
+    <label>
+      Wochentag
+      <select id="weekday" required>
+        <option value="">bitte wählen</option>
+        <option value="Mo">Mo</option>
+        <option value="Di">Di</option>
+        <option value="Mi">Mi</option>
+        <option value="Do">Do</option>
+        <option value="Fr">Fr</option>
+      </select>
+    </label>
 
-  <label>Titel
-    <input type="text" id="titel">
-  </label>
+    <label>
+      Titel
+      <input type="text" id="titel" />
+    </label>
 
-  <label>Baustelle
-    <input type="text" id="baustelle">
-  </label>
+    <label>
+      Baustelle
+      <input type="text" id="baustelle" />
+    </label>
 
-  <label>Mitarbeiter
-    <input type="text" id="mitarbeiter">
-  </label>
+    <label>
+      Mitarbeiter
+      <input type="text" id="mitarbeiter" />
+    </label>
 
-  <label>Fahrzeug
-    <input type="text" id="fahrzeug">
-  </label>
+    <label>
+      Fahrzeug
+      <input type="text" id="fahrzeug" />
+    </label>
 
-  <label>Status
-    <select id="status">
-      <option value="normal">normal</option>
-      <option value="wichtig">wichtig</option>
-      <option value="urlaub">urlaub</option>
-    </select>
-  </label>
+    <label>
+      Status
+      <select id="status">
+        <option value="normal">normal</option>
+        <option value="wichtig">wichtig</option>
+      </select>
+    </label>
 
-  <label>Notiz
-    <textarea id="notiz"></textarea>
-  </label>
+    <label>
+      Notiz
+      <textarea id="notiz"></textarea>
+    </label>
 
-  <button onclick="saveEntry()">Speichern</button>
-</section>
+    <button type="submit">Speichern</button>
+  </form>
+</main>
 
-<section id="board"></section>
-
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="supabase.js"></script>
+<script src="plantafelApi.js"></script>
 <script src="app.js"></script>
+
 </body>
 </html>
