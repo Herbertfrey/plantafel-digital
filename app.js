@@ -1,13 +1,14 @@
-// Verbindung zu Supabase
-const db = supabase.createClient(
+const form = document.getElementById("plantafel-form");
+
+const supa = window.supabase.createClient(
     "https://yzfmviddzhghvcxowbjl.supabase.co",
     "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inl6Zm12aWRkemhnaHZjeG93YmpsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjQ4MjkyNzIsImV4cCI6MjA4MDQwNTI3Mn0.BOmbE7xq1-kUBdbH3kpN4lIjDyWIwLaCpS6ZT3mbb9U"
 );
 
-const form = document.getElementById("plantafel-form");
-const output = document.getElementById("wochenuebersicht");
+// ⭐ Beim Laden sofort Daten holen
+document.addEventListener("DOMContentLoaded", ladeDaten);
 
-// ➤ SPEICHERN
+// ⭐ Formular absenden
 form.addEventListener("submit", async (e) => {
     e.preventDefault();
 
@@ -22,13 +23,11 @@ form.addEventListener("submit", async (e) => {
         notiz: document.getElementById("notiz").value,
     };
 
-    const { error } = await db
-        .from("plantafel")
-        .insert([ data ]);
+    const { error } = await supa.from("plantafel").insert([data]);
 
     if (error) {
-        console.error(error);
         alert("Fehler beim Speichern ❌");
+        console.error(error);
         return;
     }
 
@@ -37,34 +36,32 @@ form.addEventListener("submit", async (e) => {
     ladeDaten();
 });
 
-// ➤ DATEN LADEN
+// ⭐ Daten laden und auf Magnettafel anzeigen
 async function ladeDaten() {
-    const { data, error } = await db
-        .from("plantafel")
-        .select("*")
-        .order("created_at", { ascending: false });
+    const { data, error } = await supa.from("plantafel").select("*");
 
     if (error) {
         console.error(error);
         return;
     }
 
-    output.innerHTML = "";
+    // Alte Karten löschen
+    ["Mo","Di","Mi","Do","Fr"].forEach(tag => {
+        document.getElementById("col-" + tag).innerHTML = "";
+    });
 
-    data.forEach(row => {
-        const tr = document.createElement("tr");
+    // Neue Karten einfügen
+    data.forEach(eintrag => {
+        const el = document.createElement("div");
+        el.className = "card " + (eintrag.status === "wichtig" ? "wichtig" : "");
 
-        tr.innerHTML = `
-            <td>${row.weekday || ""}</td>
-            <td>${row.titel || ""}</td>
-            <td>${row.baustelle || ""}</td>
-            <td>${row.mitarbeiter || ""}</td>
-            <td>${row.fahrzeug || ""}</td>
-            <td>${row.status || ""}</td>
+        el.innerHTML = `
+            <h4>${eintrag.titel}</h4>
+            <small>${eintrag.baustelle}</small>
+            <small>${eintrag.mitarbeiter}</small>
+            <small>${eintrag.fahrzeug}</small>
         `;
 
-        output.appendChild(tr);
+        document.getElementById("col-" + eintrag.weekday).appendChild(el);
     });
 }
-
-ladeDaten();
