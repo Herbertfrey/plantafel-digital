@@ -1,41 +1,53 @@
 body {
-  font-family: Arial, sans-serif;
-  background: #f2f2f2;
-  margin: 0;
+    font-family: Arial, sans-serif;
+    margin: 20px;
 }
 
-header {
-  background: #1e73be;
-  color: white;
-  padding: 15px;
+.header {
+    background: #0074d9;
+    color: white;
+    padding: 15px;
+    margin-bottom: 20px;
 }
 
-main {
-  padding: 20px;
+form {
+    margin-bottom: 30px;
 }
 
-form label {
-  display: block;
-  margin-bottom: 10px;
+.board {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 15px;
 }
 
-input, select, textarea {
-  width: 100%;
-  padding: 6px;
+.column {
+    background: #f3f3f3;
+    border-radius: 8px;
+    padding: 10px;
 }
 
-button {
-  padding: 8px 14px;
-  cursor: pointer;
+.col {
+    min-height: 200px;
 }
 
-#board {
-  margin-top: 20px;
+.card {
+    padding: 10px;
+    border-radius: 6px;
+    margin-bottom: 10px;
+    background: #fff;
+    border-left: 5px solid #888;
 }
 
-.board-item {
-  background: white;
-  padding: 10px;
-  border: 1px solid #ccc;
-  margin-bottom: 6px;
+.card.wichtig {
+    border-left: 5px solid red;
+    background: #ffeaea;
+}
+
+.card h4 {
+    margin: 0 0 5px 0;
+}
+
+.card small {
+    display: block;
+    color: #555;
 }
