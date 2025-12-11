@@ -41,12 +41,7 @@ async function ladeDaten() {
     return;
   }
 
-  if (!data || data.length === 0) {
-    output.innerHTML = "<p>Keine Einträge</p>";
-    return;
-  }
-
-  let html = `
+  output.innerHTML = `
     <table border="1" cellpadding="6">
       <tr>
         <th>Tag</th>
@@ -56,23 +51,18 @@ async function ladeDaten() {
         <th>Fahrzeug</th>
         <th>Status</th>
       </tr>
+      ${data.map(e => `
+        <tr>
+          <td>${e.tag ?? ""}</td>
+          <td>${e.titel ?? ""}</td>
+          <td>${e.baustelle ?? ""}</td>
+          <td>${e.mitarbeiter ?? ""}</td>
+          <td>${e.fahrzeug ?? ""}</td>
+          <td>${e.status ?? ""}</td>
+        </tr>
+      `).join("")}
+    </table>
   `;
-
-  data.forEach(e => {
-    html += `
-      <tr>
-        <td>${e.tag || ""}</td>
-        <td>${e.titel || ""}</td>
-        <td>${e.baustelle || ""}</td>
-        <td>${e.mitarbeiter || ""}</td>
-        <td>${e.fahrzeug || ""}</td>
-        <td>${e.status || ""}</td>
-      </tr>
-    `;
-  });
-
-  html += "</table>";
-  output.innerHTML = html;
 }
 
 ladeDaten();
