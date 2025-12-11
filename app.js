@@ -1,14 +1,16 @@
-console.log("app.js geladen");
+// Verbindung zu Supabase
+const db = supabase.createClient(
+    "https://yzfmviddzhghvcxowbjl.supabase.co",
+    "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inl6Zm12aWRkemhnaHZjeG93YmpsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjQ4MjkyNzIsImV4cCI6MjA4MDQwNTI3Mn0.BOmbE7xq1-kUBdbH3kpN4lIjDyWIwLaCpS6ZT3mbb9U"
+);
 
-// Formular & Ausgabebereich
 const form = document.getElementById("plantafel-form");
 const output = document.getElementById("wochenuebersicht");
 
-// Formular speichern
+// ➤ SPEICHERN
 form.addEventListener("submit", async (e) => {
     e.preventDefault();
 
-    // Daten aus Formular abholen
     const data = {
         kw: Number(document.getElementById("kw").value),
         weekday: document.getElementById("weekday").value,
@@ -17,19 +19,16 @@ form.addEventListener("submit", async (e) => {
         mitarbeiter: document.getElementById("mitarbeiter").value,
         fahrzeug: document.getElementById("fahrzeug").value,
         status: document.getElementById("status").value,
-        notiz: document.getElementById("notiz").value
+        notiz: document.getElementById("notiz").value,
     };
 
-    console.log("Sende Daten:", data);
-
-    // In Supabase speichern
-    const { error } = await window.db
+    const { error } = await db
         .from("plantafel")
-        .insert([data]);
+        .insert([ data ]);
 
     if (error) {
         console.error(error);
-        alert("❌ Fehler beim Speichern");
+        alert("Fehler beim Speichern ❌");
         return;
     }
 
@@ -38,53 +37,34 @@ form.addEventListener("submit", async (e) => {
     ladeDaten();
 });
 
-// Daten laden & Tabelle anzeigen
+// ➤ DATEN LADEN
 async function ladeDaten() {
-    const kwValue = Number(document.getElementById("kw").value);
-    if (!kwValue) return;
-
-    const { data, error } = await window.db
+    const { data, error } = await db
         .from("plantafel")
         .select("*")
-        .eq("kw", kwValue)
-        .order("weekday", { ascending: true });
+        .order("created_at", { ascending: false });
 
     if (error) {
         console.error(error);
         return;
     }
 
-    console.log("Geladene Daten:", data);
+    output.innerHTML = "";
 
-    output.innerHTML = `
-        <table border="1" cellpadding="5">
-            <tr>
-                <th>Tag</th>
-                <th>Titel</th>
-                <th>Baustelle</th>
-                <th>Mitarbeiter</th>
-                <th>Fahrzeug</th>
-                <th>Status</th>
-            </tr>
-            ${data
-                .map(
-                    (row) => `
-                <tr>
-                    <td>${row.weekday || ""}</td>
-                    <td>${row.titel || ""}</td>
-                    <td>${row.baustelle || ""}</td>
-                    <td>${row.mitarbeiter || ""}</td>
-                    <td>${row.fahrzeug || ""}</td>
-                    <td>${row.status || ""}</td>
-                </tr>`
-                )
-                .join("")}
-        </table>
-    `;
+    data.forEach(row => {
+        const tr = document.createElement("tr");
+
+        tr.innerHTML = `
+            <td>${row.weekday || ""}</td>
+            <td>${row.titel || ""}</td>
+            <td>${row.baustelle || ""}</td>
+            <td>${row.mitarbeiter || ""}</td>
+            <td>${row.fahrzeug || ""}</td>
+            <td>${row.status || ""}</td>
+        `;
+
+        output.appendChild(tr);
+    });
 }
 
-// Automatisches Laden, wenn KW geändert wurde
-document.getElementById("kw").addEventListener("change", ladeDaten);
-
-// Initial laden (falls KW vorausgefüllt)
 ladeDaten();
