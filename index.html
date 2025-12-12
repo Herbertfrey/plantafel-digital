@@ -1,104 +1,53 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="de">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <meta charset="UTF-8" />
   <title>Plantafel Dachdeckerei Frey</title>
-  <link rel="stylesheet" href="./style.css" />
+  <link rel="stylesheet" href="style.css" />
 </head>
 <body>
-  <header class="topbar">
-    <div class="brand">Plantafel Dachdeckerei Frey</div>
 
-    <div class="controls">
-      <label class="pill">
-        <span>Start-KW</span>
-        <input id="startKw" type="number" min="1" max="53" value="50" />
-      </label>
+<header class="header">
+  <h1>Plantafel Dachdeckerei Frey</h1>
+</header>
 
-      <button id="btnReload" class="btn">Neu laden</button>
+<section class="magnetbereich">
+  <div class="kasten">
+    <h3>Projekte</h3>
+    <div class="row">
+      <input id="projektName" placeholder="Projektname">
+      <button onclick="addProjekt()">+</button>
     </div>
-  </header>
+    <div id="projekte"></div>
+  </div>
 
-  <main class="container">
-    <section class="panel">
-      <div class="panel-grid">
-        <!-- Mitarbeiter -->
-        <div class="card">
-          <div class="card-head">
-            <h2>Mitarbeiter</h2>
-          </div>
+  <div class="kasten">
+    <h3>Fahrzeuge</h3>
+    <div class="row">
+      <input id="fahrzeugName" placeholder="Fahrzeug">
+      <button onclick="addFahrzeug()">+</button>
+    </div>
+    <div id="fahrzeuge"></div>
+  </div>
 
-          <div class="form-row">
-            <input id="empName" class="input" placeholder="Name (z.B. Thomas)" />
-            <button id="btnAddEmp" class="btn primary">+ Hinzufügen</button>
-          </div>
+  <div class="kasten">
+    <h3>Mitarbeiter</h3>
+    <div class="row">
+      <input id="mitarbeiterName" placeholder="Name">
+      <button onclick="addMitarbeiter()">+</button>
+    </div>
+    <div id="mitarbeiter"></div>
+  </div>
+</section>
 
-          <div id="empList" class="magnet-list" aria-label="Mitarbeiterliste"></div>
-        </div>
+<div class="delete-zone"
+     ondragover="allowDrop(event)"
+     ondrop="deleteItem(event)">
+  ❌ Entfernen
+</div>
 
-        <!-- Fahrzeuge -->
-        <div class="card">
-          <div class="card-head">
-            <h2>Fahrzeuge</h2>
-          </div>
+<section id="plantafel"></section>
 
-          <div class="form-row two">
-            <input id="vehName" class="input" placeholder="Fahrzeug (z.B. MAN 7,5t)" />
-            <input id="vehPlate" class="input" placeholder="Kennzeichen (optional)" />
-            <button id="btnAddVeh" class="btn primary">+ Hinzufügen</button>
-          </div>
-
-          <div id="vehList" class="magnet-list" aria-label="Fahrzeugliste"></div>
-        </div>
-
-        <!-- Löschen -->
-        <div class="card danger">
-          <div class="card-head">
-            <h2>Entfernen</h2>
-          </div>
-          <div id="trash" class="trash">
-            Zieh Magnete hierher zum Löschen
-          </div>
-          <p class="hint">
-            Du kannst **Mitarbeiter/Fahrzeuge** auch über den kleinen Papierkorb am Magnet löschen.
-          </p>
-        </div>
-      </div>
-    </section>
-
-    <!-- Projekte -->
-    <section class="card">
-      <div class="card-head split">
-        <div>
-          <h2>Projekte</h2>
-          <p class="sub">Projekt / Baustelle (z.B. Müller Eichstätt)</p>
-        </div>
-      </div>
-
-      <div class="form-row">
-        <input id="projName" class="input" placeholder="Neues Projekt…" />
-        <button id="btnAddProj" class="btn primary">+ Projekt</button>
-      </div>
-
-      <div id="projList" class="project-list"></div>
-    </section>
-
-    <!-- Plantafel -->
-    <section class="card">
-      <div class="card-head split">
-        <div>
-          <h2>4-Wochen-Plantafel</h2>
-          <p class="sub">Projekt oben – Mitarbeiter/Fahrzeuge als Magnete darunter. Drag&Drop = speichern.</p>
-        </div>
-      </div>
-
-      <div id="board" class="board"></div>
-    </section>
-  </main>
-
-  <!-- Supabase JS (UMD) -->
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
-  <script src="./app.js"></script>
+<script src="app.js"></script>
 </body>
 </html>
