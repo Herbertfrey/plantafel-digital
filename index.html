@@ -1,79 +1,81 @@
 <!DOCTYPE html>
 <html lang="de">
 <head>
-    <meta charset="UTF-8">
-    <title>Plantafel Dachdeckerei Frey</title>
-    <link rel="stylesheet" href="style.css">
-    <script src="supabase.js"></script>
+  <meta charset="UTF-8">
+  <title>Plantafel Dachdeckerei Frey</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="style.css">
 </head>
 
 <body>
+
 <header class="header">
-    <h1>Plantafel Dachdeckerei Frey</h1>
+  <h1>Plantafel Dachdeckerei Frey</h1>
 </header>
 
 <main>
-    <h2>Wochenplan – Magnettafel (4 Kalenderwochen)</h2>
+  <h2>Wochenplan – Magnettafel (4 Kalenderwochen)</h2>
 
-    <form id="plantafel-form">
-        <label>KW
-            <input type="number" id="kw" required>
-        </label>
+  <form id="plantafel-form">
+    <label>KW
+      <input type="number" id="kw" required>
+    </label>
 
-        <label>Wochentag
-            <select id="weekday" required>
-                <option value="">bitte wählen</option>
-                <option value="Mo">Mo</option>
-                <option value="Di">Di</option>
-                <option value="Mi">Mi</option>
-                <option value="Do">Do</option>
-                <option value="Fr">Fr</option>
-            </select>
-        </label>
+    <label>Wochentag
+      <select id="weekday" required>
+        <option value="">bitte wählen</option>
+        <option value="Mo">Mo</option>
+        <option value="Di">Di</option>
+        <option value="Mi">Mi</option>
+        <option value="Do">Do</option>
+        <option value="Fr">Fr</option>
+      </select>
+    </label>
 
-        <label>Titel
-            <input type="text" id="titel">
-        </label>
+    <label>Titel
+      <input type="text" id="titel" required>
+    </label>
 
-        <label>Baustelle
-            <input type="text" id="baustelle">
-        </label>
+    <label>Baustelle
+      <input type="text" id="baustelle">
+    </label>
 
-        <label>Mitarbeiter
-            <input type="text" id="mitarbeiter">
-        </label>
+    <label>Mitarbeiter
+      <input type="text" id="mitarbeiter">
+    </label>
 
-        <label>Fahrzeug
-            <input type="text" id="fahrzeug">
-        </label>
+    <label>Fahrzeug
+      <input type="text" id="fahrzeug">
+    </label>
 
-        <label>Status
-            <select id="status">
-                <option value="normal">normal</option>
-                <option value="wichtig">wichtig</option>
-            </select>
-        </label>
+    <label>Status
+      <select id="status">
+        <option value="normal">normal</option>
+        <option value="wichtig">wichtig</option>
+      </select>
+    </label>
 
-        <label>Notiz
-            <textarea id="notiz"></textarea>
-        </label>
+    <label>Notiz
+      <textarea id="notiz"></textarea>
+    </label>
 
-        <button type="submit">Speichern</button>
-    </form>
+    <button type="submit">Speichern</button>
+  </form>
 
-    <h2>Magnettafel – Wochenübersicht</h2>
+  <h2>Magnettafel – Wochenübersicht</h2>
 
-    <!-- Magnettafel-Board -->
-    <div id="board" class="board">
-        <div class="column"><h3>Mo</h3><div class="col" id="col-Mo"></div></div>
-        <div class="column"><h3>Di</h3><div class="col" id="col-Di"></div></div>
-        <div class="column"><h3>Mi</h3><div class="col" id="col-Mi"></div></div>
-        <div class="column"><h3>Do</h3><div class="col" id="col-Do"></div></div>
-        <div class="column"><h3>Fr</h3><div class="col" id="col-Fr"></div></div>
-    </div>
-
+  <div class="board">
+    <div class="column"><h3>Mo</h3><div id="col-Mo"></div></div>
+    <div class="column"><h3>Di</h3><div id="col-Di"></div></div>
+    <div class="column"><h3>Mi</h3><div id="col-Mi"></div></div>
+    <div class="column"><h3>Do</h3><div id="col-Do"></div></div>
+    <div class="column"><h3>Fr</h3><div id="col-Fr"></div></div>
+  </div>
 </main>
 
-<script src="app.js"></script>
+<!-- WICHTIG: MODULE -->
+<script type="module" src="supabase.js"></script>
+<script type="module" src="app.js"></script>
+
 </body>
 </html>
