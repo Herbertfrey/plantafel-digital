@@ -2,15 +2,13 @@
 <html lang="de">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1.0" />
   <title>Plantafel Dachdeckerei Frey</title>
 
   <link rel="stylesheet" href="style.css" />
 
-  <!-- Supabase UMD (kein module!) -->
+  <!-- Supabase UMD -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-
-  <!-- Muss window.db setzen (deine vorhandene Datei) -->
   <script src="supabase.js"></script>
 </head>
 
@@ -18,104 +16,76 @@
   <header class="header">
     <div class="header__inner">
       <h1>Plantafel Dachdeckerei Frey</h1>
+      <div class="header__right">
+        <div class="kwctrl">
+          <button id="kwPrev" class="btn btn--ghost" type="button">◀</button>
+          <div class="kwctrl__mid">
+            <div class="kwctrl__label">Start-KW</div>
+            <input id="kwStart" type="number" min="1" max="53" />
+          </div>
+          <button id="kwNext" class="btn btn--ghost" type="button">▶</button>
+        </div>
+        <button id="reloadBtn" class="btn btn--secondary" type="button">Neu laden</button>
+      </div>
     </div>
   </header>
 
-  <main class="container">
-    <section class="card">
-      <h2>Wochenplan – Magnettafel (4 Kalenderwochen)</h2>
-
-      <div class="controls">
-        <div class="control">
-          <label for="kwStart">Start-KW</label>
-          <input id="kwStart" type="number" min="1" max="53" />
+  <main class="layout">
+    <!-- SIDEBAR: STAMMDATEN-MAGNETE -->
+    <aside class="sidebar">
+      <section class="panel">
+        <div class="panel__head">
+          <h2>Magnetkasten</h2>
+          <div class="small" id="dbStatus"></div>
         </div>
 
-        <div class="control">
-          <label>&nbsp;</label>
-          <button id="btnReload" type="button" class="btn btn--secondary">Neu laden</button>
+        <div class="panel__section">
+          <h3>Mitarbeiter</h3>
+          <div id="poolMitarbeiter" class="pool dropzone-pool" data-pool="mitarbeiter"></div>
         </div>
 
-        <div class="control">
-          <label>&nbsp;</label>
-          <button id="btnClearForm" type="button" class="btn btn--ghost">Leeren (nur Formular)</button>
+        <div class="panel__section">
+          <h3>Fahrzeuge</h3>
+          <div id="poolFahrzeuge" class="pool dropzone-pool" data-pool="fahrzeug"></div>
         </div>
-      </div>
 
-      <form id="plantafel-form" class="form">
-        <div class="form__grid">
-          <div class="field">
-            <label for="kw">KW</label>
-            <input id="kw" type="number" min="1" max="53" required />
+        <div class="panel__section">
+          <h3>Entfernen</h3>
+          <div class="trash dropzone-trash" id="trashZone">
+            Zieh Magnete hierher<br>zum Löschen
           </div>
+        </div>
+      </section>
 
-          <div class="field">
-            <label for="weekday">Wochentag</label>
-            <select id="weekday" required>
-              <option value="" selected>bitte wählen</option>
-              <option value="Mo">Mo</option>
-              <option value="Di">Di</option>
-              <option value="Mi">Mi</option>
-              <option value="Do">Do</option>
-              <option value="Fr">Fr</option>
-            </select>
-          </div>
+      <!-- Projekte pflegen -->
+      <section class="panel">
+        <div class="panel__head">
+          <h2>Projekte</h2>
+          <div class="small">stehen oben (wie am Board)</div>
+        </div>
 
-          <div class="field">
-            <label for="fahrzeug">Fahrzeug</label>
-            <select id="fahrzeug" required>
-              <option value="" selected>bitte wählen</option>
-              <option value="DOKA">DOKA</option>
-              <option value="MERCEDES BUS">MERCEDES BUS</option>
-              <option value="CRAFTER">CRAFTER</option>
-              <option value="FORD">FORD</option>
-            </select>
-          </div>
+        <form id="projectForm" class="projectForm">
+          <input id="projectName" type="text" placeholder="Projekt / Baustelle (z.B. Müller Eichstätt)" />
+          <button class="btn btn--primary" type="submit">+ Projekt</button>
+        </form>
 
-          <div class="field field--wide">
-            <label for="titel">Titel</label>
-            <input id="titel" type="text" placeholder="z.B. Dachsanierung Müller" required />
-          </div>
+        <div id="projectList" class="projectList"></div>
+      </section>
+    </aside>
 
-          <div class="field">
-            <label for="baustelle">Baustelle</label>
-            <input id="baustelle" type="text" placeholder="Ort / Objekt" />
-          </div>
-
-          <div class="field">
-            <label for="mitarbeiter">Mitarbeiter</label>
-            <input id="mitarbeiter" type="text" placeholder="z.B. Thomas, Meier" />
-          </div>
-
-          <div class="field">
-            <label for="status">Status</label>
-            <select id="status">
-              <option value="normal" selected>normal</option>
-              <option value="wichtig">wichtig</option>
-              <option value="fix">fix</option>
-              <option value="offen">offen</option>
-            </select>
-          </div>
-
-          <div class="field field--wide">
-            <label for="notiz">Notiz</label>
-            <textarea id="notiz" rows="2" placeholder="Kurzinfo / Material / Zeiten"></textarea>
+    <!-- BOARD -->
+    <section class="main">
+      <section class="boardCard">
+        <div class="boardHead">
+          <h2>4-Wochen-Plantafel</h2>
+          <div class="small">
+            Projekt steht oben. Mitarbeiter & Fahrzeuge als Magnete darunter.
+            Drag&Drop = speichern.
           </div>
         </div>
 
-        <div class="form__actions">
-          <button type="submit" class="btn btn--primary">Speichern</button>
-        </div>
-      </form>
-    </section>
-
-    <section class="card">
-      <div class="board__head">
-        <h2>Magnettafel – Wochenübersicht</h2>
-        <div class="hint">Drag & Drop: Karte in ein anderes Feld ziehen → wird gespeichert.</div>
-      </div>
-
-      <div id="board" class="weeks"></div>
+        <div id="board" class="weeks"></div>
+      </section>
     </section>
   </main>
 
