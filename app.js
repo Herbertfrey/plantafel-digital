@@ -1,101 +1,38 @@
-/* =========================
-   STATE + STORAGE
-========================= */
+// Plantafel v1 — localStorage
+// - Stammlisten bleiben oben (ziehen = kopieren)
+// - 4 Wochen (KW + Datum), Projekte pro Tag, KFZ rot, MA farbig
+// - Abwesenheiten als eigener Balken, blockiert Mitarbeiter
+// - 12 Monate (3×4) nur Projekte, ziehbar + in 4 Wochen ziehen
 
-const LS_KEY = "plantafel_v1";
+const LS_KEY = "plantafel_v1_full";
 
-const COLORS = ["blue", "green", "orange", "purple", "teal"];
+const COLORS = ["blue","green","orange","purple","teal"];
+const MONTHS = ["Jan","Feb","Mär","Apr","Mai","Jun","Jul","Aug","Sep","Okt","Nov","Dez"];
 
-const DEFAULT_STATE = {
-  startDate: null,          // ISO date of Monday
-  projects: [],             // {id, name}
-  vehicles: [],             // {id, name}
-  employees: [],            // {id, name, colorClass}
-  assignments: []           // {groupId, projectId, startIndex, length, vehicles:[ids], employees:[ids]}
+let activeAbsenceType = "urlaub";
+
+const defaultState = {
+  startDate: null, // ISO yyyy-mm-dd Monday
+  projects: [],    // {id,name}
+  vehicles: [],    // {id,name}
+  employees: [],   // {id,name,colorClass}
+  // daily assignments: {id, dateISO, projectId, vehicles:[vehicleId], employees:[employeeId]}
+  assignments: [],
+  // absences: {id, dateISO, employeeId, type}
+  absences: [],
+  // year plan: bars by month index only: {id, projectId, startMonth, monthsLen}
+  yearPlan: []
 };
 
 let state = loadState();
 
-/* =========================
-   HELPERS
-========================= */
+// ---------------- DOM ----------------
+const tabBtns = document.querySelectorAll(".tab-btn");
+const tabWeek = document.getElementById("tab-week");
+const tabYear = document.getElementById("tab-year");
 
-function uid() {
-  return Math.random().toString(16).slice(2) + Date.now().toString(16);
-}
-
-function saveState() {
-  localStorage.setItem(LS_KEY, JSON.stringify(state));
-}
-
-function loadState() {
-  try {
-    const raw = localStorage.getItem(LS_KEY);
-    if (!raw) return structuredClone(DEFAULT_STATE);
-    const parsed = JSON.parse(raw);
-    return { ...structuredClone(DEFAULT_STATE), ...parsed };
-  } catch {
-    return structuredClone(DEFAULT_STATE);
-  }
-}
-
-function pad2(n) { return String(n).padStart(2, "0"); }
-
-function formatDDMM(date) {
-  return `${pad2(date.getDate())}.${pad2(date.getMonth()+1)}`;
-}
-
-function isMonday(d) {
-  return d.getDay() === 1;
-}
-
-function startOfWeekMonday(date) {
-  const d = new Date(date);
-  d.setHours(12,0,0,0);
-  const day = d.getDay(); // 0 Sun ... 6 Sat
-  const diff = (day === 0 ? -6 : 1 - day);
-  d.setDate(d.getDate() + diff);
-  return d;
-}
-
-// ISO week number
-function isoWeek(date) {
-  const d = new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()));
-  const dayNum = d.getUTCDay() || 7;
-  d.setUTCDate(d.getUTCDate() + 4 - dayNum);
-  const yearStart = new Date(Date.UTC(d.getUTCFullYear(),0,1));
-  return Math.ceil((((d - yearStart) / 86400000) + 1) / 7);
-}
-
-function clamp(n, a, b) {
-  return Math.max(a, Math.min(b, n));
-}
-
-function getDayLabel(i) {
-  const labels = ["Mo","Di","Mi","Do","Fr"];
-  return labels[i] || "";
-}
-
-function getDayDate(startMonday, dayIndex) {
-  // dayIndex 0..19 but only weekdays; each week adds 7 days, within week offset 0..4
-  const week = Math.floor(dayIndex / 5);
-  const wd = dayIndex % 5;
-  const d = new Date(startMonday);
-  d.setDate(d.getDate() + week*7 + wd);
-  return d;
-}
-
-function findById(arr, id) {
-  return arr.find(x => x.id === id);
-}
-
-/* =========================
-   DOM
-========================= */
-
-const elStartDate = document.getElementById("startDate");
+const startDateEl = document.getElementById("startDate");
 const btnToday = document.getElementById("btnToday");
-const btnReload = document.getElementById("btnReload");
 
 const projectInput = document.getElementById("projectInput");
 const addProjectBtn = document.getElementById("addProjectBtn");
@@ -112,294 +49,381 @@ const employeeList = document.getElementById("employeeList");
 const weeksEl = document.getElementById("weeks");
 const trashEl = document.getElementById("trash");
 
-/* =========================
-   INIT START DATE
-========================= */
+const absBtns = document.querySelectorAll(".abs-btn");
 
-(function initStartDate() {
-  let monday;
-  if (state.startDate) {
-    monday = new Date(state.startDate);
-  } else {
-    monday = startOfWeekMonday(new Date());
-    state.startDate = monday.toISOString().slice(0,10);
-    saveState();
+const yearGrid = document.getElementById("yearGrid");
+
+// ---------------- Helpers ----------------
+function uid(){ return Math.random().toString(16).slice(2) + Date.now().toString(16); }
+function saveState(){ localStorage.setItem(LS_KEY, JSON.stringify(state)); }
+function loadState(){
+  try{
+    const raw = localStorage.getItem(LS_KEY);
+    if(!raw) return structuredClone(defaultState);
+    const parsed = JSON.parse(raw);
+    return { ...structuredClone(defaultState), ...parsed };
+  }catch{
+    return structuredClone(defaultState);
   }
-  elStartDate.value = state.startDate;
-})();
+}
+function pad2(n){ return String(n).padStart(2,"0"); }
+function fmtDDMM(d){ return `${pad2(d.getDate())}.${pad2(d.getMonth()+1)}`; }
 
-btnToday.addEventListener("click", () => {
-  const monday = startOfWeekMonday(new Date());
-  state.startDate = monday.toISOString().slice(0,10);
-  elStartDate.value = state.startDate;
-  saveState();
-  renderAll();
-});
+function mondayOf(date){
+  const d = new Date(date);
+  d.setHours(12,0,0,0);
+  const day = d.getDay(); // 0..6
+  const diff = (day === 0 ? -6 : 1 - day);
+  d.setDate(d.getDate() + diff);
+  return d;
+}
+function isoWeek(date){
+  const d = new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()));
+  const dayNum = d.getUTCDay() || 7;
+  d.setUTCDate(d.getUTCDate() + 4 - dayNum);
+  const yearStart = new Date(Date.UTC(d.getUTCFullYear(),0,1));
+  return Math.ceil((((d - yearStart) / 86400000) + 1) / 7);
+}
+function getWeekStart(monday, weekIndex){
+  const d = new Date(monday);
+  d.setDate(d.getDate() + weekIndex*7);
+  return d;
+}
+function dateForDayIndex(monday, dayIndex){
+  // 0..19 mapped to weekdays only
+  const w = Math.floor(dayIndex/5);
+  const wd = dayIndex%5;
+  const d = new Date(monday);
+  d.setDate(d.getDate() + w*7 + wd);
+  return d;
+}
+function toISODate(d){
+  const x = new Date(d);
+  x.setHours(12,0,0,0);
+  return x.toISOString().slice(0,10);
+}
+function findById(arr, id){ return arr.find(x => x.id === id); }
 
-elStartDate.addEventListener("change", () => {
-  const d = new Date(elStartDate.value);
-  const monday = startOfWeekMonday(d);
-  state.startDate = monday.toISOString().slice(0,10);
-  elStartDate.value = state.startDate;
-  saveState();
-  renderAll();
-});
-
-btnReload.addEventListener("click", () => {
-  renderAll();
-});
-
-/* =========================
-   ADD ITEMS
-========================= */
-
-addProjectBtn.addEventListener("click", () => {
-  const name = projectInput.value.trim();
-  if (!name) return;
-  state.projects.push({ id: uid(), name });
-  projectInput.value = "";
-  saveState();
-  renderAll();
-});
-
-addVehicleBtn.addEventListener("click", () => {
-  const name = vehicleInput.value.trim();
-  if (!name) return;
-  state.vehicles.push({ id: uid(), name });
-  vehicleInput.value = "";
-  saveState();
-  renderAll();
-});
-
-addEmployeeBtn.addEventListener("click", () => {
-  const name = employeeInput.value.trim();
-  if (!name) return;
-  const colorClass = COLORS[state.employees.length % COLORS.length];
-  state.employees.push({ id: uid(), name, colorClass });
-  employeeInput.value = "";
-  saveState();
-  renderAll();
-});
-
-/* Enter key support */
-[projectInput, vehicleInput, employeeInput].forEach((inp) => {
-  inp.addEventListener("keydown", (e) => {
-    if (e.key !== "Enter") return;
-    if (inp === projectInput) addProjectBtn.click();
-    if (inp === vehicleInput) addVehicleBtn.click();
-    if (inp === employeeInput) addEmployeeBtn.click();
-  });
-});
-
-/* =========================
-   DRAG DATA
-========================= */
-
-function setDragData(e, payload) {
+function setDrag(e, payload){
   e.dataTransfer.setData("application/json", JSON.stringify(payload));
   e.dataTransfer.effectAllowed = "copyMove";
 }
-
-function getDragData(e) {
-  try {
+function getDrag(e){
+  try{
     const raw = e.dataTransfer.getData("application/json");
     return raw ? JSON.parse(raw) : null;
-  } catch {
-    return null;
-  }
+  }catch{ return null; }
 }
 
-/* =========================
-   RENDER LISTS
-========================= */
-
-function renderMagnet(container, { type, id, text, className, deletable=true }) {
-  const m = document.createElement("span");
-  m.className = `magnet ${className}`;
-  m.draggable = true;
-  m.textContent = text;
-
-  m.addEventListener("dragstart", (e) => {
-    setDragData(e, { kind: "master", type, id });
+// ---------------- Tabs ----------------
+tabBtns.forEach(btn=>{
+  btn.addEventListener("click", ()=>{
+    tabBtns.forEach(b=>b.classList.remove("active"));
+    btn.classList.add("active");
+    const t = btn.dataset.tab;
+    tabWeek.classList.toggle("active", t==="week");
+    tabYear.classList.toggle("active", t==="year");
   });
+});
 
-  if (deletable) {
-    const del = document.createElement("span");
-    del.className = "del";
-    del.textContent = "✖";
-    del.title = "Aus Stammliste löschen";
-    del.addEventListener("click", () => {
-      if (!confirm(`Wirklich löschen: "${text}" ?`)) return;
+// ---------------- Start date ----------------
+(function initStart(){
+  if(!state.startDate){
+    state.startDate = toISODate(mondayOf(new Date()));
+    saveState();
+  }
+  startDateEl.value = state.startDate;
+})();
+btnToday.addEventListener("click", ()=>{
+  state.startDate = toISODate(mondayOf(new Date()));
+  startDateEl.value = state.startDate;
+  saveState();
+  renderAll();
+});
+startDateEl.addEventListener("change", ()=>{
+  const d = mondayOf(new Date(startDateEl.value));
+  state.startDate = toISODate(d);
+  startDateEl.value = state.startDate;
+  saveState();
+  renderAll();
+});
 
-      if (type === "project") {
-        state.projects = state.projects.filter(p => p.id !== id);
-        // Einsätze mit diesem Projekt löschen
-        state.assignments = state.assignments.filter(a => a.projectId !== id);
-      }
-      if (type === "vehicle") {
-        state.vehicles = state.vehicles.filter(v => v.id !== id);
-        // aus Einsätzen entfernen
-        state.assignments.forEach(a => a.vehicles = a.vehicles.filter(x => x !== id));
-      }
-      if (type === "employee") {
-        state.employees = state.employees.filter(m => m.id !== id);
-        state.assignments.forEach(a => a.employees = a.employees.filter(x => x !== id));
-      }
+// ---------------- Absence type toggle ----------------
+absBtns.forEach(b=>{
+  b.addEventListener("click", ()=>{
+    absBtns.forEach(x=>x.classList.remove("active"));
+    b.classList.add("active");
+    activeAbsenceType = b.dataset.abs;
+  });
+});
 
-      saveState();
-      renderAll();
-    });
-    m.appendChild(del);
+// ---------------- Add master items ----------------
+addProjectBtn.addEventListener("click", ()=>{
+  const name = projectInput.value.trim();
+  if(!name) return;
+  state.projects.push({id: uid(), name});
+  projectInput.value="";
+  saveState(); renderAll();
+});
+addVehicleBtn.addEventListener("click", ()=>{
+  const name = vehicleInput.value.trim();
+  if(!name) return;
+  state.vehicles.push({id: uid(), name});
+  vehicleInput.value="";
+  saveState(); renderAll();
+});
+addEmployeeBtn.addEventListener("click", ()=>{
+  const name = employeeInput.value.trim();
+  if(!name) return;
+  const colorClass = COLORS[state.employees.length % COLORS.length];
+  state.employees.push({id: uid(), name, colorClass});
+  employeeInput.value="";
+  saveState(); renderAll();
+});
+
+// enter key
+[projectInput, vehicleInput, employeeInput].forEach(inp=>{
+  inp.addEventListener("keydown", (e)=>{
+    if(e.key !== "Enter") return;
+    if(inp===projectInput) addProjectBtn.click();
+    if(inp===vehicleInput) addVehicleBtn.click();
+    if(inp===employeeInput) addEmployeeBtn.click();
+  });
+});
+
+// ---------------- Trash (remove planned elements only) ----------------
+trashEl.addEventListener("dragover", e=>e.preventDefault());
+trashEl.addEventListener("drop", e=>{
+  e.preventDefault();
+  const data = getDrag(e);
+  if(!data) return;
+
+  // remove assignment (day project block)
+  if(data.kind === "assignment"){
+    state.assignments = state.assignments.filter(a => a.id !== data.id);
+    saveState(); renderAll();
   }
 
-  container.appendChild(m);
-}
+  // remove absence item
+  if(data.kind === "absence"){
+    state.absences = state.absences.filter(x => x.id !== data.id);
+    saveState(); renderAll();
+  }
 
-function renderLists() {
+  // year bar
+  if(data.kind === "yearbar"){
+    state.yearPlan = state.yearPlan.filter(x => x.id !== data.id);
+    saveState(); renderAll();
+  }
+});
+
+// ---------------- Rendering masters ----------------
+function renderMasters(){
   projectList.innerHTML = "";
   vehicleList.innerHTML = "";
   employeeList.innerHTML = "";
 
-  state.projects.forEach(p => {
-    // Projekt-Magnet: grau, schwarze Schrift (trotz magnet default weiß)
-    // => wir nutzen hier spezielle Klasse "projectMag" als Inline-Style
-    const wrap = document.createElement("span");
-    wrap.className = "magnet";
-    wrap.style.background = "#e6e6e6";
-    wrap.style.color = "#000";
-    wrap.style.border = "1px solid #d2d2d2";
-    wrap.draggable = true;
-    wrap.textContent = p.name;
-
-    wrap.addEventListener("dragstart", (e) => {
-      setDragData(e, { kind: "master", type: "project", id: p.id });
+  // Projects
+  state.projects.forEach(p=>{
+    const m = document.createElement("span");
+    m.className = "magnet project-master";
+    m.textContent = p.name;
+    m.draggable = true;
+    m.addEventListener("dragstart", e=>{
+      setDrag(e, {kind:"master", type:"project", id:p.id});
     });
 
     const del = document.createElement("span");
-    del.className = "del";
-    del.textContent = "✖";
-    del.title = "Projekt löschen";
-    del.addEventListener("click", () => {
-      if (!confirm(`Wirklich Projekt löschen: "${p.name}" ?`)) return;
-      state.projects = state.projects.filter(x => x.id !== p.id);
-      state.assignments = state.assignments.filter(a => a.projectId !== p.id);
-      saveState();
-      renderAll();
+    del.className = "del"; del.textContent = "✖";
+    del.title = "Projekt löschen (Stammdaten)";
+    del.addEventListener("click", ()=>{
+      if(!confirm(`Projekt wirklich löschen: "${p.name}"?`)) return;
+      state.projects = state.projects.filter(x=>x.id!==p.id);
+      // remove all uses
+      state.assignments = state.assignments.filter(a=>a.projectId!==p.id);
+      state.yearPlan = state.yearPlan.filter(y=>y.projectId!==p.id);
+      saveState(); renderAll();
     });
-    wrap.appendChild(del);
-
-    projectList.appendChild(wrap);
+    m.appendChild(del);
+    projectList.appendChild(m);
   });
 
-  state.vehicles.forEach(v => {
-    renderMagnet(vehicleList, { type:"vehicle", id:v.id, text:v.name, className:"vehicle" });
+  // Vehicles
+  state.vehicles.forEach(v=>{
+    const m = document.createElement("span");
+    m.className = "magnet vehicle";
+    m.textContent = v.name;
+    m.draggable = true;
+    m.addEventListener("dragstart", e=>{
+      setDrag(e, {kind:"master", type:"vehicle", id:v.id});
+    });
+
+    const del = document.createElement("span");
+    del.className = "del"; del.textContent = "✖";
+    del.title = "Fahrzeug löschen (Stammdaten)";
+    del.addEventListener("click", ()=>{
+      if(!confirm(`Fahrzeug wirklich löschen: "${v.name}"?`)) return;
+      state.vehicles = state.vehicles.filter(x=>x.id!==v.id);
+      // remove from assignments
+      state.assignments.forEach(a=>{
+        a.vehicles = a.vehicles.filter(id=>id!==v.id);
+      });
+      saveState(); renderAll();
+    });
+    m.appendChild(del);
+    vehicleList.appendChild(m);
   });
 
-  state.employees.forEach(m => {
-    renderMagnet(employeeList, { type:"employee", id:m.id, text:m.name, className:`employee ${m.colorClass}` });
+  // Employees
+  state.employees.forEach(emp=>{
+    const m = document.createElement("span");
+    m.className = `magnet employee ${emp.colorClass}`;
+    m.textContent = emp.name;
+    m.draggable = true;
+    m.addEventListener("dragstart", e=>{
+      setDrag(e, {kind:"master", type:"employee", id:emp.id});
+    });
+
+    const del = document.createElement("span");
+    del.className = "del"; del.textContent = "✖";
+    del.title = "Mitarbeiter löschen (Stammdaten)";
+    del.addEventListener("click", ()=>{
+      if(!confirm(`Mitarbeiter wirklich löschen: "${emp.name}"?`)) return;
+      state.employees = state.employees.filter(x=>x.id!==emp.id);
+      // remove from assignments + absences
+      state.assignments.forEach(a=>{
+        a.employees = a.employees.filter(id=>id!==emp.id);
+      });
+      state.absences = state.absences.filter(x=>x.employeeId!==emp.id);
+      saveState(); renderAll();
+    });
+    m.appendChild(del);
+    employeeList.appendChild(m);
   });
 }
 
-/* =========================
-   ASSIGNMENTS
-========================= */
-
-function assignmentsForDayIndex(dayIndex) {
-  return state.assignments.filter(a => dayIndex >= a.startIndex && dayIndex < (a.startIndex + a.length));
+// ---------------- Business rules ----------------
+function isEmployeeAbsent(employeeId, dateISO){
+  return state.absences.some(a => a.employeeId === employeeId && a.dateISO === dateISO);
+}
+function employeePlannedElsewhere(employeeId, dateISO, assignmentId){
+  // already in any assignment that day (not same)
+  return state.assignments.some(a =>
+    a.dateISO === dateISO &&
+    a.id !== assignmentId &&
+    (a.employees || []).includes(employeeId)
+  );
 }
 
-function removeAssignmentGroup(groupId) {
-  state.assignments = state.assignments.filter(a => a.groupId !== groupId);
-  saveState();
-  renderAll();
-}
-
-function updateAssignmentGroup(groupId, patchFn) {
-  const a = state.assignments.find(x => x.groupId === groupId);
-  if (!a) return;
-  patchFn(a);
-  saveState();
-  renderAll();
-}
-
-/* =========================
-   RENDER BOARD
-========================= */
-
-function renderBoard() {
+// ---------------- Week view rendering ----------------
+function renderWeeks(){
   weeksEl.innerHTML = "";
-  const startMonday = new Date(state.startDate);
-  startMonday.setHours(12,0,0,0);
+  const monday = new Date(state.startDate);
+  monday.setHours(12,0,0,0);
 
-  for (let w = 0; w < 4; w++) {
+  for(let w=0; w<4; w++){
+    const weekStart = getWeekStart(monday, w);
+    const weekEnd = new Date(weekStart); weekEnd.setDate(weekEnd.getDate()+4);
+
+    const kw = isoWeek(weekStart);
+
     const weekBox = document.createElement("div");
     weekBox.className = "week";
 
-    const weekStart = new Date(startMonday);
-    weekStart.setDate(weekStart.getDate() + w*7);
-
-    const weekEnd = new Date(weekStart);
-    weekEnd.setDate(weekEnd.getDate() + 4); // Fr
-
-    const kw = isoWeek(weekStart);
     const title = document.createElement("div");
     title.className = "week-title";
-    title.textContent = `KW ${kw} · ${formatDDMM(weekStart)}–${formatDDMM(weekEnd)}`;
+    title.textContent = `KW ${kw} · ${fmtDDMM(weekStart)}–${fmtDDMM(weekEnd)}`;
     weekBox.appendChild(title);
 
     const days = document.createElement("div");
     days.className = "days";
 
-    for (let d = 0; d < 5; d++) {
+    for(let d=0; d<5; d++){
       const dayIndex = w*5 + d;
-      const dayDate = getDayDate(startMonday, dayIndex);
+      const dayDate = dateForDayIndex(monday, dayIndex);
+      const dateISO = toISODate(dayDate);
 
       const dayEl = document.createElement("div");
       dayEl.className = "day";
-      dayEl.dataset.dayIndex = String(dayIndex);
+      dayEl.dataset.date = dateISO;
 
       const dayTitle = document.createElement("div");
       dayTitle.className = "day-title";
-      dayTitle.textContent = `${getDayLabel(d)} · ${formatDDMM(dayDate)}`;
+      dayTitle.textContent = `${["Mo","Di","Mi","Do","Fr"][d]} · ${fmtDDMM(dayDate)}`;
       dayEl.appendChild(dayTitle);
 
       const hint = document.createElement("div");
       hint.className = "drop-hint";
-      hint.textContent = "Projekt hierher ziehen (Dauer wird gefragt)";
+      hint.textContent = "Projekt hierher ziehen (Dauer in Arbeitstagen wird gefragt)";
       dayEl.appendChild(hint);
 
-      // Drop: project -> new assignment
-      dayEl.addEventListener("dragover", (e) => e.preventDefault());
-      dayEl.addEventListener("drop", (e) => {
+      // day drop: accept project from master or year bar
+      dayEl.addEventListener("dragover", e=>e.preventDefault());
+      dayEl.addEventListener("drop", e=>{
         e.preventDefault();
-        const data = getDragData(e);
-        if (!data) return;
-        if (data.kind !== "master") return;
+        const data = getDrag(e);
+        if(!data) return;
 
-        if (data.type === "project") {
-          const maxLen = 20 - dayIndex;
-          const raw = prompt("Wie viele ARBEITSTAGE (Mo–Fr) soll das Projekt laufen? (1–20)", "1");
-          if (!raw) return;
-          const len = clamp(parseInt(raw, 10) || 1, 1, maxLen);
-
-          const groupId = uid();
-          state.assignments.push({
-            groupId,
-            projectId: data.id,
-            startIndex: dayIndex,
-            length: len,
-            vehicles: [],
-            employees: []
-          });
-          saveState();
-          renderAll();
+        if(data.kind === "master" && data.type === "project"){
+          createProjectSpanAt(dateISO, data.id);
+        }
+        if(data.kind === "yearbar"){
+          createProjectSpanAt(dateISO, data.projectId);
         }
       });
 
-      // assignments in this day
-      const list = assignmentsForDayIndex(dayIndex);
-      list.forEach(a => {
-        dayEl.appendChild(renderAssignmentBlock(a));
+      // Abwesenheiten Zone
+      const absTitle = document.createElement("div");
+      absTitle.className = "day-section-title";
+      absTitle.textContent = "Abwesenheiten";
+      dayEl.appendChild(absTitle);
+
+      const absZone = document.createElement("div");
+      absZone.className = "day-dropzone";
+      absZone.dataset.zone = "absences";
+      absZone.addEventListener("dragover", e=>e.preventDefault());
+      absZone.addEventListener("drop", e=>{
+        e.preventDefault();
+        const data = getDrag(e);
+        if(!data) return;
+        if(data.kind === "master" && data.type === "employee"){
+          // create absence entry for employee
+          const exists = state.absences.some(a=>a.employeeId===data.id && a.dateISO===dateISO);
+          if(exists) return;
+          state.absences.push({id: uid(), dateISO, employeeId: data.id, type: activeAbsenceType});
+          // also remove from any assignments that day
+          state.assignments.forEach(a=>{
+            if(a.dateISO===dateISO){
+              a.employees = (a.employees||[]).filter(id=>id!==data.id);
+            }
+          });
+          saveState(); renderAll();
+        }
+      });
+
+      // render absences
+      const absItems = state.absences.filter(a=>a.dateISO===dateISO);
+      absItems.forEach(a=>{
+        const emp = findById(state.employees, a.employeeId);
+        if(!emp) return;
+        const chip = document.createElement("div");
+        chip.className = `abs-chip ${a.type}`;
+        chip.textContent = `${a.type.toUpperCase()} – ${emp.name}`;
+        chip.draggable = true;
+        chip.addEventListener("dragstart", e=>{
+          setDrag(e, {kind:"absence", id:a.id});
+        });
+        chip.title = "Zum Löschen in „Entfernen“ ziehen";
+        absZone.appendChild(chip);
+      });
+
+      dayEl.appendChild(absZone);
+
+      // Projekte (Assignments) dieses Tages
+      const dayAssignments = state.assignments.filter(a=>a.dateISO===dateISO);
+
+      dayAssignments.forEach(a=>{
+        dayEl.appendChild(renderProjectAssignmentBlock(a));
       });
 
       days.appendChild(dayEl);
@@ -410,133 +434,224 @@ function renderBoard() {
   }
 }
 
-function renderAssignmentBlock(a) {
-  const project = findById(state.projects, a.projectId);
-  const wrap = document.createElement("div");
-  wrap.className = "project";
-  wrap.draggable = true;
-  wrap.dataset.groupId = a.groupId;
+function createProjectSpanAt(startDateISO, projectId){
+  const raw = prompt("Wie viele ARBEITSTAGE (Mo–Fr) soll das Projekt laufen? (1–20)", "1");
+  if(!raw) return;
+  let len = parseInt(raw, 10);
+  if(!Number.isFinite(len) || len < 1) len = 1;
+  len = Math.min(len, 20);
 
-  wrap.addEventListener("dragstart", (e) => {
-    setDragData(e, { kind: "assignment", groupId: a.groupId });
+  const monday = new Date(state.startDate);
+  monday.setHours(12,0,0,0);
+
+  // Build list of visible 20 workdays
+  const visibleDates = [];
+  for(let i=0;i<20;i++){
+    visibleDates.push(toISODate(dateForDayIndex(monday, i)));
+  }
+
+  const startIdx = visibleDates.indexOf(startDateISO);
+  const maxLen = startIdx >= 0 ? (20 - startIdx) : 20;
+  len = Math.min(len, maxLen);
+
+  for(let i=0;i<len;i++){
+    const dateISO = startIdx >= 0 ? visibleDates[startIdx+i] : startDateISO;
+    // create one assignment per day, but do not duplicate same project same day
+    const exists = state.assignments.some(a=>a.dateISO===dateISO && a.projectId===projectId);
+    if(exists) continue;
+    state.assignments.push({
+      id: uid(),
+      dateISO,
+      projectId,
+      vehicles: [],
+      employees: []
+    });
+  }
+  saveState(); renderAll();
+}
+
+function renderProjectAssignmentBlock(a){
+  const proj = findById(state.projects, a.projectId);
+
+  const block = document.createElement("div");
+  block.className = "project-block";
+  block.draggable = true;
+  block.addEventListener("dragstart", e=>{
+    setDrag(e, {kind:"assignment", id:a.id});
   });
 
   const title = document.createElement("div");
   title.className = "project-title";
-  title.textContent = project ? project.name : "(Projekt gelöscht)";
-  wrap.appendChild(title);
+  title.textContent = proj ? proj.name : "(Projekt gelöscht)";
+  block.appendChild(title);
 
-  const row = document.createElement("div");
-  row.className = "assignment-row";
-
-  // Vehicles zone
+  // Fahrzeuge
   const vTitle = document.createElement("div");
-  vTitle.className = "zone-title";
+  vTitle.className = "day-section-title";
   vTitle.textContent = "Fahrzeuge";
-  row.appendChild(vTitle);
+  block.appendChild(vTitle);
 
   const vZone = document.createElement("div");
-  vZone.className = "zone";
-  vZone.dataset.zone = "vehicles";
-  vZone.addEventListener("dragover", (e) => e.preventDefault());
-  vZone.addEventListener("drop", (e) => {
+  vZone.className = "day-dropzone";
+  vZone.addEventListener("dragover", e=>e.preventDefault());
+  vZone.addEventListener("drop", e=>{
     e.preventDefault();
-    const data = getDragData(e);
-    if (!data) return;
-    if (data.kind !== "master" || data.type !== "vehicle") return;
-    updateAssignmentGroup(a.groupId, (x) => {
-      if (!x.vehicles.includes(data.id)) x.vehicles.push(data.id);
-    });
+    const data = getDrag(e);
+    if(!data) return;
+    if(data.kind === "master" && data.type === "vehicle"){
+      if(!a.vehicles.includes(data.id)) a.vehicles.push(data.id);
+      saveState(); renderAll();
+    }
   });
 
-  a.vehicles.forEach(id => {
+  (a.vehicles||[]).forEach(id=>{
     const v = findById(state.vehicles, id);
-    if (!v) return;
+    if(!v) return;
     const chip = document.createElement("span");
     chip.className = "magnet vehicle";
     chip.textContent = v.name;
-
-    // remove on click
-    chip.title = "Klick = entfernen";
     chip.style.cursor = "pointer";
-    chip.addEventListener("click", () => {
-      updateAssignmentGroup(a.groupId, (x) => {
-        x.vehicles = x.vehicles.filter(z => z !== id);
-      });
+    chip.title = "Klick = entfernen (nur dieser Tag)";
+    chip.addEventListener("click", ()=>{
+      a.vehicles = a.vehicles.filter(x=>x!==id);
+      saveState(); renderAll();
     });
-
     vZone.appendChild(chip);
   });
+  block.appendChild(vZone);
 
-  row.appendChild(vZone);
-
-  // Employees zone
+  // Mitarbeiter
   const eTitle = document.createElement("div");
-  eTitle.className = "zone-title";
+  eTitle.className = "day-section-title";
   eTitle.textContent = "Mitarbeiter";
-  row.appendChild(eTitle);
+  block.appendChild(eTitle);
 
   const eZone = document.createElement("div");
-  eZone.className = "zone";
-  eZone.dataset.zone = "employees";
-  eZone.addEventListener("dragover", (e) => e.preventDefault());
-  eZone.addEventListener("drop", (e) => {
+  eZone.className = "day-dropzone";
+  eZone.addEventListener("dragover", e=>e.preventDefault());
+  eZone.addEventListener("drop", e=>{
     e.preventDefault();
-    const data = getDragData(e);
-    if (!data) return;
-    if (data.kind !== "master" || data.type !== "employee") return;
-    updateAssignmentGroup(a.groupId, (x) => {
-      if (!x.employees.includes(data.id)) x.employees.push(data.id);
-    });
+    const data = getDrag(e);
+    if(!data) return;
+    if(!(data.kind === "master" && data.type === "employee")) return;
+
+    const dateISO = a.dateISO;
+
+    // block if absent
+    if(isEmployeeAbsent(data.id, dateISO)){
+      alert("Dieser Mitarbeiter ist an dem Tag abwesend (Krank/Urlaub/Schule).");
+      return;
+    }
+    // block if already planned elsewhere same day
+    if(employeePlannedElsewhere(data.id, dateISO, a.id)){
+      alert("Dieser Mitarbeiter ist an dem Tag schon auf einem anderen Projekt eingeplant.");
+      return;
+    }
+
+    if(!a.employees.includes(data.id)) a.employees.push(data.id);
+    saveState(); renderAll();
   });
 
-  a.employees.forEach(id => {
-    const m = findById(state.employees, id);
-    if (!m) return;
+  (a.employees||[]).forEach(id=>{
+    const emp = findById(state.employees, id);
+    if(!emp) return;
     const chip = document.createElement("span");
-    chip.className = `magnet employee ${m.colorClass}`;
-    chip.textContent = m.name;
-
-    chip.title = "Klick = entfernen";
+    chip.className = `magnet employee ${emp.colorClass}`;
+    chip.textContent = emp.name;
     chip.style.cursor = "pointer";
-    chip.addEventListener("click", () => {
-      updateAssignmentGroup(a.groupId, (x) => {
-        x.employees = x.employees.filter(z => z !== id);
-      });
+    chip.title = "Klick = entfernen (nur dieser Tag)";
+    chip.addEventListener("click", ()=>{
+      a.employees = a.employees.filter(x=>x!==id);
+      saveState(); renderAll();
     });
-
     eZone.appendChild(chip);
   });
+  block.appendChild(eZone);
 
-  row.appendChild(eZone);
-
-  wrap.appendChild(row);
-
-  return wrap;
+  return block;
 }
 
-/* =========================
-   TRASH
-========================= */
+// ---------------- Year view ----------------
+function renderYear(){
+  yearGrid.innerHTML = "";
 
-trashEl.addEventListener("dragover", (e) => e.preventDefault());
-trashEl.addEventListener("drop", (e) => {
-  e.preventDefault();
-  const data = getDragData(e);
-  if (!data) return;
+  for(let m=0; m<12; m++){
+    const monthBox = document.createElement("div");
+    monthBox.className = "month";
 
-  if (data.kind === "assignment") {
-    removeAssignmentGroup(data.groupId);
+    const head = document.createElement("div");
+    head.className = "month-head";
+    head.innerHTML = `<span>${MONTHS[m]}</span><span class="small">${new Date().getFullYear()}</span>`;
+    monthBox.appendChild(head);
+
+    const drop = document.createElement("div");
+    drop.className = "month-drop";
+    drop.dataset.month = String(m);
+
+    drop.addEventListener("dragover", e=>e.preventDefault());
+    drop.addEventListener("drop", e=>{
+      e.preventDefault();
+      const data = getDrag(e);
+      if(!data) return;
+
+      // project from master -> add year plan bar (default 1 month)
+      if(data.kind==="master" && data.type==="project"){
+        state.yearPlan.push({ id: uid(), projectId: data.id, startMonth: m, monthsLen: 1 });
+        saveState(); renderAll();
+      }
+
+      // move existing yearbar to new month
+      if(data.kind==="yearbar"){
+        const bar = state.yearPlan.find(x=>x.id===data.id);
+        if(!bar) return;
+        bar.startMonth = m;
+        saveState(); renderAll();
+      }
+    });
+
+    // render bars that start in this month
+    const bars = state.yearPlan
+      .filter(b=>b.startMonth === m)
+      .map(b=>({ ...b }));
+
+    bars.forEach(b=>{
+      const proj = findById(state.projects, b.projectId);
+      const barEl = document.createElement("div");
+      barEl.className = "year-bar";
+      barEl.draggable = true;
+      barEl.addEventListener("dragstart", e=>{
+        setDrag(e, {kind:"yearbar", id:b.id, projectId:b.projectId});
+      });
+
+      const name = document.createElement("div");
+      name.textContent = proj ? proj.name : "(Projekt gelöscht)";
+      barEl.appendChild(name);
+
+      const resize = document.createElement("div");
+      resize.className = "resize";
+      resize.title = "Klick = +1 Monat (Rechts verlängern)";
+      resize.textContent = `+${b.monthsLen}M`;
+      resize.addEventListener("click", ()=>{
+        const bar = state.yearPlan.find(x=>x.id===b.id);
+        if(!bar) return;
+        bar.monthsLen = Math.min(12, bar.monthsLen + 1);
+        saveState(); renderAll();
+      });
+      barEl.appendChild(resize);
+
+      drop.appendChild(barEl);
+    });
+
+    monthBox.appendChild(drop);
+    yearGrid.appendChild(monthBox);
   }
-});
+}
 
-/* =========================
-   RENDER ALL
-========================= */
-
-function renderAll() {
-  renderLists();
-  renderBoard();
+// ---------------- Render all ----------------
+function renderAll(){
+  renderMasters();
+  renderWeeks();
+  renderYear();
 }
 
 renderAll();
