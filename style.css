@@ -5,7 +5,7 @@
   --muted:#6b7280;
   --line:#e5e7eb;
   --blue:#1f6feb;
-  --shadow:0 8px 24px rgba(0,0,0,.07);
+  --shadow:0 10px 30px rgba(0,0,0,.08);
   --radius:16px;
 }
 
@@ -17,45 +17,47 @@ body{
   color:var(--text);
 }
 
-.header{
-  background:#1f6fbf;
-  color:#fff;
-}
+.header{background:#1f6fbf; color:#fff;}
 .header__inner{
-  max-width:1400px;
+  max-width:1500px;
   margin:0 auto;
   padding:14px 16px;
   display:flex;
-  align-items:center;
   justify-content:space-between;
+  align-items:flex-start;
   gap:14px;
+  flex-wrap:wrap;
 }
-.header h1{margin:0; font-size:20px; letter-spacing:.2px}
-.header__right{display:flex; align-items:center; gap:10px; flex-wrap:wrap}
+.brand{display:flex; flex-direction:column; gap:4px}
+.brand__title{font-weight:1000; font-size:20px}
+.brand__sub{font-size:12px; opacity:.9}
 
-.kwctrl{
-  display:flex; align-items:center; gap:8px;
+.kwbar{
+  display:flex;
+  align-items:center;
+  gap:10px;
+  flex-wrap:wrap;
   background:rgba(255,255,255,.12);
   border:1px solid rgba(255,255,255,.22);
-  padding:8px;
+  padding:10px;
   border-radius:14px;
 }
-.kwctrl__mid{display:flex; flex-direction:column; gap:4px}
-.kwctrl__label{font-size:11px; opacity:.9}
-#kwStart{
-  width:92px;
+.kwbar__mid{display:flex; flex-direction:column; gap:4px}
+.kwbar__label{font-size:11px; opacity:.9}
+#kwStartInput{
+  width:110px;
+  padding:8px 10px;
+  border-radius:12px;
   border:none;
-  border-radius:10px;
-  padding:8px;
-  font-weight:800;
+  font-weight:1000;
 }
 
 .layout{
-  max-width:1400px;
+  max-width:1500px;
   margin:14px auto 40px;
   padding:0 16px;
   display:grid;
-  grid-template-columns: 320px 1fr;
+  grid-template-columns: 340px 1fr;
   gap:14px;
 }
 
@@ -74,7 +76,7 @@ body{
   gap:10px;
 }
 .panel h2{margin:0; font-size:16px}
-.panel h3{margin:12px 0 8px; font-size:13px; color:var(--muted); font-weight:800}
+.panel h3{margin:12px 0 8px; font-size:13px; color:var(--muted); font-weight:1000}
 .small{font-size:12px; color:var(--muted)}
 
 .pool{
@@ -87,18 +89,19 @@ body{
   flex-wrap:wrap;
   gap:8px;
 }
+
 .trash{
   background:#fff5f5;
   border:1px dashed #fca5a5;
   border-radius:14px;
   padding:14px 10px;
-  min-height:60px;
+  min-height:62px;
   display:flex;
   align-items:center;
   justify-content:center;
   text-align:center;
   color:#991b1b;
-  font-weight:800;
+  font-weight:1000;
 }
 
 .projectForm{display:flex; gap:8px; margin-top:10px}
@@ -114,12 +117,12 @@ body{
   align-items:center;
   justify-content:space-between;
   gap:10px;
-  padding:10px 10px;
+  padding:10px;
   border:1px solid var(--line);
   border-radius:14px;
   background:#fff;
 }
-.projectItem__name{font-weight:900}
+.projectItem__name{font-weight:1000}
 .projectItem__btns{display:flex; gap:8px}
 
 .main{min-width:0}
@@ -146,7 +149,7 @@ body{
   padding:9px 10px;
   border-radius:12px;
   cursor:pointer;
-  font-weight:900;
+  font-weight:1000;
 }
 .btn--primary{background:var(--blue); border-color:var(--blue); color:#fff}
 .btn--secondary{background:#f9fafb}
@@ -154,7 +157,7 @@ body{
 
 .weeks{
   display:grid;
-  grid-template-columns: repeat(4, minmax(240px, 1fr));
+  grid-template-columns: repeat(4, minmax(260px, 1fr));
   gap:12px;
 }
 
@@ -193,13 +196,12 @@ body{
   align-items:center;
   justify-content:space-between;
   gap:10px;
-  padding:10px 10px;
+  padding:10px;
   border-bottom:1px solid var(--line);
   background:#f3f6fb;
 }
-.dayRow__day{
-  font-weight:1000;
-}
+.dayRow__day{font-weight:1000}
+
 .dayRow__body{
   padding:10px;
   display:flex;
@@ -207,7 +209,6 @@ body{
   gap:10px;
 }
 
-/* Projekt-Block wie auf der Tafel: Projekt oben, darunter Magnetflächen */
 .projectBlock{
   border:1px solid #d7dde6;
   background:#fff;
@@ -215,7 +216,7 @@ body{
   overflow:hidden;
 }
 .projectBlock__top{
-  padding:10px 10px;
+  padding:10px;
   border-bottom:1px solid #d7dde6;
   font-weight:1000;
   background:#ffffff;
@@ -245,14 +246,13 @@ body{
 }
 .dropzone.dragover{ outline:2px dashed var(--blue); background:#eef5ff }
 
-/* Magnet */
 .magnet{
   background:#fff;
   border:1px solid #d1d5db;
   border-radius:999px;
   padding:8px 10px;
   font-size:13px;
-  font-weight:900;
+  font-weight:1000;
   cursor:grab;
   user-select:none;
   display:inline-flex;
@@ -270,10 +270,9 @@ body{
   color:#374151;
 }
 
-/* Responsive */
 @media (max-width: 1100px){
   .layout{grid-template-columns: 1fr; }
-  .weeks{grid-template-columns: repeat(2, minmax(240px, 1fr));}
+  .weeks{grid-template-columns: repeat(2, minmax(260px, 1fr));}
 }
 @media (max-width: 700px){
   .weeks{grid-template-columns: 1fr;}
