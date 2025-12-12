@@ -1,78 +1,165 @@
-* { box-sizing: border-box; font-family: Arial, sans-serif; }
+/* =========================
+   GRUNDLAYOUT
+========================= */
 
-body { margin: 0; background:#f1f3f7; }
-
-.header {
-  background:#2563eb;
-  color:#fff;
-  padding:12px;
+body {
+  font-family: Arial, Helvetica, sans-serif;
+  background: #f4f6f8;
+  margin: 0;
+  padding: 0;
+  color: #222;
 }
 
-.magnetbereich {
-  display:flex;
-  gap:12px;
-  padding:12px;
+h1, h2, h3 {
+  margin: 0;
 }
 
-.kasten {
-  background:#fff;
-  padding:10px;
-  border-radius:10px;
-  width:33%;
+/* =========================
+   KOPFLEISTE
+========================= */
+
+header {
+  background: #1f5fbf;
+  color: #fff;
+  padding: 14px 20px;
+  font-size: 20px;
+  font-weight: bold;
 }
 
-.row { display:flex; gap:6px; margin-bottom:6px; }
+/* =========================
+   OBERER BEREICH (Listen)
+========================= */
 
-input { flex:1; padding:6px; }
-
-button {
-  padding:6px 10px;
-  border:none;
-  border-radius:6px;
-  background:#2563eb;
-  color:#fff;
-  cursor:pointer;
+.top-area {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 16px;
+  padding: 16px;
 }
+
+.top-box {
+  background: #fff;
+  border-radius: 6px;
+  padding: 12px;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.08);
+}
+
+.top-box h3 {
+  font-size: 14px;
+  margin-bottom: 8px;
+}
+
+/* =========================
+   MAGNETE (ALLGEMEIN)
+========================= */
 
 .magnet {
-  padding:6px 10px;
-  margin:4px 0;
-  border-radius:999px;
-  cursor:grab;
-  font-weight:bold;
+  display: inline-block;
+  padding: 6px 10px;
+  border-radius: 14px;
+  font-size: 13px;
+  margin: 4px 4px 0 0;
+  cursor: grab;
+  user-select: none;
+  color: #fff;
 }
 
-.projekt { background:#fff; color:#000; border:2px solid #000; }
-.fahrzeug { background:#c62828; color:#fff; border-radius:8px; }
-.mitarbeiter { color:#fff; }
+/* =========================
+   PROJEKT
+========================= */
 
-.delete-zone {
-  margin:12px;
-  padding:12px;
-  border:2px dashed #c62828;
-  color:#c62828;
-  text-align:center;
-  border-radius:10px;
+.project {
+  background: #e6e6e6;
+  border-radius: 6px;
+  padding: 10px;
+  margin-bottom: 8px;
 }
 
-#plantafel {
-  padding:12px;
-  display:grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap:12px;
+.project-title {
+  font-weight: bold;
+  font-size: 14px;
+  margin-bottom: 6px;
+  color: #000;
 }
 
-.kw {
-  background:#fff;
-  border-radius:10px;
-  padding:8px;
+/* =========================
+   FAHRZEUGE
+========================= */
+
+.vehicle {
+  background: #c62828;
+  color: #fff;
 }
 
-.kw h3 { margin:0 0 4px 0; }
+/* =========================
+   MITARBEITER (FARBEN)
+========================= */
 
-.tag {
-  border:1px dashed #ccc;
-  padding:6px;
-  margin-top:6px;
-  min-height:60px;
+.employee.blue   { background: #1e88e5; }
+.employee.green  { background: #43a047; }
+.employee.orange { background: #fb8c00; }
+.employee.purple { background: #8e24aa; }
+.employee.teal   { background: #00897b; }
+
+/* =========================
+   PLANTAFEL
+========================= */
+
+.board {
+  padding: 16px;
+}
+
+.week {
+  background: #fff;
+  border-radius: 6px;
+  padding: 10px;
+  margin-bottom: 16px;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.08);
+}
+
+.week-title {
+  font-weight: bold;
+  margin-bottom: 10px;
+}
+
+.days {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 8px;
+}
+
+.day {
+  background: #f7f7f7;
+  border-radius: 6px;
+  padding: 6px;
+  min-height: 140px;
+}
+
+.day-title {
+  font-weight: bold;
+  font-size: 13px;
+  margin-bottom: 6px;
+}
+
+/* =========================
+   ENTFERNEN-BEREICH
+========================= */
+
+.trash {
+  margin: 16px;
+  padding: 14px;
+  border: 2px dashed #c62828;
+  color: #c62828;
+  text-align: center;
+  border-radius: 6px;
+  font-weight: bold;
+}
+
+/* =========================
+   DRAG FEEDBACK
+========================= */
+
+.magnet:active {
+  cursor: grabbing;
+  opacity: 0.8;
 }
