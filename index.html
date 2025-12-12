@@ -1,94 +1,150 @@
 <!DOCTYPE html>
 <html lang="de">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <meta charset="UTF-8">
   <title>Plantafel Dachdeckerei Frey</title>
-  <link rel="stylesheet" href="./style.css" />
-
-  <!-- Supabase UMD (kein module/import nötig) -->
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <link rel="stylesheet" href="style.css">
 </head>
-
 <body>
-  <header class="header">
-    <div class="header__inner">
-      <div class="brand">
-        <div class="brand__title">Plantafel Dachdeckerei Frey</div>
-        <div class="brand__sub" id="statusText">Start…</div>
-      </div>
 
-      <div class="kwbar">
-        <button class="btn btn--ghost" id="btnPrevKw" type="button">◀</button>
+<div class="header">
+  <div class="header-title">Plantafel Dachdeckerei Frey</div>
+</div>
 
-        <div class="kwbar__mid">
-          <div class="kwbar__label">Start-KW</div>
-          <input id="kwStartInput" type="number" min="1" max="53" />
-        </div>
+<!-- ================= MAGNETKASTEN ================= -->
 
-        <button class="btn btn--ghost" id="btnNextKw" type="button">▶</button>
+<div class="magnetkasten">
+  <h3>Mitarbeiter</h3>
 
-        <button class="btn btn--secondary" id="btnThisWeek" type="button">Diese Woche</button>
-        <button class="btn btn--secondary" id="btnReload" type="button">Neu laden</button>
-      </div>
+  <div class="form-row">
+    <input id="ma-name" placeholder="Name">
+    <input id="ma-kuerzel" placeholder="Kürzel">
+    <button class="primary" onclick="addMitarbeiter()">+ Hinzufügen</button>
+  </div>
+
+  <div id="mitarbeiter-liste"></div>
+</div>
+
+<div class="magnetkasten">
+  <h3>Fahrzeuge</h3>
+
+  <div class="form-row">
+    <input id="fz-name" placeholder="Fahrzeug">
+    <button class="primary" onclick="addFahrzeug()">+ Hinzufügen</button>
+  </div>
+
+  <div id="fahrzeug-liste"></div>
+</div>
+
+<!-- ================= LÖSCHBEREICH ================= -->
+
+<div class="delete-zone"
+     ondragover="allowDrop(event)"
+     ondrop="deleteMagnet(event)">
+  Zieh Magnete hierher zum Löschen
+</div>
+
+<!-- ================= PLANTAFEL ================= -->
+
+<div class="plantafel">
+
+  <div class="kalenderwoche">
+    <div class="kw-title">KW 50</div>
+
+    <div class="tag">
+      <div class="tag-title">Montag</div>
+      <div class="dropzone" ondragover="allowDrop(event)" ondrop="drop(event)"></div>
     </div>
-  </header>
 
-  <main class="layout">
-    <!-- Sidebar -->
-    <aside class="sidebar">
-      <section class="panel">
-        <div class="panel__head">
-          <h2>Magnetkasten</h2>
-          <div class="small" id="dbHint">Supabase verbunden…</div>
-        </div>
+    <div class="tag">
+      <div class="tag-title">Dienstag</div>
+      <div class="dropzone" ondragover="allowDrop(event)" ondrop="drop(event)"></div>
+    </div>
+  </div>
 
-        <div class="panel__section">
-          <h3>Mitarbeiter</h3>
-          <div id="poolMitarbeiter" class="pool"></div>
-        </div>
+  <div class="kalenderwoche">
+    <div class="kw-title">KW 51</div>
 
-        <div class="panel__section">
-          <h3>Fahrzeuge</h3>
-          <div id="poolFahrzeuge" class="pool"></div>
-        </div>
+    <div class="tag">
+      <div class="tag-title">Montag</div>
+      <div class="dropzone" ondragover="allowDrop(event)" ondrop="drop(event)"></div>
+    </div>
 
-        <div class="panel__section">
-          <h3>Entfernen</h3>
-          <div id="trashZone" class="trash">
-            Zieh zugewiesene Magnete hierher<br/>zum Löschen
-          </div>
-        </div>
-      </section>
+    <div class="tag">
+      <div class="tag-title">Dienstag</div>
+      <div class="dropzone" ondragover="allowDrop(event)" ondrop="drop(event)"></div>
+    </div>
+  </div>
 
-      <section class="panel">
-        <div class="panel__head">
-          <h2>Projekte</h2>
-          <div class="small">stehen oben (wie an der Tafel)</div>
-        </div>
+</div>
 
-        <form id="projectForm" class="projectForm">
-          <input id="projectName" type="text" placeholder="Projekt / Baustelle (z.B. Müller Eichstätt)" />
-          <button class="btn btn--primary" type="submit">+ Projekt</button>
-        </form>
+<!-- ================= SCRIPT ================= -->
 
-        <div id="projectList" class="projectList"></div>
-      </section>
-    </aside>
+<script>
+let dragItem = null;
 
-    <!-- Board -->
-    <section class="main">
-      <section class="boardCard">
-        <div class="boardHead">
-          <h2>4-Wochen-Plantafel</h2>
-          <div class="small">Projekt oben. Mitarbeiter/Fahrzeuge als Magnete darunter. Drag&Drop = speichern.</div>
-        </div>
+/* ---------- Drag & Drop ---------- */
 
-        <div id="board" class="weeks"></div>
-      </section>
-    </section>
-  </main>
+function drag(ev) {
+  dragItem = ev.target;
+}
 
-  <script src="./app.js"></script>
+function allowDrop(ev) {
+  ev.preventDefault();
+}
+
+function drop(ev) {
+  ev.preventDefault();
+  if (dragItem) {
+    ev.target.appendChild(dragItem);
+    dragItem = null;
+  }
+}
+
+function deleteMagnet(ev) {
+  ev.preventDefault();
+  if (dragItem) {
+    dragItem.remove();
+    dragItem = null;
+  }
+}
+
+/* ---------- Mitarbeiter ---------- */
+
+function addMitarbeiter() {
+  const name = document.getElementById('ma-name').value;
+  const kuerzel = document.getElementById('ma-kuerzel').value;
+
+  if (!name || !kuerzel) return;
+
+  const div = document.createElement('div');
+  div.className = 'magnet mitarbeiter';
+  div.draggable = true;
+  div.ondragstart = drag;
+  div.innerHTML = `${name} <span class="kuerzel">${kuerzel}</span>`;
+
+  document.getElementById('mitarbeiter-liste').appendChild(div);
+
+  document.getElementById('ma-name').value = '';
+  document.getElementById('ma-kuerzel').value = '';
+}
+
+/* ---------- Fahrzeuge ---------- */
+
+function addFahrzeug() {
+  const name = document.getElementById('fz-name').value;
+  if (!name) return;
+
+  const div = document.createElement('div');
+  div.className = 'magnet fahrzeug';
+  div.draggable = true;
+  div.ondragstart = drag;
+  div.textContent = name;
+
+  document.getElementById('fahrzeug-liste').appendChild(div);
+  document.getElementById('fz-name').value = '';
+}
+</script>
+
 </body>
 </html>
