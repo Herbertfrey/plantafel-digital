@@ -1,32 +1,47 @@
-const form = document.getElementById("plantafel-form");
+// Plantafel – 4 Wochen: Tage (Zeilen) × Fahrzeuge (Spalten)
+// Erwartung: supabase.js setzt window.db (Supabase Client)
 
-const kwEl = document.getElementById("kw");
-const weekdayEl = document.getElementById("weekday");
-const titelEl = document.getElementById("titel");
-const baustelleEl = document.getElementById("baustelle");
-const mitarbeiterEl = document.getElementById("mitarbeiter");
-const fahrzeugEl = document.getElementById("fahrzeug");
-const statusEl = document.getElementById("status");
-const notizEl = document.getElementById("notiz");
-
-const reloadBtn = document.getElementById("reloadBtn");
-const clearBtn = document.getElementById("clearBtn");
+const db = window.db;
 
 const DAYS = ["Mo", "Di", "Mi", "Do", "Fr"];
+const VEHICLES = ["DOKA", "MERCEDES BUS", "CRAFTER", "FORD"];
 
-function isoWeekNumber(d = new Date()) {
-  const date = new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()));
-  const dayNum = date.getUTCDay() || 7;
-  date.setUTCDate(date.getUTCDate() + 4 - dayNum);
-  const yearStart = new Date(Date.UTC(date.getUTCFullYear(), 0, 1));
-  return Math.ceil((((date - yearStart) / 86400000) + 1) / 7);
+const elBoard = document.getElementById("board");
+const elForm = document.getElementById("plantafel-form");
+
+const elKwStart = document.getElementById("kwStart");
+const elBtnReload = document.getElementById("btnReload");
+const elBtnClearForm = document.getElementById("btnClearForm");
+
+const elKw = document.getElementById("kw");
+const elWeekday = document.getElementById("weekday");
+const elFahrzeug = document.getElementById("fahrzeug");
+const elTitel = document.getElementById("titel");
+const elBaustelle = document.getElementById("baustelle");
+const elMitarbeiter = document.getElementById("mitarbeiter");
+const elStatus = document.getElementById("status");
+const elNotiz = document.getElementById("notiz");
+
+function isoWeekNumber(date = new Date()) {
+  // ISO week (Mo=Start)
+  const d = new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()));
+  const dayNum = d.getUTCDay() || 7;
+  d.setUTCDate(d.getUTCDate() + 4 - dayNum);
+  const yearStart = new Date(Date.UTC(d.getUTCFullYear(), 0, 1));
+  const weekNo = Math.ceil((((d - yearStart) / 86400000) + 1) / 7);
+  return weekNo;
 }
 
-function clearBoard() {
-  for (const day of DAYS) {
-    const col = document.getElementById(`col-${day}`);
-    if (col) col.innerHTML = "";
-  }
+function wrapKW(kw) {
+  // 1..53 (einfaches Wrapping)
+  if (kw < 1) return 53;
+  if (kw > 53) return 1;
+  return kw;
+}
+
+function getVisibleKWs() {
+  const start = Number(elKwStart.value || isoWeekNumber());
+  return [start, wrapKW(start + 1), wrapKW(start + 2), wrapKW(start + 3)];
 }
 
 function escapeHtml(s) {
@@ -38,180 +53,212 @@ function escapeHtml(s) {
     .replaceAll("'", "&#039;");
 }
 
-function buildCard(row) {
-  const div = document.createElement("div");
-  div.className = `card ${row.status || "normal"}`;
-  div.draggable = true;
-  div.dataset.id = row.id;
-
-  const title = escapeHtml(row.titel || "(ohne Titel)");
-  const baustelle = escapeHtml(row.baustelle || "");
-  const mitarbeiter = escapeHtml(row.mitarbeiter || "");
-  const fahrzeug = escapeHtml(row.fahrzeug || "");
-  const notiz = escapeHtml(row.notiz || "");
-
-  div.innerHTML = `
-    <div class="title">${title}</div>
-    <div class="meta">
-      ${baustelle ? `<div><b>Baustelle:</b> ${baustelle}</div>` : ""}
-      ${mitarbeiter ? `<div><b>Mitarbeiter:</b> ${mitarbeiter}</div>` : ""}
-      ${fahrzeug ? `<div><b>Fahrzeug:</b> ${fahrzeug}</div>` : ""}
-      ${notiz ? `<div><b>Notiz:</b> ${notiz}</div>` : ""}
-    </div>
-  `;
-
-  div.addEventListener("dragstart", (e) => {
-    e.dataTransfer.setData("text/plain", row.id);
-    e.dataTransfer.effectAllowed = "move";
-  });
-
-  return div;
+function vehicleLabelShort(v) {
+  // für mobil später ggf. kürzen – erstmal so lassen
+  return v;
 }
 
-async function loadData() {
-  if (!window.db) {
-    alert("Supabase ist nicht verbunden. Bitte SUPABASE_URL und ANON_KEY in supabase.js eintragen.");
-    return;
+function renderBoardSkeleton() {
+  const kws = getVisibleKWs();
+  elBoard.innerHTML = "";
+
+  for (const kw of kws) {
+    const week = document.createElement("section");
+    week.className = "week";
+    week.dataset.kw = String(kw);
+
+    week.innerHTML = `
+      <div class="week__top">
+        <div class="week__title">KW ${kw}</div>
+        <div class="week__sub">Drag & Drop</div>
+      </div>
+      <div class="week__grid">
+        <div class="grid__head"></div>
+        ${VEHICLES.map(v => `<div class="grid__head">${escapeHtml(vehicleLabelShort(v))}</div>`).join("")}
+
+        ${DAYS.map(day => `
+          <div class="grid__rowlabel">${day}</div>
+          ${VEHICLES.map(v => `
+            <div class="grid__cell">
+              <div class="dropzone"
+                   data-kw="${kw}"
+                   data-day="${day}"
+                   data-vehicle="${escapeHtml(v)}"></div>
+            </div>
+          `).join("")}
+        `).join("")}
+      </div>
+    `;
+
+    elBoard.appendChild(week);
   }
 
-  const kw = Number(kwEl.value);
-  if (!kw || kw < 1 || kw > 53) {
-    clearBoard();
-    return;
-  }
-
-  clearBoard();
-
-  const { data, error } = await window.db
-    .from("plantafel")
-    .select("*")
-    .eq("kw", kw)
-    .order("created_at", { ascending: true });
-
-  if (error) {
-    console.error(error);
-    alert("Fehler beim Laden ❌ (Console anschauen)");
-    return;
-  }
-
-  for (const row of (data || [])) {
-    const day = row.weekday;
-    if (!DAYS.includes(day)) continue;
-    const col = document.getElementById(`col-${day}`);
-    if (!col) continue;
-    col.appendChild(buildCard(row));
-  }
+  wireDropzones();
 }
 
-async function insertRow(payload) {
-  const { error } = await window.db
-    .from("plantafel")
-    .insert([payload]);
+function wireDropzones() {
+  const zones = elBoard.querySelectorAll(".dropzone");
 
-  if (error) {
-    console.error(error);
-    alert("Fehler beim Speichern ❌");
-    return false;
-  }
-  return true;
-}
-
-async function updateWeekday(id, newDay) {
-  const { error } = await window.db
-    .from("plantafel")
-    .update({ weekday: newDay })
-    .eq("id", id);
-
-  if (error) {
-    console.error(error);
-    alert("Fehler beim Verschieben ❌");
-    return false;
-  }
-  return true;
-}
-
-function wireDropZones() {
-  for (const day of DAYS) {
-    const zone = document.getElementById(`col-${day}`);
-    if (!zone) continue;
-
+  zones.forEach(zone => {
     zone.addEventListener("dragover", (e) => {
       e.preventDefault();
-      zone.classList.add("drop-hover");
-      e.dataTransfer.dropEffect = "move";
+      zone.classList.add("dragover");
     });
-
-    zone.addEventListener("dragleave", () => {
-      zone.classList.remove("drop-hover");
-    });
+    zone.addEventListener("dragleave", () => zone.classList.remove("dragover"));
 
     zone.addEventListener("drop", async (e) => {
       e.preventDefault();
-      zone.classList.remove("drop-hover");
+      zone.classList.remove("dragover");
 
-      const id = e.dataTransfer.getData("text/plain");
-      if (!id) return;
+      const cardId = e.dataTransfer.getData("text/cardId");
+      if (!cardId) return;
 
-      const ok = await updateWeekday(id, day);
-      if (ok) await loadData();
+      const newKw = Number(zone.dataset.kw);
+      const newDay = zone.dataset.day;
+      const newVehicle = zone.dataset.vehicle;
+
+      // Optimistisch: Karte direkt verschieben
+      const cardEl = document.querySelector(`.carditem[data-id="${CSS.escape(cardId)}"]`);
+      if (cardEl) zone.appendChild(cardEl);
+
+      // In DB speichern
+      try {
+        const { error } = await db
+          .from("plantafel")
+          .update({ kw: newKw, weekday: newDay, fahrzeug: newVehicle })
+          .eq("id", cardId);
+
+        if (error) throw error;
+      } catch (err) {
+        console.error(err);
+        alert("Fehler beim Verschieben ❌");
+        // Zur Sicherheit neu laden
+        await loadAndRender();
+      }
     });
+  });
+}
+
+function createCardEl(row) {
+  const el = document.createElement("div");
+  const statusClass = row.status ? `status-${row.status}` : "status-normal";
+
+  el.className = `carditem ${statusClass}`;
+  el.draggable = true;
+  el.dataset.id = row.id;
+
+  const meta = [
+    row.baustelle ? `📍 ${row.baustelle}` : "",
+    row.mitarbeiter ? `👷 ${row.mitarbeiter}` : "",
+    row.notiz ? `📝 ${row.notiz}` : "",
+  ].filter(Boolean).join("<br/>");
+
+  el.innerHTML = `
+    <div class="carditem__status"></div>
+    <div class="carditem__title">${escapeHtml(row.titel || "")}</div>
+    <div class="carditem__meta">${meta}</div>
+  `;
+
+  el.addEventListener("dragstart", (e) => {
+    e.dataTransfer.setData("text/cardId", row.id);
+    e.dataTransfer.effectAllowed = "move";
+  });
+
+  return el;
+}
+
+async function loadRowsForVisibleWeeks() {
+  const kws = getVisibleKWs();
+  // KW-Filter: in(...)
+  const { data, error } = await db
+    .from("plantafel")
+    .select("*")
+    .in("kw", kws)
+    .order("created_at", { ascending: true });
+
+  if (error) throw error;
+  return data || [];
+}
+
+function placeRows(rows) {
+  // Alle Zonen leeren
+  elBoard.querySelectorAll(".dropzone").forEach(z => (z.innerHTML = ""));
+
+  for (const r of rows) {
+    const kw = Number(r.kw);
+    const day = r.weekday;
+    const v = r.fahrzeug;
+
+    const zone = elBoard.querySelector(
+      `.dropzone[data-kw="${kw}"][data-day="${CSS.escape(day)}"][data-vehicle="${CSS.escape(v)}"]`
+    );
+
+    if (!zone) continue;
+
+    zone.appendChild(createCardEl(r));
   }
 }
 
-// Events
-form.addEventListener("submit", async (e) => {
+async function loadAndRender() {
+  renderBoardSkeleton();
+  try {
+    const rows = await loadRowsForVisibleWeeks();
+    placeRows(rows);
+  } catch (err) {
+    console.error(err);
+    alert("Fehler beim Laden ❌");
+  }
+}
+
+// --- Form Speichern ---
+elForm.addEventListener("submit", async (e) => {
   e.preventDefault();
 
-  if (!window.db) {
-    alert("Supabase ist nicht verbunden. Bitte supabase.js prüfen.");
-    return;
-  }
-
   const payload = {
-    kw: Number(kwEl.value),
-    weekday: weekdayEl.value,
-    titel: titelEl.value.trim(),
-    baustelle: baustelleEl.value.trim(),
-    mitarbeiter: mitarbeiterEl.value.trim(),
-    fahrzeug: fahrzeugEl.value.trim(),
-    status: statusEl.value,
-    notiz: notizEl.value.trim(),
+    kw: Number(elKw.value),
+    weekday: elWeekday.value,
+    fahrzeug: elFahrzeug.value,
+    titel: elTitel.value.trim(),
+    baustelle: elBaustelle.value.trim(),
+    mitarbeiter: elMitarbeiter.value.trim(),
+    status: elStatus.value,
+    notiz: elNotiz.value.trim(),
   };
 
-  if (!payload.kw || payload.kw < 1 || payload.kw > 53) {
-    alert("Bitte KW korrekt eingeben.");
-    return;
-  }
-  if (!DAYS.includes(payload.weekday)) {
-    alert("Bitte Wochentag wählen.");
-    return;
-  }
-  if (!payload.titel) {
-    alert("Bitte Titel eingeben.");
-    return;
-  }
+  try {
+    const { error } = await db.from("plantafel").insert([payload]);
+    if (error) throw error;
 
-  const ok = await insertRow(payload);
-  if (ok) {
     alert("Gespeichert ✅");
-    form.reset();
-    kwEl.value = payload.kw; // KW behalten
-    statusEl.value = "normal";
-    await loadData();
+    // Formular nur leeren (KW und Auswahl lassen wir erstmal stehen)
+    elTitel.value = "";
+    elBaustelle.value = "";
+    elMitarbeiter.value = "";
+    elNotiz.value = "";
+
+    await loadAndRender();
+  } catch (err) {
+    console.error(err);
+    alert("Fehler beim Speichern ❌");
   }
 });
 
-reloadBtn.addEventListener("click", loadData);
-clearBtn.addEventListener("click", () => {
-  const kw = kwEl.value;
-  form.reset();
-  kwEl.value = kw;
-  statusEl.value = "normal";
+elBtnReload.addEventListener("click", loadAndRender);
+
+elBtnClearForm.addEventListener("click", () => {
+  elWeekday.value = "";
+  elFahrzeug.value = "";
+  elTitel.value = "";
+  elBaustelle.value = "";
+  elMitarbeiter.value = "";
+  elStatus.value = "normal";
+  elNotiz.value = "";
 });
 
-// Start
+// Initial
 (function init() {
-  kwEl.value = isoWeekNumber(new Date());
-  wireDropZones();
-  loadData();
+  const current = isoWeekNumber();
+  elKwStart.value = String(current);
+  elKw.value = String(current);
+  loadAndRender();
 })();
