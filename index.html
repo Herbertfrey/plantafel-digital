@@ -1,53 +1,60 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="de">
 <head>
-  <meta charset="UTF-8" />
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>Plantafel Dachdeckerei Frey</title>
-  <link rel="stylesheet" href="style.css" />
+  <link rel="stylesheet" href="./style.css" />
 </head>
 <body>
+  <header>Plantafel Dachdeckerei Frey</header>
 
-<header class="header">
-  <h1>Plantafel Dachdeckerei Frey</h1>
-</header>
-
-<section class="magnetbereich">
-  <div class="kasten">
-    <h3>Projekte</h3>
-    <div class="row">
-      <input id="projektName" placeholder="Projektname">
-      <button onclick="addProjekt()">+</button>
+  <section class="board">
+    <div style="display:flex; gap:12px; align-items:center; padding: 0 16px 10px;">
+      <label style="font-weight:bold;">Start-Montag:</label>
+      <input id="startDate" type="date" />
+      <button id="btnToday" style="padding:6px 10px; cursor:pointer;">Heute-Woche</button>
+      <button id="btnReload" style="padding:6px 10px; cursor:pointer;">Neu laden</button>
+      <span style="opacity:.7;">(4 Wochen · Mo–Fr)</span>
     </div>
-    <div id="projekte"></div>
-  </div>
 
-  <div class="kasten">
-    <h3>Fahrzeuge</h3>
-    <div class="row">
-      <input id="fahrzeugName" placeholder="Fahrzeug">
-      <button onclick="addFahrzeug()">+</button>
+    <div class="top-area">
+      <!-- Projekte -->
+      <div class="top-box">
+        <h3>Projekte</h3>
+        <div style="display:flex; gap:8px;">
+          <input id="projectInput" placeholder="Projektname" style="flex:1; padding:8px;" />
+          <button id="addProjectBtn" style="padding:8px 12px; cursor:pointer;">+</button>
+        </div>
+        <div id="projectList" style="margin-top:10px;"></div>
+      </div>
+
+      <!-- Fahrzeuge -->
+      <div class="top-box">
+        <h3>Fahrzeuge</h3>
+        <div style="display:flex; gap:8px;">
+          <input id="vehicleInput" placeholder="Fahrzeug" style="flex:1; padding:8px;" />
+          <button id="addVehicleBtn" style="padding:8px 12px; cursor:pointer;">+</button>
+        </div>
+        <div id="vehicleList" style="margin-top:10px;"></div>
+      </div>
+
+      <!-- Mitarbeiter -->
+      <div class="top-box">
+        <h3>Mitarbeiter</h3>
+        <div style="display:flex; gap:8px;">
+          <input id="employeeInput" placeholder="Name" style="flex:1; padding:8px;" />
+          <button id="addEmployeeBtn" style="padding:8px 12px; cursor:pointer;">+</button>
+        </div>
+        <div id="employeeList" style="margin-top:10px;"></div>
+      </div>
     </div>
-    <div id="fahrzeuge"></div>
-  </div>
 
-  <div class="kasten">
-    <h3>Mitarbeiter</h3>
-    <div class="row">
-      <input id="mitarbeiterName" placeholder="Name">
-      <button onclick="addMitarbeiter()">+</button>
-    </div>
-    <div id="mitarbeiter"></div>
-  </div>
-</section>
+    <div id="trash" class="trash">✖ Entfernen (Einsatz-Block hierher ziehen)</div>
 
-<div class="delete-zone"
-     ondragover="allowDrop(event)"
-     ondrop="deleteItem(event)">
-  ❌ Entfernen
-</div>
+    <div id="weeks"></div>
+  </section>
 
-<section id="plantafel"></section>
-
-<script src="app.js"></script>
+  <script src="./app.js"></script>
 </body>
 </html>
