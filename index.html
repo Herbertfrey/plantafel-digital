@@ -1,97 +1,53 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="de">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Plantafel Dachdeckerei Frey</title>
-  <link rel="stylesheet" href="./style.css" />
+  <meta charset="UTF-8">
+  <title>Plantafel</title>
+  <link rel="stylesheet" href="style.css">
 </head>
 <body>
-<header class="topbar">Plantafel Dachdeckerei Frey</header>
 
-<!-- TABS -->
-<div class="tabs">
-  <button class="tab-btn active" data-tab="week">4 Wochen</button>
-  <button class="tab-btn" data-tab="year">12 Monate</button>
+<header>Plantafel – Dachdeckerei Frey</header>
 
-  <div class="tabs-right">
-    <label class="small">Start-Montag:</label>
-    <input id="startDate" type="date" />
-    <button id="btnToday" class="btn secondary">Diese Woche</button>
-    <span class="small hint">KW+Datum in der Wochenansicht</span>
+<!-- PROJEKT PARKPLATZ -->
+<section class="panel">
+  <h2>Projekte (Parkplatz)</h2>
+  <div class="row">
+    <input id="projectInput" placeholder="Neues Projekt">
+    <button onclick="addProject()">+</button>
   </div>
-</div>
+  <div id="projectPool" class="pool"></div>
+</section>
 
-<!-- STAMMDATEN (Fahrzeuge/Mitarbeiter + Abwesenheiten) -->
-<section class="top-area">
-  <div class="top-box">
+<!-- STAMMDATEN -->
+<section class="panel grid2">
+  <div>
     <h3>Fahrzeuge</h3>
-    <div class="row">
-      <input id="vehicleInput" placeholder="Fahrzeug" />
-      <button id="addVehicleBtn" class="btn">+</button>
-    </div>
-    <div id="vehicleList" class="magnet-list"></div>
+    <input id="vehicleInput" placeholder="Fahrzeug">
+    <button onclick="addVehicle()">+</button>
+    <div id="vehiclePool" class="pool"></div>
   </div>
 
-  <div class="top-box">
+  <div>
     <h3>Mitarbeiter</h3>
-    <div class="row">
-      <input id="employeeInput" placeholder="Name" />
-      <button id="addEmployeeBtn" class="btn">+</button>
-    </div>
-    <div id="employeeList" class="magnet-list"></div>
-
-    <div class="absence-toolbar">
-      <div class="small">Abwesenheitstyp:</div>
-      <div class="absence-buttons">
-        <button class="btn abs-btn active" data-abs="urlaub">Urlaub</button>
-        <button class="btn abs-btn" data-abs="krank">Krank</button>
-        <button class="btn abs-btn" data-abs="schule">Schule</button>
-      </div>
-      <div class="small hint">Mitarbeiter auf „Abwesenheiten“ im Tag ziehen.</div>
-    </div>
-  </div>
-
-  <div class="top-box">
-    <h3>Hinweise</h3>
-    <div class="small">
-      <div><b>4 Wochen:</b> zeigt nur, was du aus <b>12 Monate</b> reinziehst.</div>
-      <div><b>Zurück:</b> Projektblock aus der Woche in einen Monat ziehen = aus der 4-Wochen-Planung entfernen.</div>
-      <div><b>Löschen:</b> Einzel-Tag/Abwesenheit in „Entfernen“ ziehen.</div>
-    </div>
+    <input id="employeeInput" placeholder="Mitarbeiter">
+    <button onclick="addEmployee()">+</button>
+    <div id="employeePool" class="pool"></div>
   </div>
 </section>
 
-<div id="trash" class="trash">✖ Entfernen (Tag/Abwesenheit hierher ziehen)</div>
+<!-- 12 MONATE -->
+<section class="panel">
+  <h2>12 Monate</h2>
+  <div id="yearGrid" class="year-grid"></div>
+</section>
 
-<!-- CONTENT -->
-<main>
-  <!-- 4 WOCHEN -->
-  <section id="tab-week" class="tab-content active">
-    <div id="weeks"></div>
-  </section>
+<!-- 4 WOCHEN -->
+<section class="panel">
+  <h2>4 Wochen Planung</h2>
+  <div id="weeks"></div>
+</section>
 
-  <!-- 12 MONATE -->
-  <section id="tab-year" class="tab-content">
-    <div class="year-wrap">
-      <div class="year-head">
-        <div class="year-title">12 Monate (3×4) – nur Projekte (Parkplatz)</div>
-
-        <div class="year-add">
-          <input id="projectInput" placeholder="Neues Projekt anlegen (schwarz)" />
-          <button id="addProjectBtn" class="btn">Projekt +</button>
-        </div>
-
-        <div class="small hint">
-          Projekte als Balken in Monate ziehen. Balken in 4-Wochen ziehen = einplanen. Projekt aus Woche in Monat ziehen = aus 4-Wochen entfernen.
-        </div>
-      </div>
-
-      <div id="yearGrid" class="year-grid"></div>
-    </div>
-  </section>
-</main>
-
-<script src="./app.js"></script>
+<script src="app.js"></script>
 </body>
 </html>
