@@ -1,114 +1,124 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="de">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Plantafel Dachdeckerei Frey</title>
+
   <link rel="stylesheet" href="style.css" />
 
-  <!-- Supabase UMD (wichtig: KEIN module, KEIN import) -->
+  <!-- Supabase UMD (kein module!) -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+  <!-- Muss window.db setzen (deine vorhandene Datei) -->
+  <script src="supabase.js"></script>
 </head>
 
 <body>
   <header class="header">
-    <h1>Plantafel Dachdeckerei Frey</h1>
+    <div class="header__inner">
+      <h1>Plantafel Dachdeckerei Frey</h1>
+    </div>
   </header>
 
   <main class="container">
-    <h2>Wochenplan – Magnettafel (4 Kalenderwochen)</h2>
+    <section class="card">
+      <h2>Wochenplan – Magnettafel (4 Kalenderwochen)</h2>
 
-    <form id="plantafel-form" class="form">
-      <div class="row">
-        <label>KW
-          <input type="number" id="kw" min="1" max="53" required />
-        </label>
+      <div class="controls">
+        <div class="control">
+          <label for="kwStart">Start-KW</label>
+          <input id="kwStart" type="number" min="1" max="53" />
+        </div>
 
-        <label>Wochentag
-          <select id="weekday" required>
-            <option value="">bitte wählen</option>
-            <option value="Mo">Mo</option>
-            <option value="Di">Di</option>
-            <option value="Mi">Mi</option>
-            <option value="Do">Do</option>
-            <option value="Fr">Fr</option>
-          </select>
-        </label>
+        <div class="control">
+          <label>&nbsp;</label>
+          <button id="btnReload" type="button" class="btn btn--secondary">Neu laden</button>
+        </div>
 
-        <label>Titel
-          <input type="text" id="titel" placeholder="z.B. Dachsanierung Müller" required />
-        </label>
+        <div class="control">
+          <label>&nbsp;</label>
+          <button id="btnClearForm" type="button" class="btn btn--ghost">Leeren (nur Formular)</button>
+        </div>
       </div>
 
-      <div class="row">
-        <label>Baustelle
-          <input type="text" id="baustelle" placeholder="Ort / Objekt" />
-        </label>
+      <form id="plantafel-form" class="form">
+        <div class="form__grid">
+          <div class="field">
+            <label for="kw">KW</label>
+            <input id="kw" type="number" min="1" max="53" required />
+          </div>
 
-        <label>Mitarbeiter
-          <input type="text" id="mitarbeiter" placeholder="z.B. Thomas, Meier" />
-        </label>
+          <div class="field">
+            <label for="weekday">Wochentag</label>
+            <select id="weekday" required>
+              <option value="" selected>bitte wählen</option>
+              <option value="Mo">Mo</option>
+              <option value="Di">Di</option>
+              <option value="Mi">Mi</option>
+              <option value="Do">Do</option>
+              <option value="Fr">Fr</option>
+            </select>
+          </div>
 
-        <label>Fahrzeug
-          <input type="text" id="fahrzeug" placeholder="z.B. Sprinter 1 / Anhänger" />
-        </label>
-      </div>
+          <div class="field">
+            <label for="fahrzeug">Fahrzeug</label>
+            <select id="fahrzeug" required>
+              <option value="" selected>bitte wählen</option>
+              <option value="DOKA">DOKA</option>
+              <option value="MERCEDES BUS">MERCEDES BUS</option>
+              <option value="CRAFTER">CRAFTER</option>
+              <option value="FORD">FORD</option>
+            </select>
+          </div>
 
-      <div class="row">
-        <label>Status
-          <select id="status">
-            <option value="normal">normal</option>
-            <option value="wichtig">wichtig</option>
-            <option value="fertig">fertig</option>
-            <option value="krank">krank</option>
-          </select>
-        </label>
+          <div class="field field--wide">
+            <label for="titel">Titel</label>
+            <input id="titel" type="text" placeholder="z.B. Dachsanierung Müller" required />
+          </div>
 
-        <label class="grow">Notiz
-          <textarea id="notiz" rows="2" placeholder="Kurzinfo / Material / Zeiten"></textarea>
-        </label>
+          <div class="field">
+            <label for="baustelle">Baustelle</label>
+            <input id="baustelle" type="text" placeholder="Ort / Objekt" />
+          </div>
 
-        <button class="btn" type="submit">Speichern</button>
-      </div>
-    </form>
+          <div class="field">
+            <label for="mitarbeiter">Mitarbeiter</label>
+            <input id="mitarbeiter" type="text" placeholder="z.B. Thomas, Meier" />
+          </div>
 
-    <div class="toolbar">
-      <button class="btn secondary" id="reloadBtn" type="button">Neu laden</button>
-      <button class="btn secondary" id="clearBtn" type="button">Leeren (nur Formular)</button>
-    </div>
+          <div class="field">
+            <label for="status">Status</label>
+            <select id="status">
+              <option value="normal" selected>normal</option>
+              <option value="wichtig">wichtig</option>
+              <option value="fix">fix</option>
+              <option value="offen">offen</option>
+            </select>
+          </div>
 
-    <h2>Magnettafel – Wochenübersicht</h2>
+          <div class="field field--wide">
+            <label for="notiz">Notiz</label>
+            <textarea id="notiz" rows="2" placeholder="Kurzinfo / Material / Zeiten"></textarea>
+          </div>
+        </div>
 
-    <section class="board" id="board">
-      <div class="col" data-day="Mo">
-        <div class="col-head">Mo</div>
-        <div class="col-body" id="col-Mo"></div>
-      </div>
-      <div class="col" data-day="Di">
-        <div class="col-head">Di</div>
-        <div class="col-body" id="col-Di"></div>
-      </div>
-      <div class="col" data-day="Mi">
-        <div class="col-head">Mi</div>
-        <div class="col-body" id="col-Mi"></div>
-      </div>
-      <div class="col" data-day="Do">
-        <div class="col-head">Do</div>
-        <div class="col-body" id="col-Do"></div>
-      </div>
-      <div class="col" data-day="Fr">
-        <div class="col-head">Fr</div>
-        <div class="col-body" id="col-Fr"></div>
-      </div>
+        <div class="form__actions">
+          <button type="submit" class="btn btn--primary">Speichern</button>
+        </div>
+      </form>
     </section>
 
-    <p class="hint">
-      Tipp: Karte anfassen & ziehen → in anderen Tag fallen lassen → wird automatisch gespeichert.
-    </p>
+    <section class="card">
+      <div class="board__head">
+        <h2>Magnettafel – Wochenübersicht</h2>
+        <div class="hint">Drag & Drop: Karte in ein anderes Feld ziehen → wird gespeichert.</div>
+      </div>
+
+      <div id="board" class="weeks"></div>
+    </section>
   </main>
 
-  <!-- Reihenfolge ist wichtig -->
-  <script src="supabase.js"></script>
   <script src="app.js"></script>
 </body>
 </html>
