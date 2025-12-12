@@ -1,10 +1,12 @@
-// Plantafel v1 — localStorage
-// - Stammlisten bleiben oben (ziehen = kopieren)
-// - 4 Wochen (KW + Datum), Projekte pro Tag, KFZ rot, MA farbig
-// - Abwesenheiten als eigener Balken, blockiert Mitarbeiter
-// - 12 Monate (3×4) nur Projekte, ziehbar + in 4 Wochen ziehen
+// Plantafel — Komplett (localStorage)
+// - 12 Monate: Projekt-Parkplatz + Balken (nur Projekte)
+// - 4 Wochen: zeigt NUR geplante Tages-Einsätze (nichts automatisch)
+// - Projekt aus 12 Monate -> Tag: erzeugt Tages-Einsätze (Prompt Arbeitstage)
+// - Projekt aus Woche -> Monat: entfernt Projekt aus aktuellem 4-Wochen-Fenster (zurück parken)
+// - Fahrzeuge/Mitarbeiter pro Tag einzeln
+// - Abwesenheiten als eigener Balken, blockieren MA
 
-const LS_KEY = "plantafel_v1_full";
+const LS_KEY = "plantafel_full_parking_v1";
 
 const COLORS = ["blue","green","orange","purple","teal"];
 const MONTHS = ["Jan","Feb","Mär","Apr","Mai","Jun","Jul","Aug","Sep","Okt","Nov","Dez"];
@@ -16,12 +18,16 @@ const defaultState = {
   projects: [],    // {id,name}
   vehicles: [],    // {id,name}
   employees: [],   // {id,name,colorClass}
+
   // daily assignments: {id, dateISO, projectId, vehicles:[vehicleId], employees:[employeeId]}
   assignments: [],
+
   // absences: {id, dateISO, employeeId, type}
   absences: [],
-  // year plan: bars by month index only: {id, projectId, startMonth, monthsLen}
-  yearPlan: []
+
+  // year bars: {id, projectId, monthIndex}  (einfach: Projekt "liegt" in einem Monat; du kannst es verschieben)
+  // (Kein Start/Ende, keine Dauer — nur Parkplatz/Zuordnung zu einem Monat)
+  yearBars: []
 };
 
 let state = loadState();
@@ -34,10 +40,6 @@ const tabYear = document.getElementById("tab-year");
 const startDateEl = document.getElementById("startDate");
 const btnToday = document.getElementById("btnToday");
 
-const projectInput = document.getElementById("projectInput");
-const addProjectBtn = document.getElementById("addProjectBtn");
-const projectList = document.getElementById("projectList");
-
 const vehicleInput = document.getElementById("vehicleInput");
 const addVehicleBtn = document.getElementById("addVehicleBtn");
 const vehicleList = document.getElementById("vehicleList");
@@ -46,10 +48,13 @@ const employeeInput = document.getElementById("employeeInput");
 const addEmployeeBtn = document.getElementById("addEmployeeBtn");
 const employeeList = document.getElementById("employeeList");
 
-const weeksEl = document.getElementById("weeks");
-const trashEl = document.getElementById("trash");
-
 const absBtns = document.querySelectorAll(".abs-btn");
+
+const trashEl = document.getElementById("trash");
+const weeksEl = document.getElementById("weeks");
+
+const projectInput = document.getElementById("projectInput");
+const addProjectBtn = document.getElementById("addProjectBtn");
 
 const yearGrid = document.getElementById("yearGrid");
 
@@ -66,6 +71,7 @@ function loadState(){
     return structuredClone(defaultState);
   }
 }
+
 function pad2(n){ return String(n).padStart(2,"0"); }
 function fmtDDMM(d){ return `${pad2(d.getDate())}.${pad2(d.getMonth()+1)}`; }
 
@@ -77,6 +83,7 @@ function mondayOf(date){
   d.setDate(d.getDate() + diff);
   return d;
 }
+
 function isoWeek(date){
   const d = new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()));
   const dayNum = d.getUTCDay() || 7;
@@ -84,24 +91,22 @@ function isoWeek(date){
   const yearStart = new Date(Date.UTC(d.getUTCFullYear(),0,1));
   return Math.ceil((((d - yearStart) / 86400000) + 1) / 7);
 }
-function getWeekStart(monday, weekIndex){
-  const d = new Date(monday);
-  d.setDate(d.getDate() + weekIndex*7);
-  return d;
-}
+
 function dateForDayIndex(monday, dayIndex){
-  // 0..19 mapped to weekdays only
+  // 0..19 mapped to weekdays only (Mo–Fr)
   const w = Math.floor(dayIndex/5);
   const wd = dayIndex%5;
   const d = new Date(monday);
   d.setDate(d.getDate() + w*7 + wd);
   return d;
 }
+
 function toISODate(d){
   const x = new Date(d);
   x.setHours(12,0,0,0);
   return x.toISOString().slice(0,10);
 }
+
 function findById(arr, id){ return arr.find(x => x.id === id); }
 
 function setDrag(e, payload){
@@ -113,6 +118,17 @@ function getDrag(e){
     const raw = e.dataTransfer.getData("application/json");
     return raw ? JSON.parse(raw) : null;
   }catch{ return null; }
+}
+
+// Visible 4-week weekday dates (20 workdays)
+function getVisibleDates(){
+  const monday = new Date(state.startDate);
+  monday.setHours(12,0,0,0);
+  const dates = [];
+  for(let i=0;i<20;i++){
+    dates.push(toISODate(dateForDayIndex(monday, i)));
+  }
+  return dates;
 }
 
 // ---------------- Tabs ----------------
@@ -148,7 +164,7 @@ startDateEl.addEventListener("change", ()=>{
   renderAll();
 });
 
-// ---------------- Absence type toggle ----------------
+// ---------------- Abwesenheitstyp ----------------
 absBtns.forEach(b=>{
   b.addEventListener("click", ()=>{
     absBtns.forEach(x=>x.classList.remove("active"));
@@ -158,13 +174,6 @@ absBtns.forEach(b=>{
 });
 
 // ---------------- Add master items ----------------
-addProjectBtn.addEventListener("click", ()=>{
-  const name = projectInput.value.trim();
-  if(!name) return;
-  state.projects.push({id: uid(), name});
-  projectInput.value="";
-  saveState(); renderAll();
-});
 addVehicleBtn.addEventListener("click", ()=>{
   const name = vehicleInput.value.trim();
   if(!name) return;
@@ -180,134 +189,35 @@ addEmployeeBtn.addEventListener("click", ()=>{
   employeeInput.value="";
   saveState(); renderAll();
 });
-
-// enter key
-[projectInput, vehicleInput, employeeInput].forEach(inp=>{
+[vehicleInput, employeeInput].forEach(inp=>{
   inp.addEventListener("keydown", (e)=>{
     if(e.key !== "Enter") return;
-    if(inp===projectInput) addProjectBtn.click();
     if(inp===vehicleInput) addVehicleBtn.click();
     if(inp===employeeInput) addEmployeeBtn.click();
   });
 });
 
-// ---------------- Trash (remove planned elements only) ----------------
-trashEl.addEventListener("dragover", e=>e.preventDefault());
-trashEl.addEventListener("drop", e=>{
-  e.preventDefault();
-  const data = getDrag(e);
-  if(!data) return;
-
-  // remove assignment (day project block)
-  if(data.kind === "assignment"){
-    state.assignments = state.assignments.filter(a => a.id !== data.id);
-    saveState(); renderAll();
-  }
-
-  // remove absence item
-  if(data.kind === "absence"){
-    state.absences = state.absences.filter(x => x.id !== data.id);
-    saveState(); renderAll();
-  }
-
-  // year bar
-  if(data.kind === "yearbar"){
-    state.yearPlan = state.yearPlan.filter(x => x.id !== data.id);
-    saveState(); renderAll();
-  }
+// ---------------- Projects only in YEAR ----------------
+addProjectBtn.addEventListener("click", ()=>{
+  const name = projectInput.value.trim();
+  if(!name) return;
+  const pId = uid();
+  state.projects.push({id: pId, name});
+  // automatically "park" it into current month
+  const now = new Date();
+  state.yearBars.push({id: uid(), projectId: pId, monthIndex: now.getMonth()});
+  projectInput.value="";
+  saveState(); renderAll();
 });
-
-// ---------------- Rendering masters ----------------
-function renderMasters(){
-  projectList.innerHTML = "";
-  vehicleList.innerHTML = "";
-  employeeList.innerHTML = "";
-
-  // Projects
-  state.projects.forEach(p=>{
-    const m = document.createElement("span");
-    m.className = "magnet project-master";
-    m.textContent = p.name;
-    m.draggable = true;
-    m.addEventListener("dragstart", e=>{
-      setDrag(e, {kind:"master", type:"project", id:p.id});
-    });
-
-    const del = document.createElement("span");
-    del.className = "del"; del.textContent = "✖";
-    del.title = "Projekt löschen (Stammdaten)";
-    del.addEventListener("click", ()=>{
-      if(!confirm(`Projekt wirklich löschen: "${p.name}"?`)) return;
-      state.projects = state.projects.filter(x=>x.id!==p.id);
-      // remove all uses
-      state.assignments = state.assignments.filter(a=>a.projectId!==p.id);
-      state.yearPlan = state.yearPlan.filter(y=>y.projectId!==p.id);
-      saveState(); renderAll();
-    });
-    m.appendChild(del);
-    projectList.appendChild(m);
-  });
-
-  // Vehicles
-  state.vehicles.forEach(v=>{
-    const m = document.createElement("span");
-    m.className = "magnet vehicle";
-    m.textContent = v.name;
-    m.draggable = true;
-    m.addEventListener("dragstart", e=>{
-      setDrag(e, {kind:"master", type:"vehicle", id:v.id});
-    });
-
-    const del = document.createElement("span");
-    del.className = "del"; del.textContent = "✖";
-    del.title = "Fahrzeug löschen (Stammdaten)";
-    del.addEventListener("click", ()=>{
-      if(!confirm(`Fahrzeug wirklich löschen: "${v.name}"?`)) return;
-      state.vehicles = state.vehicles.filter(x=>x.id!==v.id);
-      // remove from assignments
-      state.assignments.forEach(a=>{
-        a.vehicles = a.vehicles.filter(id=>id!==v.id);
-      });
-      saveState(); renderAll();
-    });
-    m.appendChild(del);
-    vehicleList.appendChild(m);
-  });
-
-  // Employees
-  state.employees.forEach(emp=>{
-    const m = document.createElement("span");
-    m.className = `magnet employee ${emp.colorClass}`;
-    m.textContent = emp.name;
-    m.draggable = true;
-    m.addEventListener("dragstart", e=>{
-      setDrag(e, {kind:"master", type:"employee", id:emp.id});
-    });
-
-    const del = document.createElement("span");
-    del.className = "del"; del.textContent = "✖";
-    del.title = "Mitarbeiter löschen (Stammdaten)";
-    del.addEventListener("click", ()=>{
-      if(!confirm(`Mitarbeiter wirklich löschen: "${emp.name}"?`)) return;
-      state.employees = state.employees.filter(x=>x.id!==emp.id);
-      // remove from assignments + absences
-      state.assignments.forEach(a=>{
-        a.employees = a.employees.filter(id=>id!==emp.id);
-      });
-      state.absences = state.absences.filter(x=>x.employeeId!==emp.id);
-      saveState(); renderAll();
-    });
-    m.appendChild(del);
-    employeeList.appendChild(m);
-  });
-}
+projectInput.addEventListener("keydown", (e)=>{
+  if(e.key === "Enter") addProjectBtn.click();
+});
 
 // ---------------- Business rules ----------------
 function isEmployeeAbsent(employeeId, dateISO){
   return state.absences.some(a => a.employeeId === employeeId && a.dateISO === dateISO);
 }
 function employeePlannedElsewhere(employeeId, dateISO, assignmentId){
-  // already in any assignment that day (not same)
   return state.assignments.some(a =>
     a.dateISO === dateISO &&
     a.id !== assignmentId &&
@@ -315,16 +225,132 @@ function employeePlannedElsewhere(employeeId, dateISO, assignmentId){
   );
 }
 
-// ---------------- Week view rendering ----------------
+// ---------------- Trash ----------------
+trashEl.addEventListener("dragover", e=>e.preventDefault());
+trashEl.addEventListener("drop", e=>{
+  e.preventDefault();
+  const data = getDrag(e);
+  if(!data) return;
+
+  if(data.kind === "assignment"){
+    state.assignments = state.assignments.filter(a => a.id !== data.id);
+    saveState(); renderAll();
+  }
+
+  if(data.kind === "absence"){
+    state.absences = state.absences.filter(x => x.id !== data.id);
+    saveState(); renderAll();
+  }
+});
+
+// ---------------- YEAR VIEW ----------------
+function renderYear(){
+  yearGrid.innerHTML = "";
+
+  const year = new Date().getFullYear();
+
+  for(let m=0; m<12; m++){
+    const monthBox = document.createElement("div");
+    monthBox.className = "month";
+
+    const head = document.createElement("div");
+    head.className = "month-head";
+    head.innerHTML = `<span>${MONTHS[m]}</span><span class="small">${year}</span>`;
+    monthBox.appendChild(head);
+
+    const drop = document.createElement("div");
+    drop.className = "month-drop";
+    drop.dataset.month = String(m);
+
+    drop.addEventListener("dragover", e=>e.preventDefault());
+    drop.addEventListener("drop", e=>{
+      e.preventDefault();
+      const data = getDrag(e);
+      if(!data) return;
+
+      // Move yearbar
+      if(data.kind === "yearbar"){
+        const bar = state.yearBars.find(x=>x.id===data.id);
+        if(!bar) return;
+        bar.monthIndex = m;
+        saveState(); renderAll();
+        return;
+      }
+
+      // From WEEK -> back to YEAR month: remove from current 4-week window
+      if(data.kind === "plannedProject"){
+        // ensure a year bar exists
+        let bar = state.yearBars.find(x => x.projectId === data.projectId);
+        if(!bar){
+          bar = { id: uid(), projectId: data.projectId, monthIndex: m };
+          state.yearBars.push(bar);
+        } else {
+          bar.monthIndex = m;
+        }
+
+        // remove all assignments for that project within current visible 4 weeks
+        const visible = new Set(getVisibleDates());
+        state.assignments = state.assignments.filter(a =>
+          !(a.projectId === data.projectId && visible.has(a.dateISO))
+        );
+
+        saveState(); renderAll();
+        return;
+      }
+    });
+
+    // Bars in this month
+    const bars = state.yearBars.filter(b => b.monthIndex === m);
+
+    bars.forEach(b=>{
+      const proj = findById(state.projects, b.projectId);
+      if(!proj) return;
+
+      const barEl = document.createElement("div");
+      barEl.className = "year-bar";
+      barEl.draggable = true;
+
+      barEl.addEventListener("dragstart", e=>{
+        setDrag(e, {kind:"yearbar", id:b.id, projectId:b.projectId});
+      });
+
+      const name = document.createElement("div");
+      name.textContent = proj.name;
+      barEl.appendChild(name);
+
+      const del = document.createElement("div");
+      del.className = "del";
+      del.title = "Projekt löschen (auch aus Planung)";
+      del.textContent = "✖";
+      del.addEventListener("click", ()=>{
+        if(!confirm(`Projekt wirklich löschen: "${proj.name}" ?`)) return;
+        // delete project
+        state.projects = state.projects.filter(p=>p.id!==proj.id);
+        // delete year bars and assignments
+        state.yearBars = state.yearBars.filter(x=>x.projectId!==proj.id);
+        state.assignments = state.assignments.filter(a=>a.projectId!==proj.id);
+        saveState(); renderAll();
+      });
+      barEl.appendChild(del);
+
+      drop.appendChild(barEl);
+    });
+
+    monthBox.appendChild(drop);
+    yearGrid.appendChild(monthBox);
+  }
+}
+
+// ---------------- WEEK VIEW ----------------
 function renderWeeks(){
   weeksEl.innerHTML = "";
+
   const monday = new Date(state.startDate);
   monday.setHours(12,0,0,0);
 
   for(let w=0; w<4; w++){
-    const weekStart = getWeekStart(monday, w);
+    const weekStart = new Date(monday); weekStart.setDate(weekStart.getDate() + w*7);
     const weekEnd = new Date(weekStart); weekEnd.setDate(weekEnd.getDate()+4);
-
     const kw = isoWeek(weekStart);
 
     const weekBox = document.createElement("div");
@@ -354,25 +380,22 @@ function renderWeeks(){
 
       const hint = document.createElement("div");
       hint.className = "drop-hint";
-      hint.textContent = "Projekt hierher ziehen (Dauer in Arbeitstagen wird gefragt)";
+      hint.textContent = "Projekt aus 12 Monate hierher ziehen (Dauer wird gefragt)";
       dayEl.appendChild(hint);
 
-      // day drop: accept project from master or year bar
+      // Drop: only from YEAR (yearbar)
       dayEl.addEventListener("dragover", e=>e.preventDefault());
       dayEl.addEventListener("drop", e=>{
         e.preventDefault();
         const data = getDrag(e);
         if(!data) return;
 
-        if(data.kind === "master" && data.type === "project"){
-          createProjectSpanAt(dateISO, data.id);
-        }
         if(data.kind === "yearbar"){
           createProjectSpanAt(dateISO, data.projectId);
         }
       });
 
-      // Abwesenheiten Zone
+      // Abwesenheiten
       const absTitle = document.createElement("div");
       absTitle.className = "day-section-title";
       absTitle.textContent = "Abwesenheiten";
@@ -380,28 +403,28 @@ function renderWeeks(){
 
       const absZone = document.createElement("div");
       absZone.className = "day-dropzone";
-      absZone.dataset.zone = "absences";
       absZone.addEventListener("dragover", e=>e.preventDefault());
       absZone.addEventListener("drop", e=>{
         e.preventDefault();
         const data = getDrag(e);
         if(!data) return;
         if(data.kind === "master" && data.type === "employee"){
-          // create absence entry for employee
           const exists = state.absences.some(a=>a.employeeId===data.id && a.dateISO===dateISO);
           if(exists) return;
+
           state.absences.push({id: uid(), dateISO, employeeId: data.id, type: activeAbsenceType});
-          // also remove from any assignments that day
+
+          // remove employee from any project that day
           state.assignments.forEach(a=>{
-            if(a.dateISO===dateISO){
+            if(a.dateISO === dateISO){
               a.employees = (a.employees||[]).filter(id=>id!==data.id);
             }
           });
+
           saveState(); renderAll();
         }
       });
 
-      // render absences
       const absItems = state.absences.filter(a=>a.dateISO===dateISO);
       absItems.forEach(a=>{
         const emp = findById(state.employees, a.employeeId);
@@ -419,9 +442,8 @@ function renderWeeks(){
 
       dayEl.appendChild(absZone);
 
-      // Projekte (Assignments) dieses Tages
+      // Projects planned this day
       const dayAssignments = state.assignments.filter(a=>a.dateISO===dateISO);
-
       dayAssignments.forEach(a=>{
         dayEl.appendChild(renderProjectAssignmentBlock(a));
       });
@@ -441,22 +463,16 @@ function createProjectSpanAt(startDateISO, projectId){
   if(!Number.isFinite(len) || len < 1) len = 1;
   len = Math.min(len, 20);
 
-  const monday = new Date(state.startDate);
-  monday.setHours(12,0,0,0);
-
-  // Build list of visible 20 workdays
-  const visibleDates = [];
-  for(let i=0;i<20;i++){
-    visibleDates.push(toISODate(dateForDayIndex(monday, i)));
-  }
-
+  const visibleDates = getVisibleDates();
   const startIdx = visibleDates.indexOf(startDateISO);
-  const maxLen = startIdx >= 0 ? (20 - startIdx) : 20;
+  if(startIdx < 0) return;
+
+  const maxLen = 20 - startIdx;
   len = Math.min(len, maxLen);
 
   for(let i=0;i<len;i++){
-    const dateISO = startIdx >= 0 ? visibleDates[startIdx+i] : startDateISO;
-    // create one assignment per day, but do not duplicate same project same day
+    const dateISO = visibleDates[startIdx+i];
+    // no duplicate same project same day
     const exists = state.assignments.some(a=>a.dateISO===dateISO && a.projectId===projectId);
     if(exists) continue;
     state.assignments.push({
@@ -467,6 +483,7 @@ function createProjectSpanAt(startDateISO, projectId){
       employees: []
     });
   }
+
   saveState(); renderAll();
 }
 
@@ -476,8 +493,10 @@ function renderProjectAssignmentBlock(a){
   const block = document.createElement("div");
   block.className = "project-block";
   block.draggable = true;
+
+  // Drag this project back into YEAR month (removes from current window)
   block.addEventListener("dragstart", e=>{
-    setDrag(e, {kind:"assignment", id:a.id});
+    setDrag(e, {kind:"plannedProject", projectId: a.projectId});
   });
 
   const title = document.createElement("div");
@@ -537,12 +556,10 @@ function renderProjectAssignmentBlock(a){
 
     const dateISO = a.dateISO;
 
-    // block if absent
     if(isEmployeeAbsent(data.id, dateISO)){
       alert("Dieser Mitarbeiter ist an dem Tag abwesend (Krank/Urlaub/Schule).");
       return;
     }
-    // block if already planned elsewhere same day
     if(employeePlannedElsewhere(data.id, dateISO, a.id)){
       alert("Dieser Mitarbeiter ist an dem Tag schon auf einem anderen Projekt eingeplant.");
       return;
@@ -568,90 +585,80 @@ function renderProjectAssignmentBlock(a){
   });
   block.appendChild(eZone);
 
+  // Tag-Einsatz separat löschbar über Trash:
+  // (ziehen des Blocks in Trash löscht nur diesen Tag)
+  // Dafür brauchen wir ein eigenes Drag-Target:
+  block.addEventListener("dragstart", (e)=>{
+    // zusätzlich: wenn du in Trash ziehst, soll "assignment" löschen
+    // wir hängen die assignment-id mit an:
+    const payload = {kind:"assignment", id:a.id, projectId:a.projectId};
+    e.dataTransfer.setData("application/json", JSON.stringify(payload));
+    e.dataTransfer.effectAllowed = "copyMove";
+  });
+
   return block;
 }
 
-// ---------------- Year view ----------------
-function renderYear(){
-  yearGrid.innerHTML = "";
+// ---------------- Masters for week (vehicles/employees) ----------------
+function renderMasters(){
+  vehicleList.innerHTML = "";
+  employeeList.innerHTML = "";
 
-  for(let m=0; m<12; m++){
-    const monthBox = document.createElement("div");
-    monthBox.className = "month";
-
-    const head = document.createElement("div");
-    head.className = "month-head";
-    head.innerHTML = `<span>${MONTHS[m]}</span><span class="small">${new Date().getFullYear()}</span>`;
-    monthBox.appendChild(head);
-
-    const drop = document.createElement("div");
-    drop.className = "month-drop";
-    drop.dataset.month = String(m);
-
-    drop.addEventListener("dragover", e=>e.preventDefault());
-    drop.addEventListener("drop", e=>{
-      e.preventDefault();
-      const data = getDrag(e);
-      if(!data) return;
-
-      // project from master -> add year plan bar (default 1 month)
-      if(data.kind==="master" && data.type==="project"){
-        state.yearPlan.push({ id: uid(), projectId: data.id, startMonth: m, monthsLen: 1 });
-        saveState(); renderAll();
-      }
-
-      // move existing yearbar to new month
-      if(data.kind==="yearbar"){
-        const bar = state.yearPlan.find(x=>x.id===data.id);
-        if(!bar) return;
-        bar.startMonth = m;
-        saveState(); renderAll();
-      }
+  // Vehicles
+  state.vehicles.forEach(v=>{
+    const m = document.createElement("span");
+    m.className = "magnet vehicle";
+    m.textContent = v.name;
+    m.draggable = true;
+    m.addEventListener("dragstart", e=>{
+      setDrag(e, {kind:"master", type:"vehicle", id:v.id});
     });
 
-    // render bars that start in this month
-    const bars = state.yearPlan
-      .filter(b=>b.startMonth === m)
-      .map(b=>({ ...b }));
+    const del = document.createElement("span");
+    del.className = "del"; del.textContent = "✖";
+    del.title = "Fahrzeug löschen (Stammdaten)";
+    del.addEventListener("click", ()=>{
+      if(!confirm(`Fahrzeug wirklich löschen: "${v.name}"?`)) return;
+      state.vehicles = state.vehicles.filter(x=>x.id!==v.id);
+      state.assignments.forEach(a=>{ a.vehicles = (a.vehicles||[]).filter(id=>id!==v.id); });
+      saveState(); renderAll();
+    });
+    m.appendChild(del);
 
-    bars.forEach(b=>{
-      const proj = findById(state.projects, b.projectId);
-      const barEl = document.createElement("div");
-      barEl.className = "year-bar";
-      barEl.draggable = true;
-      barEl.addEventListener("dragstart", e=>{
-        setDrag(e, {kind:"yearbar", id:b.id, projectId:b.projectId});
-      });
+    vehicleList.appendChild(m);
+  });
 
-      const name = document.createElement("div");
-      name.textContent = proj ? proj.name : "(Projekt gelöscht)";
-      barEl.appendChild(name);
-
-      const resize = document.createElement("div");
-      resize.className = "resize";
-      resize.title = "Klick = +1 Monat (Rechts verlängern)";
-      resize.textContent = `+${b.monthsLen}M`;
-      resize.addEventListener("click", ()=>{
-        const bar = state.yearPlan.find(x=>x.id===b.id);
-        if(!bar) return;
-        bar.monthsLen = Math.min(12, bar.monthsLen + 1);
-        saveState(); renderAll();
-      });
-      barEl.appendChild(resize);
-
-      drop.appendChild(barEl);
+  // Employees
+  state.employees.forEach(emp=>{
+    const m = document.createElement("span");
+    m.className = `magnet employee ${emp.colorClass}`;
+    m.textContent = emp.name;
+    m.draggable = true;
+    m.addEventListener("dragstart", e=>{
+      setDrag(e, {kind:"master", type:"employee", id:emp.id});
     });
 
-    monthBox.appendChild(drop);
-    yearGrid.appendChild(monthBox);
-  }
+    const del = document.createElement("span");
+    del.className = "del"; del.textContent = "✖";
+    del.title = "Mitarbeiter löschen (Stammdaten)";
+    del.addEventListener("click", ()=>{
+      if(!confirm(`Mitarbeiter wirklich löschen: "${emp.name}"?`)) return;
+      state.employees = state.employees.filter(x=>x.id!==emp.id);
+      state.assignments.forEach(a=>{ a.employees = (a.employees||[]).filter(id=>id!==emp.id); });
+      state.absences = state.absences.filter(x=>x.employeeId!==emp.id);
+      saveState(); renderAll();
+    });
+    m.appendChild(del);
+
+    employeeList.appendChild(m);
+  });
 }
 
 // ---------------- Render all ----------------
 function renderAll(){
   renderMasters();
-  renderWeeks();
   renderYear();
+  renderWeeks();
 }
 
 renderAll();
