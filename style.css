@@ -1,279 +1,248 @@
-:root{
-  --bg:#f3f5f7;
-  --card:#ffffff;
-  --text:#111827;
-  --muted:#6b7280;
-  --line:#e5e7eb;
-  --blue:#1f6feb;
-  --shadow:0 10px 30px rgba(0,0,0,.08);
-  --radius:16px;
+/* ===============================
+   GRUNDLAYOUT
+   =============================== */
+
+* {
+  box-sizing: border-box;
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
 }
 
-*{box-sizing:border-box}
-body{
-  margin:0;
-  font-family:system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,Cantarell,Noto Sans,sans-serif;
-  background:var(--bg);
-  color:var(--text);
+body {
+  margin: 0;
+  background: #f1f3f7;
+  color: #222;
 }
 
-.header{background:#1f6fbf; color:#fff;}
-.header__inner{
-  max-width:1500px;
-  margin:0 auto;
-  padding:14px 16px;
-  display:flex;
-  justify-content:space-between;
-  align-items:flex-start;
-  gap:14px;
-  flex-wrap:wrap;
-}
-.brand{display:flex; flex-direction:column; gap:4px}
-.brand__title{font-weight:1000; font-size:20px}
-.brand__sub{font-size:12px; opacity:.9}
-
-.kwbar{
-  display:flex;
-  align-items:center;
-  gap:10px;
-  flex-wrap:wrap;
-  background:rgba(255,255,255,.12);
-  border:1px solid rgba(255,255,255,.22);
-  padding:10px;
-  border-radius:14px;
-}
-.kwbar__mid{display:flex; flex-direction:column; gap:4px}
-.kwbar__label{font-size:11px; opacity:.9}
-#kwStartInput{
-  width:110px;
-  padding:8px 10px;
-  border-radius:12px;
-  border:none;
-  font-weight:1000;
+h1, h2, h3 {
+  margin: 0 0 8px 0;
 }
 
-.layout{
-  max-width:1500px;
-  margin:14px auto 40px;
-  padding:0 16px;
-  display:grid;
-  grid-template-columns: 340px 1fr;
-  gap:14px;
+button {
+  cursor: pointer;
+  border: none;
+  border-radius: 8px;
+  padding: 6px 12px;
+  font-weight: 600;
 }
 
-.sidebar{display:flex; flex-direction:column; gap:14px}
-.panel{
-  background:var(--card);
-  border:1px solid var(--line);
-  border-radius:var(--radius);
-  box-shadow:var(--shadow);
-  padding:12px;
-}
-.panel__head{
-  display:flex;
-  align-items:flex-end;
-  justify-content:space-between;
-  gap:10px;
-}
-.panel h2{margin:0; font-size:16px}
-.panel h3{margin:12px 0 8px; font-size:13px; color:var(--muted); font-weight:1000}
-.small{font-size:12px; color:var(--muted)}
-
-.pool{
-  background:#f7f8fb;
-  border:1px dashed #cbd5e1;
-  border-radius:14px;
-  padding:10px;
-  min-height:70px;
-  display:flex;
-  flex-wrap:wrap;
-  gap:8px;
+button.primary {
+  background: #2563eb;
+  color: #fff;
 }
 
-.trash{
-  background:#fff5f5;
-  border:1px dashed #fca5a5;
-  border-radius:14px;
-  padding:14px 10px;
-  min-height:62px;
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  text-align:center;
-  color:#991b1b;
-  font-weight:1000;
+button.danger {
+  background: #dc2626;
+  color: #fff;
 }
 
-.projectForm{display:flex; gap:8px; margin-top:10px}
-.projectForm input{
-  flex:1;
-  border:1px solid var(--line);
-  border-radius:12px;
-  padding:10px;
-}
-.projectList{margin-top:10px; display:flex; flex-direction:column; gap:8px}
-.projectItem{
-  display:flex;
-  align-items:center;
-  justify-content:space-between;
-  gap:10px;
-  padding:10px;
-  border:1px solid var(--line);
-  border-radius:14px;
-  background:#fff;
-}
-.projectItem__name{font-weight:1000}
-.projectItem__btns{display:flex; gap:8px}
+/* ===============================
+   KOPFLEISTE
+   =============================== */
 
-.main{min-width:0}
-.boardCard{
-  background:var(--card);
-  border:1px solid var(--line);
-  border-radius:var(--radius);
-  box-shadow:var(--shadow);
-  padding:12px;
-}
-.boardHead{
-  display:flex;
-  align-items:flex-end;
-  justify-content:space-between;
-  gap:12px;
-  flex-wrap:wrap;
-  padding:4px 4px 12px;
-}
-.boardHead h2{margin:0; font-size:18px}
-
-.btn{
-  border:1px solid var(--line);
-  background:#fff;
-  padding:9px 10px;
-  border-radius:12px;
-  cursor:pointer;
-  font-weight:1000;
-}
-.btn--primary{background:var(--blue); border-color:var(--blue); color:#fff}
-.btn--secondary{background:#f9fafb}
-.btn--ghost{background:transparent; border-color:rgba(255,255,255,.35); color:#fff}
-
-.weeks{
-  display:grid;
-  grid-template-columns: repeat(4, minmax(260px, 1fr));
-  gap:12px;
+.header {
+  background: #2563eb;
+  color: #fff;
+  padding: 12px 20px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
 }
 
-.week{
-  border:1px solid var(--line);
-  border-radius:var(--radius);
-  overflow:hidden;
-  background:#fff;
-}
-.week__top{
-  background:#f9fafb;
-  border-bottom:1px solid var(--line);
-  padding:10px 12px;
-  display:flex;
-  align-items:center;
-  justify-content:space-between;
-}
-.week__title{font-weight:1000}
-.week__sub{font-size:12px; color:var(--muted)}
-
-.days{
-  padding:10px;
-  display:flex;
-  flex-direction:column;
-  gap:10px;
+.header-title {
+  font-size: 18px;
+  font-weight: 700;
 }
 
-.dayRow{
-  border:1px solid var(--line);
-  border-radius:14px;
-  overflow:hidden;
-  background:#fcfcfd;
-}
-.dayRow__head{
-  display:flex;
-  align-items:center;
-  justify-content:space-between;
-  gap:10px;
-  padding:10px;
-  border-bottom:1px solid var(--line);
-  background:#f3f6fb;
-}
-.dayRow__day{font-weight:1000}
+/* ===============================
+   MAGNETKASTEN
+   =============================== */
 
-.dayRow__body{
-  padding:10px;
-  display:flex;
-  flex-direction:column;
-  gap:10px;
+.magnetkasten {
+  background: #ffffff;
+  border-radius: 12px;
+  padding: 12px;
+  margin-bottom: 12px;
+  border: 2px solid #d0d7e2;
 }
 
-.projectBlock{
-  border:1px solid #d7dde6;
-  background:#fff;
-  border-radius:14px;
-  overflow:hidden;
-}
-.projectBlock__top{
-  padding:10px;
-  border-bottom:1px solid #d7dde6;
-  font-weight:1000;
-  background:#ffffff;
-}
-.projectBlock__zones{
-  display:grid;
-  grid-template-columns: 1fr 1fr;
-  gap:10px;
-  padding:10px;
-  background:#fbfdff;
-}
-.zoneTitle{
-  font-size:12px;
-  color:var(--muted);
-  font-weight:900;
-  margin-bottom:6px;
-}
-.dropzone{
-  border:1px dashed #cbd5e1;
-  background:#f7f8fb;
-  border-radius:14px;
-  min-height:56px;
-  padding:8px;
-  display:flex;
-  flex-wrap:wrap;
-  gap:8px;
-}
-.dropzone.dragover{ outline:2px dashed var(--blue); background:#eef5ff }
-
-.magnet{
-  background:#fff;
-  border:1px solid #d1d5db;
-  border-radius:999px;
-  padding:8px 10px;
-  font-size:13px;
-  font-weight:1000;
-  cursor:grab;
-  user-select:none;
-  display:inline-flex;
-  align-items:center;
-  gap:8px;
-}
-.magnet:active{cursor:grabbing}
-.magnet .pill{
-  font-size:11px;
-  font-weight:1000;
-  padding:2px 7px;
-  border-radius:999px;
-  border:1px solid #e5e7eb;
-  background:#f9fafb;
-  color:#374151;
+.magnetkasten h3 {
+  font-size: 14px;
+  margin-bottom: 6px;
 }
 
-@media (max-width: 1100px){
-  .layout{grid-template-columns: 1fr; }
-  .weeks{grid-template-columns: repeat(2, minmax(260px, 1fr));}
+/* ===============================
+   MAGNETE – ALLGEMEIN
+   =============================== */
+
+.magnet {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  margin: 4px;
+  border-radius: 999px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: grab;
+  user-select: none;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.15);
+  transition: transform 0.1s ease, box-shadow 0.1s ease;
 }
-@media (max-width: 700px){
-  .weeks{grid-template-columns: 1fr;}
+
+.magnet:active {
+  cursor: grabbing;
+  transform: scale(0.96);
+  box-shadow: 0 1px 2px rgba(0,0,0,0.25);
+}
+
+/* ===============================
+   MITARBEITER-MAGNETE
+   =============================== */
+
+.magnet.mitarbeiter {
+  background: #3b82f6;
+  color: #ffffff;
+}
+
+.magnet.mitarbeiter .kuerzel {
+  background: rgba(255,255,255,0.25);
+  padding: 2px 6px;
+  border-radius: 999px;
+  font-size: 11px;
+}
+
+/* ===============================
+   FAHRZEUG-MAGNETE
+   =============================== */
+
+.magnet.fahrzeug {
+  background: #444;
+  color: #ffffff;
+  border-radius: 8px;
+  font-weight: 500;
+}
+
+/* ===============================
+   LÖSCHBEREICH
+   =============================== */
+
+.delete-zone {
+  background: #fee2e2;
+  border: 2px dashed #dc2626;
+  color: #991b1b;
+  border-radius: 12px;
+  padding: 16px;
+  text-align: center;
+  font-weight: 700;
+  margin-bottom: 16px;
+}
+
+/* ===============================
+   PROJEKTE
+   =============================== */
+
+.projekte {
+  background: #ffffff;
+  border-radius: 12px;
+  padding: 12px;
+  margin-bottom: 12px;
+  border: 2px solid #d0d7e2;
+}
+
+.projekt {
+  background: #f8fafc;
+  border: 2px solid #cbd5e1;
+  border-radius: 12px;
+  padding: 10px;
+  margin-bottom: 8px;
+}
+
+.projekt-title {
+  font-weight: 700;
+  font-size: 14px;
+  margin-bottom: 6px;
+}
+
+/* ===============================
+   4-WOCHEN-PLANTAFEL
+   =============================== */
+
+.plantafel {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 12px;
+}
+
+.kalenderwoche {
+  background: #ffffff;
+  border-radius: 12px;
+  padding: 10px;
+  border: 2px solid #d0d7e2;
+}
+
+.kw-title {
+  font-weight: 700;
+  margin-bottom: 6px;
+}
+
+.tag {
+  background: #f1f5f9;
+  border-radius: 10px;
+  padding: 8px;
+  margin-bottom: 6px;
+}
+
+.tag-title {
+  font-size: 13px;
+  font-weight: 700;
+  margin-bottom: 4px;
+}
+
+.tag-inhalt {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+/* ===============================
+   DROP-BEREICHE
+   =============================== */
+
+.dropzone {
+  min-height: 38px;
+  border: 2px dashed #cbd5e1;
+  border-radius: 8px;
+  padding: 6px;
+}
+
+.dropzone.hover {
+  background: #e0ecff;
+  border-color: #2563eb;
+}
+
+/* ===============================
+   FORMULARE (ANLEGEN / LÖSCHEN)
+   =============================== */
+
+.form-row {
+  display: flex;
+  gap: 6px;
+  margin-bottom: 8px;
+}
+
+input {
+  flex: 1;
+  padding: 6px 8px;
+  border-radius: 8px;
+  border: 1px solid #cbd5e1;
+}
+
+/* ===============================
+   MOBILE
+   =============================== */
+
+@media (max-width: 900px) {
+  .plantafel {
+    grid-template-columns: 1fr;
+  }
 }
