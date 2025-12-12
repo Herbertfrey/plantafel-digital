@@ -7,54 +7,80 @@
   <link rel="stylesheet" href="./style.css" />
 </head>
 <body>
-  <header>Plantafel Dachdeckerei Frey</header>
+<header class="topbar">Plantafel Dachdeckerei Frey</header>
 
-  <section class="board">
-    <div style="display:flex; gap:12px; align-items:center; padding: 0 16px 10px;">
-      <label style="font-weight:bold;">Start-Montag:</label>
-      <input id="startDate" type="date" />
-      <button id="btnToday" style="padding:6px 10px; cursor:pointer;">Heute-Woche</button>
-      <button id="btnReload" style="padding:6px 10px; cursor:pointer;">Neu laden</button>
-      <span style="opacity:.7;">(4 Wochen · Mo–Fr)</span>
+<!-- TAB BAR -->
+<div class="tabs">
+  <button class="tab-btn active" data-tab="week">4 Wochen</button>
+  <button class="tab-btn" data-tab="year">12 Monate</button>
+  <div class="tabs-right">
+    <label class="small">Start-Montag:</label>
+    <input id="startDate" type="date" />
+    <button id="btnToday" class="btn secondary">Diese Woche</button>
+  </div>
+</div>
+
+<!-- STAMMDATEN (immer oben) -->
+<section class="top-area">
+  <div class="top-box">
+    <h3>Projekte</h3>
+    <div class="row">
+      <input id="projectInput" placeholder="Projektname" />
+      <button id="addProjectBtn" class="btn">+</button>
     </div>
+    <div id="projectList" class="magnet-list"></div>
+  </div>
 
-    <div class="top-area">
-      <!-- Projekte -->
-      <div class="top-box">
-        <h3>Projekte</h3>
-        <div style="display:flex; gap:8px;">
-          <input id="projectInput" placeholder="Projektname" style="flex:1; padding:8px;" />
-          <button id="addProjectBtn" style="padding:8px 12px; cursor:pointer;">+</button>
-        </div>
-        <div id="projectList" style="margin-top:10px;"></div>
-      </div>
-
-      <!-- Fahrzeuge -->
-      <div class="top-box">
-        <h3>Fahrzeuge</h3>
-        <div style="display:flex; gap:8px;">
-          <input id="vehicleInput" placeholder="Fahrzeug" style="flex:1; padding:8px;" />
-          <button id="addVehicleBtn" style="padding:8px 12px; cursor:pointer;">+</button>
-        </div>
-        <div id="vehicleList" style="margin-top:10px;"></div>
-      </div>
-
-      <!-- Mitarbeiter -->
-      <div class="top-box">
-        <h3>Mitarbeiter</h3>
-        <div style="display:flex; gap:8px;">
-          <input id="employeeInput" placeholder="Name" style="flex:1; padding:8px;" />
-          <button id="addEmployeeBtn" style="padding:8px 12px; cursor:pointer;">+</button>
-        </div>
-        <div id="employeeList" style="margin-top:10px;"></div>
-      </div>
+  <div class="top-box">
+    <h3>Fahrzeuge</h3>
+    <div class="row">
+      <input id="vehicleInput" placeholder="Fahrzeug" />
+      <button id="addVehicleBtn" class="btn">+</button>
     </div>
+    <div id="vehicleList" class="magnet-list"></div>
+  </div>
 
-    <div id="trash" class="trash">✖ Entfernen (Einsatz-Block hierher ziehen)</div>
+  <div class="top-box">
+    <h3>Mitarbeiter</h3>
+    <div class="row">
+      <input id="employeeInput" placeholder="Name" />
+      <button id="addEmployeeBtn" class="btn">+</button>
+    </div>
+    <div id="employeeList" class="magnet-list"></div>
 
+    <div class="absence-toolbar">
+      <div class="small">Abwesenheitstyp:</div>
+      <div class="absence-buttons">
+        <button class="btn abs-btn active" data-abs="urlaub">Urlaub</button>
+        <button class="btn abs-btn" data-abs="krank">Krank</button>
+        <button class="btn abs-btn" data-abs="schule">Schule</button>
+      </div>
+      <div class="small hint">Mitarbeiter auf „Abwesenheiten“ im Tag ziehen.</div>
+    </div>
+  </div>
+</section>
+
+<div id="trash" class="trash">✖ Entfernen (Plan-Element hierher ziehen)</div>
+
+<!-- TAB CONTENTS -->
+<main>
+  <!-- 4 WOCHEN -->
+  <section id="tab-week" class="tab-content active">
     <div id="weeks"></div>
   </section>
 
-  <script src="./app.js"></script>
+  <!-- 12 MONATE -->
+  <section id="tab-year" class="tab-content">
+    <div class="year-wrap">
+      <div class="year-head">
+        <div class="year-title">12 Monate (3×4) – nur Projekte</div>
+        <div class="small hint">Projekt aus Stammliste hier einplanen. Balken ziehen/verlängern. Balken in 4-Wochen ziehen = Start der Detailplanung.</div>
+      </div>
+      <div id="yearGrid" class="year-grid"></div>
+    </div>
+  </section>
+</main>
+
+<script src="./app.js"></script>
 </body>
 </html>
