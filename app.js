@@ -1,463 +1,632 @@
-// ================================
-// Plantafel – Version 1 (UMD, ohne module/import)
-// Tabellen: mitarbeiter, fahrzeuge, projekte, einsatzplan
-// einsatzplan: { id, kw, weekday, projekt_id, typ, item_id }
-// typ: "mitarbeiter" | "fahrzeug"
-// ================================
+/* global supabase */
+/**
+ * Plantafel – komplett neu
+ * Tabellen (public):
+ * - mitarbeiter: id uuid PK default gen_random_uuid(), name text, color text
+ * - fahrzeuge:  id uuid PK default gen_random_uuid(), name text, color text, kennzeichen text
+ * - projekte:   id uuid PK default gen_random_uuid(), name text
+ * - einsatzplan:id uuid PK default gen_random_uuid(), kw int4, weekday text, projekt_id uuid, typ text, item_id uuid
+ *
+ * typ: "mitarbeiter" | "fahrzeug"
+ */
 
 const SUPABASE_URL = "https://yzfmviddzhghvcxowbjl.supabase.co";
-const SUPABASE_ANON_KEY =
-  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inl6Zm12aWRkemhnaHZjeG93YmpsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjQ4MjkyNzIsImV4cCI6MjA4MDQwNTI3Mn0.BOmbE7xq1-kUBdbH3kpN4lIjDyWIwLaCpS6ZT3mbb9U";
+const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inl6Zm12aWRkemhnaHZjeG93YmpsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjQ4MjkyNzIsImV4cCI6MjA4MDQwNTI3Mn0.BOmbE7xq1-kUBdbH3kpN4lIjDyWIwLaCpS6ZT3mbb9U"; // <-- hier einsetzen
 
-const db = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+const db = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-// DOM
-const elStatus = document.getElementById("statusText");
-const elDbHint = document.getElementById("dbHint");
+const DAYS = [
+  { key: "Mo", label: "Mo" },
+  { key: "Di", label: "Di" },
+  { key: "Mi", label: "Mi" },
+  { key: "Do", label: "Do" },
+  { key: "Fr", label: "Fr" },
+];
 
-const elKwStart = document.getElementById("kwStartInput");
-const elPrev = document.getElementById("btnPrevKw");
-const elNext = document.getElementById("btnNextKw");
-const elThisWeek = document.getElementById("btnThisWeek");
-const elReload = document.getElementById("btnReload");
+const els = {
+  startKw: document.getElementById("startKw"),
+  btnReload: document.getElementById("btnReload"),
 
-const elPoolMA = document.getElementById("poolMitarbeiter");
-const elPoolFZ = document.getElementById("poolFahrzeuge");
-const elTrash = document.getElementById("trashZone");
+  empName: document.getElementById("empName"),
+  btnAddEmp: document.getElementById("btnAddEmp"),
+  empList: document.getElementById("empList"),
 
-const elProjectForm = document.getElementById("projectForm");
-const elProjectName = document.getElementById("projectName");
-const elProjectList = document.getElementById("projectList");
+  vehName: document.getElementById("vehName"),
+  vehPlate: document.getElementById("vehPlate"),
+  btnAddVeh: document.getElementById("btnAddVeh"),
+  vehList: document.getElementById("vehList"),
 
-const elBoard = document.getElementById("board");
+  projName: document.getElementById("projName"),
+  btnAddProj: document.getElementById("btnAddProj"),
+  projList: document.getElementById("projList"),
 
-// State
-const DAYS = ["Mo", "Di", "Mi", "Do", "Fr"];
-let projekts = [];
-let mitarbeiter = [];
-let fahrzeuge = [];
-let einsaetze = []; // visible weeks
-let dragging = null; // payload
+  board: document.getElementById("board"),
+  trash: document.getElementById("trash"),
+};
 
-// ---------- Helpers ----------
-function setStatus(msg) {
-  elStatus.textContent = msg || "";
+let state = {
+  mitarbeiter: [],
+  fahrzeuge: [],
+  projekte: [],
+  einsatz: [], // rows from einsatzplan
+};
+
+function randColorFromName(name) {
+  const s = (name || "").trim().toLowerCase();
+  let h = 0;
+  for (let i = 0; i < s.length; i++) h = (h * 31 + s.charCodeAt(i)) >>> 0;
+  // h -> HSL-ish hex-ish quick palette
+  const r = 80 + (h % 140);
+  const g = 80 + ((h >> 8) % 140);
+  const b = 80 + ((h >> 16) % 140);
+  return `rgb(${r},${g},${b})`;
 }
 
-function escapeHtml(s) {
-  return String(s ?? "")
-    .replaceAll("&", "&amp;")
-    .replaceAll("<", "&lt;")
-    .replaceAll(">", "&gt;")
-    .replaceAll('"', "&quot;")
-    .replaceAll("'", "&#039;");
+function toast(msg) {
+  alert(msg);
 }
 
-// ISO week number
-function isoWeekNumber(date = new Date()) {
-  const d = new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()));
-  const dayNum = d.getUTCDay() || 7;
-  d.setUTCDate(d.getUTCDate() + 4 - dayNum);
-  const yearStart = new Date(Date.UTC(d.getUTCFullYear(), 0, 1));
-  return Math.ceil((((d - yearStart) / 86400000) + 1) / 7);
+function mustKeyInserted() {
+  if (!SUPABASE_ANON_KEY || SUPABASE_ANON_KEY.includes("HIER_DEIN_ANON_KEY")) {
+    toast("Bitte zuerst den Anon-Key in app.js eintragen (SUPABASE_ANON_KEY).");
+    return false;
+  }
+  return true;
 }
 
-function wrapKW(kw) {
-  if (kw < 1) return 53;
-  if (kw > 53) return 1;
-  return kw;
-}
+/* -------------------- DB Helpers -------------------- */
 
-function visibleKWs() {
-  const start = Number(elKwStart.value || isoWeekNumber());
-  return [start, wrapKW(start + 1), wrapKW(start + 2), wrapKW(start + 3)];
-}
-
-// ---------- Drag payload ----------
-function setDragPayload(payload) {
-  dragging = payload;
-}
-
-function getDragPayload() {
-  return dragging;
-}
-
-// ---------- Load ----------
 async function loadAll() {
-  const kws = visibleKWs();
-  setStatus("Lade Daten…");
+  if (!mustKeyInserted()) return;
 
-  const [pRes, mRes, fRes, eRes] = await Promise.all([
-    db.from("projekte").select("id,name").order("name", { ascending: true }),
-    db.from("mitarbeiter").select("id,name,color").order("name", { ascending: true }),
-    db.from("fahrzeuge").select("id,name,kennzeichen,color").order("name", { ascending: true }),
-    db.from("einsatzplan").select("*").in("kw", kws),
+  const [emp, veh, proj] = await Promise.all([
+    db.from("mitarbeiter").select("*").order("name", { ascending: true }),
+    db.from("fahrzeuge").select("*").order("name", { ascending: true }),
+    db.from("projekte").select("*").order("name", { ascending: true }),
   ]);
 
-  if (pRes.error) return showDbError("projekte", pRes.error);
-  if (mRes.error) return showDbError("mitarbeiter", mRes.error);
-  if (fRes.error) return showDbError("fahrzeuge", fRes.error);
-  if (eRes.error) return showDbError("einsatzplan", eRes.error);
+  if (emp.error) return toast("Fehler mitarbeiter: " + emp.error.message);
+  if (veh.error) return toast("Fehler fahrzeuge: " + veh.error.message);
+  if (proj.error) return toast("Fehler projekte: " + proj.error.message);
 
-  projekts = pRes.data || [];
-  mitarbeiter = mRes.data || [];
-  fahrzeuge = fRes.data || [];
-  einsaetze = eRes.data || [];
+  state.mitarbeiter = emp.data || [];
+  state.fahrzeuge = veh.data || [];
+  state.projekte = proj.data || [];
 
-  elDbHint.textContent = `OK · Projekte: ${projekts.length} · MA: ${mitarbeiter.length} · FZ: ${fahrzeuge.length}`;
-  setStatus("Bereit.");
+  await loadEinsatzplanForView();
 
-  renderPools();
-  renderProjectList();
+  renderAll();
+}
+
+async function loadEinsatzplanForView() {
+  const startKw = clampKw(parseInt(els.startKw.value || "1", 10));
+  const kws = [startKw, startKw + 1, startKw + 2, startKw + 3].map(normalizeKw);
+
+  const res = await db
+    .from("einsatzplan")
+    .select("*")
+    .in("kw", kws);
+
+  if (res.error) return toast("Fehler einsatzplan: " + res.error.message);
+  state.einsatz = res.data || [];
+}
+
+function clampKw(n) {
+  if (!Number.isFinite(n)) return 1;
+  return Math.min(53, Math.max(1, n));
+}
+function normalizeKw(n) {
+  // simple wrap 53 -> 1
+  let x = n;
+  while (x > 53) x -= 53;
+  while (x < 1) x += 53;
+  return x;
+}
+
+/* -------------------- CRUD -------------------- */
+
+async function addMitarbeiter(name) {
+  name = (name || "").trim();
+  if (!name) return;
+
+  const payload = {
+    name,
+    color: randColorFromName(name),
+  };
+
+  const res = await db.from("mitarbeiter").insert(payload).select("*").single();
+  if (res.error) return toast("Mitarbeiter anlegen fehlgeschlagen: " + res.error.message);
+
+  state.mitarbeiter.push(res.data);
+  state.mitarbeiter.sort((a, b) => (a.name || "").localeCompare(b.name || ""));
+  renderAll();
+}
+
+async function deleteMitarbeiter(id) {
+  // Zuweisungen mitlöschen
+  await db.from("einsatzplan").delete().eq("typ", "mitarbeiter").eq("item_id", id);
+  const res = await db.from("mitarbeiter").delete().eq("id", id);
+  if (res.error) return toast("Mitarbeiter löschen fehlgeschlagen: " + res.error.message);
+
+  state.mitarbeiter = state.mitarbeiter.filter(x => x.id !== id);
+  state.einsatz = state.einsatz.filter(x => !(x.typ === "mitarbeiter" && x.item_id === id));
+  renderAll();
+}
+
+async function addFahrzeug(name, kennzeichen) {
+  name = (name || "").trim();
+  kennzeichen = (kennzeichen || "").trim();
+  if (!name) return;
+
+  const payload = {
+    name,
+    kennzeichen: kennzeichen || null,
+    color: randColorFromName(name),
+  };
+
+  const res = await db.from("fahrzeuge").insert(payload).select("*").single();
+  if (res.error) return toast("Fahrzeug anlegen fehlgeschlagen: " + res.error.message);
+
+  state.fahrzeuge.push(res.data);
+  state.fahrzeuge.sort((a, b) => (a.name || "").localeCompare(b.name || ""));
+  renderAll();
+}
+
+async function deleteFahrzeug(id) {
+  await db.from("einsatzplan").delete().eq("typ", "fahrzeug").eq("item_id", id);
+  const res = await db.from("fahrzeuge").delete().eq("id", id);
+  if (res.error) return toast("Fahrzeug löschen fehlgeschlagen: " + res.error.message);
+
+  state.fahrzeuge = state.fahrzeuge.filter(x => x.id !== id);
+  state.einsatz = state.einsatz.filter(x => !(x.typ === "fahrzeug" && x.item_id === id));
+  renderAll();
+}
+
+async function addProjekt(name) {
+  name = (name || "").trim();
+  if (!name) return;
+
+  const res = await db.from("projekte").insert({ name }).select("*").single();
+  if (res.error) return toast("Projekt anlegen fehlgeschlagen: " + res.error.message);
+
+  state.projekte.push(res.data);
+  state.projekte.sort((a, b) => (a.name || "").localeCompare(b.name || ""));
+  renderAll();
+}
+
+async function deleteProjekt(id) {
+  // Zuweisungen für Projekt löschen
+  await db.from("einsatzplan").delete().eq("projekt_id", id);
+
+  const res = await db.from("projekte").delete().eq("id", id);
+  if (res.error) return toast("Projekt löschen fehlgeschlagen: " + res.error.message);
+
+  state.projekte = state.projekte.filter(x => x.id !== id);
+  state.einsatz = state.einsatz.filter(x => x.projekt_id !== id);
+  renderAll();
+}
+
+/* -------------------- Einsatzplan (Zuweisung) -------------------- */
+
+function findEinsatz(kw, weekday, projekt_id, typ, item_id) {
+  return state.einsatz.find(r =>
+    r.kw === kw &&
+    r.weekday === weekday &&
+    r.projekt_id === projekt_id &&
+    r.typ === typ &&
+    r.item_id === item_id
+  );
+}
+
+async function createAssignment({ kw, weekday, projekt_id, typ, item_id }) {
+  // Duplikate verhindern
+  if (findEinsatz(kw, weekday, projekt_id, typ, item_id)) return;
+
+  const res = await db.from("einsatzplan").insert({
+    kw, weekday, projekt_id, typ, item_id
+  }).select("*").single();
+
+  if (res.error) return toast("Zuweisung fehlgeschlagen: " + res.error.message);
+
+  state.einsatz.push(res.data);
+  renderBoardOnly();
+}
+
+async function deleteAssignment(assignmentId) {
+  const res = await db.from("einsatzplan").delete().eq("id", assignmentId);
+  if (res.error) return toast("Zuweisung löschen fehlgeschlagen: " + res.error.message);
+
+  state.einsatz = state.einsatz.filter(x => x.id !== assignmentId);
+  renderBoardOnly();
+}
+
+async function moveAssignment(assignmentId, { kw, weekday, projekt_id }) {
+  const res = await db.from("einsatzplan")
+    .update({ kw, weekday, projekt_id })
+    .eq("id", assignmentId)
+    .select("*")
+    .single();
+
+  if (res.error) return toast("Verschieben fehlgeschlagen: " + res.error.message);
+
+  state.einsatz = state.einsatz.map(x => (x.id === assignmentId ? res.data : x));
+  renderBoardOnly();
+}
+
+/* -------------------- Drag & Drop -------------------- */
+
+function setDragData(ev, data) {
+  ev.dataTransfer.setData("application/json", JSON.stringify(data));
+  ev.dataTransfer.effectAllowed = "move";
+}
+
+function getDragData(ev) {
+  const raw = ev.dataTransfer.getData("application/json");
+  if (!raw) return null;
+  try { return JSON.parse(raw); } catch { return null; }
+}
+
+/* -------------------- Render -------------------- */
+
+function clear(el) { while (el.firstChild) el.removeChild(el.firstChild); }
+
+function renderAll() {
+  renderMagnetLists();
+  renderProjects();
   renderBoard();
 }
 
-function showDbError(table, err) {
-  console.error(err);
-  elDbHint.textContent = "Fehler";
-  setStatus("Fehler.");
-  alert(`Supabase-Fehler bei Tabelle "${table}":\n\n${err.message}\n\n(Details in der Konsole)`);
+function renderMagnetLists() {
+  clear(els.empList);
+  clear(els.vehList);
+
+  for (const m of state.mitarbeiter) {
+    els.empList.appendChild(makeMagnet({
+      id: m.id,
+      label: m.name,
+      color: m.color,
+      typ: "mitarbeiter",
+      meta: null,
+      onDelete: () => deleteMitarbeiter(m.id),
+    }));
+  }
+
+  for (const v of state.fahrzeuge) {
+    const meta = v.kennzeichen ? v.kennzeichen : null;
+    els.vehList.appendChild(makeMagnet({
+      id: v.id,
+      label: v.name,
+      color: v.color,
+      typ: "fahrzeug",
+      meta,
+      onDelete: () => deleteFahrzeug(v.id),
+    }));
+  }
 }
 
-// ---------- Render Pools ----------
-function makePoolMagnet(kind, row) {
+function makeMagnet({ id, label, color, typ, meta, onDelete }) {
   const el = document.createElement("div");
   el.className = "magnet";
   el.draggable = true;
-  el.dataset.kind = kind;
-  el.dataset.itemId = row.id;
 
-  const label = kind === "fahrzeug"
-    ? `${row.name}${row.kennzeichen ? " (" + row.kennzeichen + ")" : ""}`
-    : row.name;
+  const dot = document.createElement("span");
+  dot.className = "dot";
+  dot.style.background = color || "#94a3b8";
 
-  el.innerHTML = `
-    <span>${escapeHtml(label)}</span>
-    <span class="pill">${kind === "mitarbeiter" ? "MA" : "FZ"}</span>
-  `;
+  const text = document.createElement("span");
+  text.textContent = label || "-";
 
-  el.addEventListener("dragstart", () => {
-    setDragPayload({
-      origin: "pool",
-      kind,
-      itemId: row.id
-    });
+  el.appendChild(dot);
+  el.appendChild(text);
+
+  if (meta) {
+    const m = document.createElement("span");
+    m.className = "meta";
+    m.textContent = meta;
+    el.appendChild(m);
+  }
+
+  const del = document.createElement("button");
+  del.className = "del";
+  del.type = "button";
+  del.title = "Löschen";
+  del.textContent = "🗑";
+  del.addEventListener("click", (e) => {
+    e.stopPropagation();
+    onDelete();
+  });
+  el.appendChild(del);
+
+  el.addEventListener("dragstart", (ev) => {
+    setDragData(ev, { kind: "magnet", typ, item_id: id });
   });
 
   return el;
 }
 
-function renderPools() {
-  elPoolMA.innerHTML = "";
-  elPoolFZ.innerHTML = "";
+function renderProjects() {
+  clear(els.projList);
 
-  mitarbeiter.forEach(m => elPoolMA.appendChild(makePoolMagnet("mitarbeiter", m)));
-  fahrzeuge.forEach(f => elPoolFZ.appendChild(makePoolMagnet("fahrzeug", f)));
+  if (state.projekte.length === 0) {
+    const p = document.createElement("div");
+    p.className = "small";
+    p.textContent = "Noch keine Projekte. Oben eins anlegen.";
+    els.projList.appendChild(p);
+    return;
+  }
 
-  wireTrash();
+  for (const p of state.projekte) {
+    const row = document.createElement("div");
+    row.className = "project-row";
+
+    const left = document.createElement("div");
+    const strong = document.createElement("strong");
+    strong.textContent = p.name || "-";
+    left.appendChild(strong);
+
+    const right = document.createElement("div");
+    right.className = "right";
+
+    const b = document.createElement("span");
+    b.className = "badge";
+    b.textContent = "steht oben (wie an der Tafel)";
+
+    const btnDel = document.createElement("button");
+    btnDel.className = "btn";
+    btnDel.type = "button";
+    btnDel.textContent = "Löschen";
+    btnDel.addEventListener("click", () => {
+      if (confirm(`Projekt wirklich löschen?\n\n${p.name}\n\n(Alle Zuweisungen dazu werden entfernt)`)) {
+        deleteProjekt(p.id);
+      }
+    });
+
+    right.appendChild(b);
+    right.appendChild(btnDel);
+
+    row.appendChild(left);
+    row.appendChild(right);
+
+    els.projList.appendChild(row);
+  }
 }
 
-function wireTrash() {
-  elTrash.addEventListener("dragover", (e) => {
-    e.preventDefault();
-    elTrash.classList.add("dragover");
+function renderBoard() {
+  clear(els.board);
+
+  const startKw = clampKw(parseInt(els.startKw.value || "1", 10));
+  const weeks = [0, 1, 2, 3].map(i => normalizeKw(startKw + i));
+
+  for (const kw of weeks) {
+    const weekEl = document.createElement("div");
+    weekEl.className = "week";
+
+    const head = document.createElement("div");
+    head.className = "week-head";
+    head.innerHTML = `<div class="kw">KW ${kw}</div><div class="small">Mo–Fr</div>`;
+    weekEl.appendChild(head);
+
+    const daysEl = document.createElement("div");
+    daysEl.className = "week-days";
+
+    for (const d of DAYS) {
+      const dayEl = document.createElement("div");
+      dayEl.className = "day";
+      const h3 = document.createElement("h3");
+      h3.textContent = d.label;
+      dayEl.appendChild(h3);
+
+      const content = document.createElement("div");
+      content.className = "day-content";
+
+      // pro Tag alle Projekte als Karten
+      for (const proj of state.projekte) {
+        const card = makeProjectDayCard({ kw, weekday: d.key, proj });
+        content.appendChild(card);
+      }
+
+      dayEl.appendChild(content);
+      daysEl.appendChild(dayEl);
+    }
+
+    weekEl.appendChild(daysEl);
+    els.board.appendChild(weekEl);
+  }
+}
+
+function renderBoardOnly() {
+  // nur Board neu zeichnen (schneller)
+  renderBoard();
+}
+
+function makeProjectDayCard({ kw, weekday, proj }) {
+  const card = document.createElement("div");
+  card.className = "projcard";
+
+  const title = document.createElement("div");
+  title.className = "title";
+  title.textContent = proj.name || "-";
+  card.appendChild(title);
+
+  const zones = document.createElement("div");
+  zones.className = "dropzones";
+
+  zones.appendChild(makeDropZone({
+    label: "Mitarbeiter",
+    kw, weekday,
+    projekt_id: proj.id,
+    typ: "mitarbeiter",
+  }));
+
+  zones.appendChild(makeDropZone({
+    label: "Fahrzeuge",
+    kw, weekday,
+    projekt_id: proj.id,
+    typ: "fahrzeug",
+  }));
+
+  card.appendChild(zones);
+  return card;
+}
+
+function makeDropZone({ label, kw, weekday, projekt_id, typ }) {
+  const zone = document.createElement("div");
+  zone.className = "dropzone";
+
+  const l = document.createElement("div");
+  l.className = "label";
+  l.textContent = label;
+  zone.appendChild(l);
+
+  const chips = document.createElement("div");
+  chips.className = "chips";
+  zone.appendChild(chips);
+
+  // vorhandene Zuweisungen für diese Zone
+  const items = state.einsatz.filter(r =>
+    r.kw === kw &&
+    r.weekday === weekday &&
+    r.projekt_id === projekt_id &&
+    r.typ === typ
+  );
+
+  for (const row of items) {
+    const chip = document.createElement("div");
+    chip.className = "chip";
+    chip.draggable = true;
+
+    const display = getDisplayForRow(row);
+    chip.textContent = display;
+    chip.style.borderColor = "rgba(148,163,184,.6)";
+
+    // Drag = Assignment verschieben
+    chip.addEventListener("dragstart", (ev) => {
+      setDragData(ev, { kind: "assignment", assignment_id: row.id });
+    });
+
+    const x = document.createElement("button");
+    x.className = "x";
+    x.type = "button";
+    x.textContent = "✕";
+    x.title = "Zuweisung entfernen";
+    x.addEventListener("click", () => deleteAssignment(row.id));
+    chip.appendChild(x);
+
+    chips.appendChild(chip);
+  }
+
+  // Drop Handling
+  zone.addEventListener("dragover", (ev) => {
+    ev.preventDefault();
+    zone.classList.add("over");
   });
-  elTrash.addEventListener("dragleave", () => elTrash.classList.remove("dragover"));
+  zone.addEventListener("dragleave", () => zone.classList.remove("over"));
+  zone.addEventListener("drop", async (ev) => {
+    ev.preventDefault();
+    zone.classList.remove("over");
 
-  elTrash.addEventListener("drop", async (e) => {
-    e.preventDefault();
-    elTrash.classList.remove("dragover");
+    const data = getDragData(ev);
+    if (!data) return;
 
-    const payload = getDragPayload();
-    if (!payload) return;
+    if (data.kind === "magnet") {
+      if (data.typ !== typ) return; // falsche Zone
+      await createAssignment({
+        kw, weekday, projekt_id, typ, item_id: data.item_id
+      });
+      return;
+    }
 
-    // only assigned magnets can be deleted
-    if (payload.origin === "assign" && payload.einsatzId) {
-      await deleteEinsatz(payload.einsatzId);
-      await loadAll();
+    if (data.kind === "assignment") {
+      // assignment in anderes Projekt/Tag verschieben (typ bleibt gleich)
+      const row = state.einsatz.find(x => x.id === data.assignment_id);
+      if (!row) return;
+      if (row.typ !== typ) return; // nur in gleiche Zone (Mitarbeiter bleibt Mitarbeiter)
+      await moveAssignment(data.assignment_id, { kw, weekday, projekt_id });
+    }
+  });
+
+  return zone;
+}
+
+function getDisplayForRow(row) {
+  if (row.typ === "mitarbeiter") {
+    const m = state.mitarbeiter.find(x => x.id === row.item_id);
+    return m ? m.name : "(Mitarbeiter)";
+  }
+  if (row.typ === "fahrzeug") {
+    const f = state.fahrzeuge.find(x => x.id === row.item_id);
+    if (!f) return "(Fahrzeug)";
+    return f.kennzeichen ? `${f.name} (${f.kennzeichen})` : f.name;
+  }
+  return "(Eintrag)";
+}
+
+/* -------------------- Trash Drop -------------------- */
+
+function setupTrash() {
+  els.trash.addEventListener("dragover", (ev) => {
+    ev.preventDefault();
+    els.trash.classList.add("over");
+  });
+  els.trash.addEventListener("dragleave", () => els.trash.classList.remove("over"));
+  els.trash.addEventListener("drop", async (ev) => {
+    ev.preventDefault();
+    els.trash.classList.remove("over");
+
+    const data = getDragData(ev);
+    if (!data) return;
+
+    if (data.kind === "magnet") {
+      if (data.typ === "mitarbeiter") return deleteMitarbeiter(data.item_id);
+      if (data.typ === "fahrzeug") return deleteFahrzeug(data.item_id);
+    }
+    if (data.kind === "assignment") {
+      return deleteAssignment(data.assignment_id);
     }
   });
 }
 
-// ---------- Projects ----------
-function renderProjectList() {
-  elProjectList.innerHTML = "";
+/* -------------------- Events -------------------- */
 
-  projekts.forEach(p => {
-    const row = document.createElement("div");
-    row.className = "projectItem";
-    row.innerHTML = `
-      <div class="projectItem__name">${escapeHtml(p.name)}</div>
-      <div class="projectItem__btns">
-        <button class="btn btn--secondary" type="button" data-del="${p.id}">Löschen</button>
-      </div>
-    `;
-    row.querySelector("[data-del]").addEventListener("click", async () => {
-      if (!confirm(`Projekt "${p.name}" löschen?`)) return;
-      const { error } = await db.from("projekte").delete().eq("id", p.id);
-      if (error) {
-        console.error(error);
-        alert("Fehler beim Löschen: " + error.message);
-      } else {
-        await loadAll();
-      }
-    });
-    elProjectList.appendChild(row);
+function setupEvents() {
+  els.btnReload.addEventListener("click", loadAll);
+
+  els.btnAddEmp.addEventListener("click", async () => {
+    await addMitarbeiter(els.empName.value);
+    els.empName.value = "";
+    els.empName.focus();
+  });
+  els.empName.addEventListener("keydown", (e) => {
+    if (e.key === "Enter") els.btnAddEmp.click();
+  });
+
+  els.btnAddVeh.addEventListener("click", async () => {
+    await addFahrzeug(els.vehName.value, els.vehPlate.value);
+    els.vehName.value = "";
+    els.vehPlate.value = "";
+    els.vehName.focus();
+  });
+  els.vehPlate.addEventListener("keydown", (e) => {
+    if (e.key === "Enter") els.btnAddVeh.click();
+  });
+
+  els.btnAddProj.addEventListener("click", async () => {
+    await addProjekt(els.projName.value);
+    els.projName.value = "";
+    els.projName.focus();
+  });
+  els.projName.addEventListener("keydown", (e) => {
+    if (e.key === "Enter") els.btnAddProj.click();
+  });
+
+  els.startKw.addEventListener("change", async () => {
+    await loadEinsatzplanForView();
+    renderBoardOnly();
   });
 }
 
-elProjectForm.addEventListener("submit", async (e) => {
-  e.preventDefault();
-  const name = elProjectName.value.trim();
-  if (!name) return;
+/* -------------------- Start -------------------- */
 
-  setStatus("Projekt anlegen…");
-  const { error } = await db.from("projekte").insert([{ name }]);
-  if (error) {
-    console.error(error);
-    alert("Fehler beim Projekt anlegen: " + error.message);
-  }
-  elProjectName.value = "";
-  await loadAll();
-});
-
-// ---------- Board ----------
-function renderBoard() {
-  const kws = visibleKWs();
-  elBoard.innerHTML = "";
-
-  kws.forEach(kw => {
-    const week = document.createElement("section");
-    week.className = "week";
-    week.dataset.kw = String(kw);
-
-    week.innerHTML = `
-      <div class="week__top">
-        <div class="week__title">KW ${kw}</div>
-        <div class="week__sub">Mo–Fr</div>
-      </div>
-      <div class="days" id="week-${kw}"></div>
-    `;
-
-    const daysWrap = week.querySelector(`#week-${kw}`);
-
-    DAYS.forEach(day => {
-      const dayRow = document.createElement("div");
-      dayRow.className = "dayRow";
-      dayRow.innerHTML = `
-        <div class="dayRow__head">
-          <div class="dayRow__day">${day}</div>
-          <div class="small">Projekt oben · Magnete unten</div>
-        </div>
-        <div class="dayRow__body" id="kw${kw}-${day}"></div>
-      `;
-
-      const body = dayRow.querySelector(`#kw${kw}-${day}`);
-
-      // For each project: fixed block
-      projekts.forEach(p => {
-        const block = document.createElement("div");
-        block.className = "projectBlock";
-        block.innerHTML = `
-          <div class="projectBlock__top">${escapeHtml(p.name)}</div>
-          <div class="projectBlock__zones">
-            <div>
-              <div class="zoneTitle">Mitarbeiter</div>
-              <div class="dropzone"
-                   data-kw="${kw}"
-                   data-day="${day}"
-                   data-project="${p.id}"
-                   data-kind="mitarbeiter"></div>
-            </div>
-            <div>
-              <div class="zoneTitle">Fahrzeuge</div>
-              <div class="dropzone"
-                   data-kw="${kw}"
-                   data-day="${day}"
-                   data-project="${p.id}"
-                   data-kind="fahrzeug"></div>
-            </div>
-          </div>
-        `;
-        body.appendChild(block);
-      });
-
-      daysWrap.appendChild(dayRow);
-    });
-
-    elBoard.appendChild(week);
-  });
-
-  wireDropzones();
-  placeAssignments();
-}
-
-function wireDropzones() {
-  const zones = elBoard.querySelectorAll(".dropzone");
-  zones.forEach(zone => {
-    zone.addEventListener("dragover", (e) => {
-      e.preventDefault();
-      zone.classList.add("dragover");
-    });
-    zone.addEventListener("dragleave", () => zone.classList.remove("dragover"));
-
-    zone.addEventListener("drop", async (e) => {
-      e.preventDefault();
-      zone.classList.remove("dragover");
-
-      const payload = getDragPayload();
-      if (!payload) return;
-
-      const kw = Number(zone.dataset.kw);
-      const day = zone.dataset.day;
-      const projectId = zone.dataset.project;
-      const kind = zone.dataset.kind;
-
-      if (payload.kind !== kind) return;
-
-      // pool -> insert
-      if (payload.origin === "pool") {
-        await insertEinsatz({ kw, day, projectId, kind, itemId: payload.itemId });
-        await loadAll();
-        return;
-      }
-
-      // assigned -> move
-      if (payload.origin === "assign" && payload.einsatzId) {
-        await moveEinsatz({ einsatzId: payload.einsatzId, kw, day, projectId });
-        await loadAll();
-      }
-    });
-  });
-}
-
-function placeAssignments() {
-  // clear zones
-  elBoard.querySelectorAll(".dropzone").forEach(z => (z.innerHTML = ""));
-
-  for (const e of einsaetze) {
-    const zone = elBoard.querySelector(
-      `.dropzone[data-kw="${e.kw}"][data-day="${CSS.escape(e.weekday)}"][data-project="${e.projekt_id}"][data-kind="${e.typ}"]`
-    );
-    if (!zone) continue;
-
-    const name = resolveName(e.typ, e.item_id);
-    zone.appendChild(makeAssignedMagnet(e, name));
-  }
-}
-
-function resolveName(kind, id) {
-  if (kind === "mitarbeiter") {
-    return mitarbeiter.find(x => x.id === id)?.name || "MA?";
-  }
-  const f = fahrzeuge.find(x => x.id === id);
-  if (!f) return "FZ?";
-  return `${f.name}${f.kennzeichen ? " (" + f.kennzeichen + ")" : ""}`;
-}
-
-function makeAssignedMagnet(einsatz, label) {
-  const el = document.createElement("div");
-  el.className = "magnet";
-  el.draggable = true;
-
-  el.innerHTML = `
-    <span>${escapeHtml(label)}</span>
-    <span class="pill">${einsatz.typ === "mitarbeiter" ? "MA" : "FZ"}</span>
-  `;
-
-  el.addEventListener("dragstart", () => {
-    setDragPayload({
-      origin: "assign",
-      einsatzId: einsatz.id,
-      kind: einsatz.typ,
-      itemId: einsatz.item_id
-    });
-  });
-
-  return el;
-}
-
-// ---------- DB ops ----------
-async function insertEinsatz({ kw, day, projectId, kind, itemId }) {
-  // prevent duplicates in same cell
-  const exists = einsaetze.some(x =>
-    Number(x.kw) === kw &&
-    x.weekday === day &&
-    x.projekt_id === projectId &&
-    x.typ === kind &&
-    x.item_id === itemId
-  );
-  if (exists) return;
-
-  setStatus("Zuweisen…");
-  const { error } = await db.from("einsatzplan").insert([{
-    kw,
-    weekday: day,
-    projekt_id: projectId,
-    typ: kind,       // <- KRITISCH (damit NOT NULL passt)
-    item_id: itemId
-  }]);
-
-  if (error) {
-    console.error(error);
-    alert("Fehler beim Zuweisen: " + error.message);
-  }
-}
-
-async function moveEinsatz({ einsatzId, kw, day, projectId }) {
-  setStatus("Verschieben…");
-  const { error } = await db.from("einsatzplan")
-    .update({ kw, weekday: day, projekt_id: projectId })
-    .eq("id", einsatzId);
-
-  if (error) {
-    console.error(error);
-    alert("Fehler beim Verschieben: " + error.message);
-  }
-}
-
-async function deleteEinsatz(einsatzId) {
-  setStatus("Löschen…");
-  const { error } = await db.from("einsatzplan").delete().eq("id", einsatzId);
-
-  if (error) {
-    console.error(error);
-    alert("Fehler beim Löschen: " + error.message);
-  }
-}
-
-// ---------- KW Controls ----------
-function setKwToThisWeek() {
-  elKwStart.value = String(isoWeekNumber());
-}
-
-elReload.addEventListener("click", loadAll);
-
-elThisWeek.addEventListener("click", async () => {
-  setKwToThisWeek();
-  await loadAll();
-});
-
-elPrev.addEventListener("click", async () => {
-  elKwStart.value = String(wrapKW(Number(elKwStart.value) - 1));
-  await loadAll();
-});
-
-elNext.addEventListener("click", async () => {
-  elKwStart.value = String(wrapKW(Number(elKwStart.value) + 1));
-  await loadAll();
-});
-
-elKwStart.addEventListener("change", loadAll);
-
-// ---------- Start ----------
-(function init() {
-  try {
-    setStatus("Verbinden…");
-    setKwToThisWeek();
-    loadAll();
-  } catch (e) {
-    console.error(e);
-    alert("Startfehler: " + e.message);
-  }
-})();
+setupTrash();
+setupEvents();
+loadAll();
