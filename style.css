@@ -54,7 +54,9 @@ header {
 ========================= */
 
 .magnet {
-  display: inline-block;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
   padding: 6px 10px;
   border-radius: 14px;
   font-size: 13px;
@@ -62,6 +64,19 @@ header {
   cursor: grab;
   user-select: none;
   color: #fff;
+  white-space: nowrap;
+}
+
+.magnet .del {
+  display:inline-block;
+  width: 18px;
+  height: 18px;
+  line-height: 18px;
+  text-align:center;
+  border-radius: 999px;
+  background: rgba(255,255,255,0.25);
+  font-weight: bold;
+  cursor: pointer;
 }
 
 /* =========================
@@ -72,13 +87,14 @@ header {
   background: #e6e6e6;
   border-radius: 6px;
   padding: 10px;
-  margin-bottom: 8px;
+  margin: 8px 0;
+  border: 1px solid #d2d2d2;
 }
 
 .project-title {
   font-weight: bold;
   font-size: 14px;
-  margin-bottom: 6px;
+  margin-bottom: 8px;
   color: #000;
 }
 
@@ -106,14 +122,14 @@ header {
 ========================= */
 
 .board {
-  padding: 16px;
+  padding: 16px 0 24px;
 }
 
 .week {
   background: #fff;
   border-radius: 6px;
   padding: 10px;
-  margin-bottom: 16px;
+  margin: 0 16px 16px;
   box-shadow: 0 2px 6px rgba(0,0,0,0.08);
 }
 
@@ -132,13 +148,45 @@ header {
   background: #f7f7f7;
   border-radius: 6px;
   padding: 6px;
-  min-height: 140px;
+  min-height: 170px;
+  border: 1px solid #e3e3e3;
 }
 
 .day-title {
   font-weight: bold;
   font-size: 13px;
   margin-bottom: 6px;
+}
+
+.drop-hint {
+  font-size: 11px;
+  opacity: 0.7;
+  margin-bottom: 6px;
+}
+
+/* =========================
+   EINSATZ-INHALT
+========================= */
+
+.assignment-row {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 6px;
+}
+
+.zone-title {
+  font-size: 12px;
+  font-weight: bold;
+  opacity: 0.85;
+  margin-top: 2px;
+}
+
+.zone {
+  min-height: 30px;
+  padding: 4px 4px 6px;
+  border-radius: 6px;
+  border: 1px dashed #cfcfcf;
+  background: #fafafa;
 }
 
 /* =========================
@@ -153,6 +201,7 @@ header {
   text-align: center;
   border-radius: 6px;
   font-weight: bold;
+  background: #fff;
 }
 
 /* =========================
@@ -161,5 +210,5 @@ header {
 
 .magnet:active {
   cursor: grabbing;
-  opacity: 0.8;
+  opacity: 0.85;
 }
