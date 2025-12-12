@@ -2,66 +2,69 @@
 <html lang="de">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1.0" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>Plantafel Dachdeckerei Frey</title>
+  <link rel="stylesheet" href="./style.css" />
 
-  <link rel="stylesheet" href="style.css" />
-
-  <!-- Supabase UMD -->
+  <!-- Supabase UMD (kein module/import nötig) -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <script src="supabase.js"></script>
 </head>
 
 <body>
   <header class="header">
     <div class="header__inner">
-      <h1>Plantafel Dachdeckerei Frey</h1>
-      <div class="header__right">
-        <div class="kwctrl">
-          <button id="kwPrev" class="btn btn--ghost" type="button">◀</button>
-          <div class="kwctrl__mid">
-            <div class="kwctrl__label">Start-KW</div>
-            <input id="kwStart" type="number" min="1" max="53" />
-          </div>
-          <button id="kwNext" class="btn btn--ghost" type="button">▶</button>
+      <div class="brand">
+        <div class="brand__title">Plantafel Dachdeckerei Frey</div>
+        <div class="brand__sub" id="statusText">Start…</div>
+      </div>
+
+      <div class="kwbar">
+        <button class="btn btn--ghost" id="btnPrevKw" type="button">◀</button>
+
+        <div class="kwbar__mid">
+          <div class="kwbar__label">Start-KW</div>
+          <input id="kwStartInput" type="number" min="1" max="53" />
         </div>
-        <button id="reloadBtn" class="btn btn--secondary" type="button">Neu laden</button>
+
+        <button class="btn btn--ghost" id="btnNextKw" type="button">▶</button>
+
+        <button class="btn btn--secondary" id="btnThisWeek" type="button">Diese Woche</button>
+        <button class="btn btn--secondary" id="btnReload" type="button">Neu laden</button>
       </div>
     </div>
   </header>
 
   <main class="layout">
-    <!-- SIDEBAR: STAMMDATEN-MAGNETE -->
+    <!-- Sidebar -->
     <aside class="sidebar">
       <section class="panel">
         <div class="panel__head">
           <h2>Magnetkasten</h2>
-          <div class="small" id="dbStatus"></div>
+          <div class="small" id="dbHint">Supabase verbunden…</div>
         </div>
 
         <div class="panel__section">
           <h3>Mitarbeiter</h3>
-          <div id="poolMitarbeiter" class="pool dropzone-pool" data-pool="mitarbeiter"></div>
+          <div id="poolMitarbeiter" class="pool"></div>
         </div>
 
         <div class="panel__section">
           <h3>Fahrzeuge</h3>
-          <div id="poolFahrzeuge" class="pool dropzone-pool" data-pool="fahrzeug"></div>
+          <div id="poolFahrzeuge" class="pool"></div>
         </div>
 
         <div class="panel__section">
           <h3>Entfernen</h3>
-          <div class="trash dropzone-trash" id="trashZone">
-            Zieh Magnete hierher<br>zum Löschen
+          <div id="trashZone" class="trash">
+            Zieh zugewiesene Magnete hierher<br/>zum Löschen
           </div>
         </div>
       </section>
 
-      <!-- Projekte pflegen -->
       <section class="panel">
         <div class="panel__head">
           <h2>Projekte</h2>
-          <div class="small">stehen oben (wie am Board)</div>
+          <div class="small">stehen oben (wie an der Tafel)</div>
         </div>
 
         <form id="projectForm" class="projectForm">
@@ -73,15 +76,12 @@
       </section>
     </aside>
 
-    <!-- BOARD -->
+    <!-- Board -->
     <section class="main">
       <section class="boardCard">
         <div class="boardHead">
           <h2>4-Wochen-Plantafel</h2>
-          <div class="small">
-            Projekt steht oben. Mitarbeiter & Fahrzeuge als Magnete darunter.
-            Drag&Drop = speichern.
-          </div>
+          <div class="small">Projekt oben. Mitarbeiter/Fahrzeuge als Magnete darunter. Drag&Drop = speichern.</div>
         </div>
 
         <div id="board" class="weeks"></div>
@@ -89,6 +89,6 @@
     </section>
   </main>
 
-  <script src="app.js"></script>
+  <script src="./app.js"></script>
 </body>
 </html>
