@@ -1,220 +1,141 @@
-// =====================================
-// PLANTAFEL – STABILER NEUSTART
-// passt exakt zu deiner index.html
-// =====================================
+// ===============================
+// PLANTAFEL – DRAG-STABILE VERSION
+// ===============================
 
-const LS_KEY = "plantafel_stable_clean";
+const LS_KEY = "plantafel_drag_final";
 
-// ---------- STATE ----------
-const defaultState = {
-  startMonday: null,
-  projects: [],        // {id, name}
-  yearBars: [],        // {projectId, month}
-  assignments: []      // {id, projectId, dateISO}
+const state = JSON.parse(localStorage.getItem(LS_KEY)) || {
+  start: new Date().toISOString().slice(0,10),
+  projects: [],
+  months: {},
+  days: {}
 };
 
-let state = load();
+function save(){ localStorage.setItem(LS_KEY, JSON.stringify(state)); }
+function uid(){ return Math.random().toString(36).slice(2); }
 
-// ---------- HELPERS ----------
-function uid() {
-  return Math.random().toString(16).slice(2);
-}
-
-function save() {
-  localStorage.setItem(LS_KEY, JSON.stringify(state));
-}
-
-function load() {
-  const raw = localStorage.getItem(LS_KEY);
-  return raw ? JSON.parse(raw) : structuredClone(defaultState);
-}
-
-function mondayOf(d) {
-  const x = new Date(d);
-  const day = x.getDay() || 7;
-  x.setDate(x.getDate() - day + 1);
-  x.setHours(12,0,0,0);
-  return x;
-}
-
-function iso(d){
-  const x = new Date(d);
-  x.setHours(12,0,0,0);
-  return x.toISOString().slice(0,10);
-}
-
-function setDrag(e, data){
-  e.dataTransfer.setData("application/json", JSON.stringify(data));
-  e.dataTransfer.effectAllowed = "move";
-}
-
-function getDrag(e){
-  try {
-    return JSON.parse(e.dataTransfer.getData("application/json"));
-  } catch {
-    return null;
-  }
-}
-
-// ---------- INIT DATE ----------
-const startInput = document.getElementById("startDate");
-const btnToday = document.getElementById("btnToday");
-
-if(!state.startMonday){
-  state.startMonday = iso(mondayOf(new Date()));
-  save();
-}
-startInput.value = state.startMonday;
-
-btnToday.onclick = () => {
-  state.startMonday = iso(mondayOf(new Date()));
-  startInput.value = state.startMonday;
-  save();
-  render();
-};
-
-startInput.onchange = () => {
-  state.startMonday = iso(mondayOf(startInput.value));
-  save();
-  render();
-};
+const months = ["Jan","Feb","Mär","Apr","Mai","Jun","Jul","Aug","Sep","Okt","Nov","Dez"];
 
 // ---------- TABS ----------
 document.querySelectorAll(".tab-btn").forEach(btn=>{
-  btn.onclick = () => {
+  btn.onclick = ()=>{
     document.querySelectorAll(".tab-btn").forEach(b=>b.classList.remove("active"));
     btn.classList.add("active");
-
-    const tab = btn.dataset.tab;
-    document.getElementById("tab-week").classList.toggle("active", tab==="week");
-    document.getElementById("tab-year").classList.toggle("active", tab==="year");
+    document.getElementById("tab-week").classList.toggle("active", btn.dataset.tab==="week");
+    document.getElementById("tab-year").classList.toggle("active", btn.dataset.tab==="year");
   };
 });
 
 // ---------- PROJECT ADD ----------
-const projectInput = document.getElementById("projectInput");
-const addProjectBtn = document.getElementById("addProjectBtn");
-
-addProjectBtn.onclick = () => {
-  const name = projectInput.value.trim();
-  if(!name) return;
-
+document.getElementById("addProjectBtn").onclick = ()=>{
+  const inp = document.getElementById("projectInput");
+  if(!inp.value.trim()) return;
   const id = uid();
-  state.projects.push({id, name});
-  state.yearBars.push({projectId:id, month:new Date().getMonth()});
-
-  projectInput.value = "";
-  save();
-  render();
+  state.projects.push({id, name: inp.value});
+  state.months[id] = 0;
+  inp.value = "";
+  save(); render();
 };
 
-// ---------- YEAR VIEW ----------
-const yearGrid = document.getElementById("yearGrid");
-const MONTHS = ["Jan","Feb","Mär","Apr","Mai","Jun","Jul","Aug","Sep","Okt","Nov","Dez"];
-
+// ---------- YEAR ----------
 function renderYear(){
-  yearGrid.innerHTML = "";
+  const grid = document.getElementById("yearGrid");
+  grid.innerHTML = "";
 
-  for(let m=0;m<12;m++){
+  months.forEach((m,idx)=>{
     const box = document.createElement("div");
     box.className = "month";
-
-    const head = document.createElement("div");
-    head.className = "month-head";
-    head.textContent = MONTHS[m];
-    box.appendChild(head);
-
+    box.innerHTML = `<div class="month-head">${m}</div>`;
     const drop = document.createElement("div");
     drop.className = "month-drop";
 
-    drop.ondragover = e => e.preventDefault();
-    drop.ondrop = e => {
-      e.preventDefault();
-      const data = getDrag(e);
-      if(!data) return;
-
-      if(data.kind === "planned"){
-        state.assignments = state.assignments.filter(a=>a.projectId!==data.projectId);
-        const bar = state.yearBars.find(b=>b.projectId===data.projectId);
-        if(bar) bar.month = m;
-        save();
-        render();
-      }
+    drop.ondragover = e=>e.preventDefault();
+    drop.ondrop = e=>{
+      const id = e.dataTransfer.getData("text/plain");
+      if(!id) return;
+      delete state.days[id];
+      state.months[id] = idx;
+      save(); render();
     };
 
-    state.yearBars.filter(b=>b.month===m).forEach(b=>{
-      const p = state.projects.find(p=>p.id===b.projectId);
-      if(!p) return;
-
-      const el = document.createElement("div");
-      el.className = "year-bar";
-      el.textContent = p.name;
-      el.draggable = true;
-      el.ondragstart = e=>setDrag(e,{kind:"year", projectId:p.id});
-      drop.appendChild(el);
+    state.projects.forEach(p=>{
+      if(state.months[p.id] === idx){
+        const el = document.createElement("div");
+        el.className = "year-bar";
+        el.textContent = p.name;
+        el.setAttribute("draggable","true");
+        el.ondragstart = e=>{
+          e.dataTransfer.setData("text/plain", p.id);
+        };
+        drop.appendChild(el);
+      }
     });
 
     box.appendChild(drop);
-    yearGrid.appendChild(box);
-  }
+    grid.appendChild(box);
+  });
 }
 
-// ---------- WEEK VIEW ----------
-const weeksEl = document.getElementById("weeks");
+// ---------- WEEK ----------
+function renderWeek(){
+  const wrap = document.getElementById("weeks");
+  wrap.innerHTML = "";
+  const start = new Date(state.start);
 
-function renderWeeks(){
-  weeksEl.innerHTML = "";
-  const monday = new Date(state.startMonday);
-
-  for(let i=0;i<20;i++){
-    const d = new Date(monday);
+  for(let i=0;i<14;i++){
+    const d = new Date(start);
     d.setDate(d.getDate()+i);
-    const dateISO = iso(d);
+    const iso = d.toISOString().slice(0,10);
 
     const day = document.createElement("div");
     day.className = "day";
-    day.innerHTML = `<b>${dateISO}</b>`;
+    day.innerHTML = `<b>${iso}</b>`;
 
     day.ondragover = e=>e.preventDefault();
     day.ondrop = e=>{
-      e.preventDefault();
-      const data = getDrag(e);
-      if(!data || data.kind!=="year") return;
-
-      const len = Number(prompt("Arbeitstage?", "1")) || 1;
-      for(let j=0;j<len;j++){
-        const dd = new Date(d);
-        dd.setDate(dd.getDate()+j);
-        state.assignments.push({
-          id:uid(),
-          projectId:data.projectId,
-          dateISO:iso(dd)
-        });
-      }
-      save();
-      render();
+      const id = e.dataTransfer.getData("text/plain");
+      if(!id) return;
+      state.days[id] = iso;
+      save(); render();
     };
 
-    state.assignments.filter(a=>a.dateISO===dateISO).forEach(a=>{
-      const p = state.projects.find(p=>p.id===a.projectId);
-      if(!p) return;
-
-      const blk = document.createElement("div");
-      blk.className = "project-block";
-      blk.textContent = p.name;
-      blk.draggable = true;
-      blk.ondragstart = e=>setDrag(e,{kind:"planned", projectId:p.id});
-      day.appendChild(blk);
+    Object.entries(state.days).forEach(([pid,date])=>{
+      if(date===iso){
+        const p = state.projects.find(x=>x.id===pid);
+        const el = document.createElement("div");
+        el.className = "project-block";
+        el.textContent = p.name;
+        el.setAttribute("draggable","true");
+        el.ondragstart = e=>{
+          e.dataTransfer.setData("text/plain", pid);
+        };
+        day.appendChild(el);
+      }
     });
 
-    weeksEl.appendChild(day);
+    wrap.appendChild(day);
   }
 }
+
+// ---------- TRASH ----------
+const trash = document.getElementById("trash");
+trash.ondragover = e=>e.preventDefault();
+trash.ondrop = e=>{
+  const id = e.dataTransfer.getData("text/plain");
+  delete state.days[id];
+  delete state.months[id];
+  save(); render();
+};
+
+// ---------- DATE ----------
+document.getElementById("btnToday").onclick = ()=>{
+  state.start = new Date().toISOString().slice(0,10);
+  save(); render();
+};
 
 // ---------- RENDER ----------
 function render(){
   renderYear();
-  renderWeeks();
+  renderWeek();
 }
-
 render();
