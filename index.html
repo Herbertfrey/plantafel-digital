@@ -1,93 +1,30 @@
 <!doctype html>
 <html lang="de">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Plantafel Dachdeckerei Frey</title>
-  <link rel="stylesheet" href="./style.css" />
+  <meta charset="utf-8">
+  <title>Plantafel – Projekt-Parkplatz</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
-<header class="topbar">Plantafel Dachdeckerei Frey</header>
-
-<!-- PROJEKT-PARKPLATZ (ÜBERSICHT WIE WHITEBOARD) -->
-<section class="project-parking">
-  <h3>Projekt-Parkplatz (Übersicht)</h3>
-  <div id="projectParkingList" class="parking-list"></div>
-</section>
-
-<!-- TABS -->
-<div class="tabs">
-  <button class="tab-btn active" data-tab="week">4 Wochen</button>
-  <button class="tab-btn" data-tab="year">12 Monate</button>
-
-  <div class="tabs-right">
-    <label class="small">Start-Montag:</label>
-    <input id="startDate" type="date" />
-    <button id="btnToday" class="btn secondary">Diese Woche</button>
-  </div>
-</div>
-
-<!-- STAMMDATEN -->
-<section class="top-area">
-  <div class="top-box">
-    <h3>Fahrzeuge</h3>
-    <div class="row">
-      <input id="vehicleInput" placeholder="Fahrzeug" />
-      <button id="addVehicleBtn" class="btn">+</button>
-    </div>
-    <div id="vehicleList" class="magnet-list"></div>
-  </div>
-
-  <div class="top-box">
-    <h3>Mitarbeiter</h3>
-    <div class="row">
-      <input id="employeeInput" placeholder="Name" />
-      <button id="addEmployeeBtn" class="btn">+</button>
-    </div>
-    <div id="employeeList" class="magnet-list"></div>
-
-    <div class="absence-toolbar">
-      <div class="small">Abwesenheitstyp:</div>
-      <div class="absence-buttons">
-        <button class="btn abs-btn active" data-abs="urlaub">Urlaub</button>
-        <button class="btn abs-btn" data-abs="krank">Krank</button>
-        <button class="btn abs-btn" data-abs="schule">Schule</button>
-      </div>
-    </div>
-  </div>
-
-  <div class="top-box">
-    <h3>Hinweise</h3>
-    <div class="small">
-      <div>4 Wochen: nur explizit geplante Projekte</div>
-      <div>Projekt aus Monat → Woche ziehen = einplanen</div>
-      <div>Projekt aus Woche → Monat ziehen = zurück</div>
-    </div>
-  </div>
-</section>
-
-<div id="trash" class="trash">✖ Entfernen (Tag / Abwesenheit hierher ziehen)</div>
+<header class="topbar">
+  Plantafel – Projekt-Parkplatz
+</header>
 
 <main>
-  <section id="tab-week" class="tab-content active">
-    <div id="weeks"></div>
-  </section>
+  <section class="parking">
+    <h2>Projekt-Parkplatz (ungeplant)</h2>
 
-  <section id="tab-year" class="tab-content">
-    <div class="year-wrap">
-      <div class="year-head">
-        <div class="year-title">12 Monate – Projekt-Parkplatz</div>
-        <div class="year-add">
-          <input id="projectInput" placeholder="Neues Projekt" />
-          <button id="addProjectBtn" class="btn">Projekt +</button>
-        </div>
-      </div>
-      <div id="yearGrid" class="year-grid"></div>
+    <div class="row">
+      <input id="projectInput" placeholder="Projektname eingeben">
+      <button id="addProjectBtn">Projekt +</button>
     </div>
+
+    <div id="parkingList" class="parking-list"></div>
   </section>
 </main>
 
-<script src="./app.js"></script>
+<script src="app.js"></script>
 </body>
 </html>
