@@ -1,98 +1,162 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="de">
 <head>
-<meta charset="utf-8">
-<title>Plantafel Dachdeckerei Frey</title>
-<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta charset="UTF-8" />
+<title>Plantafel Dachdeckerei</title>
+
 <style>
-body{margin:0;font-family:Arial;background:#f4f6f8}
-header{background:#1f5fbf;color:#fff;padding:14px 18px;font-size:20px}
-main{padding:16px}
-
-.box{background:#fff;border-radius:12px;padding:12px;margin-bottom:16px}
-.row{display:flex;gap:8px;flex-wrap:wrap}
-input{padding:8px}
-button{padding:8px 12px;cursor:pointer}
-
-.magnet{
-  display:inline-block;padding:6px 10px;border-radius:14px;
-  background:#e6e6e6;border:1px solid #d2d2d2;
-  cursor:grab;user-select:none;margin:4px
-}
-.vehicle{background:#c62828;color:#fff}
-.employee.blue{background:#1e88e5;color:#fff}
-.employee.green{background:#43a047;color:#fff}
-.employee.orange{background:#fb8c00;color:#fff}
-.employee.purple{background:#8e24aa;color:#fff}
-.employee.teal{background:#00897b;color:#fff}
-
-.months{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
-.month{background:#fafafa;border:1px dashed #cfcfcf;border-radius:12px;padding:8px}
-.month h4{margin:0 0 6px}
-
-.trash{
-  border:2px dashed #c62828;color:#c62828;
-  text-align:center;padding:12px;border-radius:12px
-}
-
-.week{background:#fff;border-radius:12px;padding:10px;margin-bottom:12px}
-.week-title{font-weight:bold;margin-bottom:8px}
-.days{display:grid;grid-template-columns:repeat(5,1fr);gap:8px}
-.day{background:#f7f7f7;border:1px solid #ddd;border-radius:10px;padding:6px;min-height:120px}
-.day-title{font-size:12px;font-weight:bold;margin-bottom:4px}
-.day-drop{min-height:40px}
-
-.project-block{
-  background:#e6e6e6;border:1px solid #ccc;border-radius:10px;
-  padding:6px;margin:4px 0
-}
-.section-title{font-size:11px;font-weight:bold;margin-top:4px}
+body { font-family: Arial; background:#f4f6f8; margin:0; padding:16px }
+h2 { margin-top:30px }
+input, button { padding:6px }
+.box { background:#fff; padding:10px; margin-bottom:20px; border-radius:8px }
+.row { display:flex; gap:10px; flex-wrap:wrap }
+.item { padding:6px 10px; background:#e0e0e0; border-radius:12px; cursor:grab }
+.item:active { cursor:grabbing }
+.month, .day { border:1px dashed #bbb; min-height:60px; padding:6px; border-radius:8px }
+.grid { display:grid; grid-template-columns:repeat(4,1fr); gap:10px }
+.week { margin-bottom:20px }
+.trash { border:2px dashed red; padding:15px; text-align:center; color:red }
 </style>
 </head>
+
 <body>
 
-<header>Plantafel Dachdeckerei Frey</header>
-
-<main>
+<h1>Plantafel</h1>
 
 <div class="box">
-  <h3>Fahrzeuge</h3>
-  <div class="row">
-    <input id="vehicleInput" placeholder="Fahrzeug">
-    <button id="addVehicleBtn">+</button>
-  </div>
-  <div id="vehicleList"></div>
+<h2>Fahrzeuge</h2>
+<input id="vehInput"><button onclick="addVehicle()">+</button>
+<div id="vehicles" class="row"></div>
 </div>
 
 <div class="box">
-  <h3>Mitarbeiter</h3>
-  <div class="row">
-    <input id="employeeInput" placeholder="Name">
-    <button id="addEmployeeBtn">+</button>
-  </div>
-  <div id="employeeList"></div>
+<h2>Mitarbeiter</h2>
+<input id="empInput"><button onclick="addEmployee()">+</button>
+<div id="employees" class="row"></div>
 </div>
 
 <div class="box">
-  <h3>12 Monate – Projekt-Parkplatz</h3>
-  <div class="row">
-    <input id="projectInput" placeholder="Projektname">
-    <button id="addProjectBtn">Projekt +</button>
-    <label style="margin-left:auto">Start-Montag:</label>
-    <input id="startDate" type="date">
-  </div>
-  <div id="months" class="months"></div>
+<h2>Projekt-Parkplatz (12 Monate)</h2>
+<input id="projInput"><button onclick="addProject()">Projekt +</button>
+<div id="months" class="grid"></div>
 </div>
-
-<div id="trash" class="trash">✖ Entfernen (hierher ziehen)</div>
 
 <div class="box">
-  <h3>4-Wochen-Planung</h3>
-  <div id="weeks"></div>
+<h2>4-Wochen-Planung</h2>
+<div id="weeks"></div>
 </div>
 
-</main>
+<div class="trash" id="trash">❌ ENTFERNEN (hierher ziehen)</div>
 
-<script src="app.js"></script>
+<script>
+const state = JSON.parse(localStorage.getItem("plantafel")) || {
+  projects:[], employees:[], vehicles:[],
+  months:{}, weeks:{}
+};
+
+const months = ["Jan","Feb","Mär","Apr","Mai","Jun","Jul","Aug","Sep","Okt","Nov","Dez"];
+
+function save(){ localStorage.setItem("plantafel",JSON.stringify(state)); render(); }
+
+function addProject(){
+  const v=projInput.value.trim(); if(!v)return;
+  const id=Date.now(); state.projects.push({id,name:v});
+  state.months[id]="Jan"; projInput.value=""; save();
+}
+
+function addEmployee(){
+  const v=empInput.value.trim(); if(!v)return;
+  state.employees.push({id:Date.now(),name:v}); empInput.value=""; save();
+}
+
+function addVehicle(){
+  const v=vehInput.value.trim(); if(!v)return;
+  state.vehicles.push({id:Date.now(),name:v}); vehInput.value=""; save();
+}
+
+function makeDrag(el,type,id){
+  el.draggable=true;
+  el.ondragstart=e=>{
+    e.dataTransfer.setData("type",type);
+    e.dataTransfer.setData("id",id);
+  };
+}
+
+function dropZone(el,fn){
+  el.ondragover=e=>e.preventDefault();
+  el.ondrop=e=>fn(
+    e.dataTransfer.getData("type"),
+    +e.dataTransfer.getData("id")
+  );
+}
+
+function render(){
+vehicles.innerHTML="";
+employees.innerHTML="";
+monthsDiv.innerHTML="";
+weeks.innerHTML="";
+
+state.vehicles.forEach(v=>{
+  const s=document.createElement("span");
+  s.className="item"; s.textContent=v.name;
+  makeDrag(s,"vehicle",v.id); vehicles.appendChild(s);
+});
+
+state.employees.forEach(e=>{
+  const s=document.createElement("span");
+  s.className="item"; s.textContent=e.name;
+  makeDrag(s,"employee",e.id); employees.appendChild(s);
+});
+
+months.forEach(m=>{
+  const d=document.createElement("div");
+  d.className="month"; d.innerHTML="<b>"+m+"</b>";
+  dropZone(d,(t,id)=>{ if(t==="project"){ state.months[id]=m; save(); }});
+  state.projects.filter(p=>state.months[p.id]===m)
+    .forEach(p=>{
+      const s=document.createElement("span");
+      s.className="item"; s.textContent=p.name;
+      makeDrag(s,"project",p.id); d.appendChild(s);
+    });
+  monthsDiv.appendChild(d);
+});
+
+for(let w=1;w<=4;w++){
+  const div=document.createElement("div");
+  div.className="week";
+  div.innerHTML="<b>KW "+w+"</b>";
+  const row=document.createElement("div");
+  row.className="row";
+  ["Mo","Di","Mi","Do","Fr"].forEach(d=>{
+    const day=document.createElement("div");
+    day.className="day";
+    const key="W"+w+d;
+    dropZone(day,(t,id)=>{
+      if(!state.weeks[key])state.weeks[key]=[];
+      state.weeks[key].push({t,id}); save();
+    });
+    (state.weeks[key]||[]).forEach(x=>{
+      const s=document.createElement("span");
+      s.className="item";
+      const src=[...state.projects,...state.employees,...state.vehicles]
+        .find(z=>z.id===x.id);
+      if(src){ s.textContent=src.name; makeDrag(s,x.t,x.id); }
+      day.appendChild(s);
+    });
+    row.appendChild(day);
+  });
+  div.appendChild(row); weeks.appendChild(div);
+}
+}
+
+dropZone(trash,(t,id)=>{
+  if(t==="project") state.projects=state.projects.filter(p=>p.id!==id);
+  if(t==="employee") state.employees=state.employees.filter(e=>e.id!==id);
+  if(t==="vehicle") state.vehicles=state.vehicles.filter(v=>v.id!==id);
+  save();
+});
+
+render();
+</script>
 </body>
 </html>
