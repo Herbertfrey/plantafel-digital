@@ -3,30 +3,36 @@
 <head>
   <meta charset="UTF-8">
   <title>Plantafel Dachdeckerei Frey</title>
+
   <style>
-    body { font-family: Arial; margin: 20px; }
+    body { font-family: Arial, sans-serif; margin: 20px; }
     h2 { margin-top: 30px; }
-    input { padding: 6px; margin-right: 6px; }
-    button { padding: 6px 10px; }
-    .box { border: 1px solid #ccc; padding: 10px; margin-top: 10px; }
+
+    input { padding: 6px; }
+    button { padding: 6px 10px; margin-left: 6px; }
+
+    .list { margin-top: 10px; }
     .item {
       display: inline-block;
       padding: 5px 8px;
       border: 1px solid #333;
+      background: #f5f5f5;
       margin: 4px;
       cursor: grab;
-      background: #f5f5f5;
     }
+
     .month {
-      min-height: 60px;
       border: 1px dashed #999;
-      margin: 5px;
-      padding: 5px;
+      padding: 10px;
+      margin: 6px 0;
+      min-height: 40px;
     }
+
     .remove {
       border: 2px dashed red;
-      padding: 10px;
+      padding: 15px;
       margin-top: 20px;
+      text-align: center;
     }
   </style>
 </head>
@@ -37,12 +43,12 @@
 <h2>Fahrzeuge</h2>
 <input id="vehicleInput" placeholder="Fahrzeug">
 <button onclick="addVehicle()">+</button>
-<div id="vehicles"></div>
+<div id="vehicles" class="list"></div>
 
 <h2>Mitarbeiter</h2>
 <input id="employeeInput" placeholder="Name">
 <button onclick="addEmployee()">+</button>
-<div id="employees"></div>
+<div id="employees" class="list"></div>
 
 <h2>Projekt-Parkplatz (12 Monate)</h2>
 <input id="projectInput" placeholder="Projektname">
