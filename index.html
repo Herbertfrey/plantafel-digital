@@ -1,36 +1,27 @@
 <!DOCTYPE html>
 <html lang="de">
 <head>
-<meta charset="UTF-8">
+<meta charset="UTF-8" />
 <title>Plantafel Dachdeckerei Frey</title>
-
 <style>
-body { font-family: Arial, sans-serif; margin:20px; }
-h2 { margin-top:30px; }
+body { font-family: Arial, sans-serif; background:#f4f6f8; margin:0; padding:20px; }
+h1 { background:#1e5ed8; color:#fff; padding:10px 15px; }
+section { background:#fff; padding:15px; margin-bottom:15px; border-radius:6px; }
 input { padding:6px; }
 button { padding:6px 10px; margin-left:5px; }
-
-.item {
-  display:inline-block;
-  padding:5px 8px;
-  border:1px solid #333;
-  background:#eee;
-  margin:4px;
-  cursor:grab;
+.list span {
+  display:inline-block; padding:5px 8px; margin:4px;
+  background:#e0e7ff; border-radius:4px; cursor:grab;
 }
-
+.months { display:grid; grid-template-columns:repeat(4,1fr); gap:10px; }
 .month {
-  border:1px dashed #999;
-  min-height:40px;
-  padding:6px;
-  margin:5px 0;
+  min-height:80px; border:1px dashed #aaa; padding:5px;
+  background:#fafafa;
 }
-
-.remove {
-  border:2px dashed red;
-  padding:15px;
-  margin-top:20px;
-  text-align:center;
+.month h4 { margin:0 0 5px 0; font-size:14px; }
+.trash {
+  border:2px dashed red; padding:10px; text-align:center;
+  color:red; margin-top:15px;
 }
 </style>
 </head>
@@ -39,105 +30,126 @@ button { padding:6px 10px; margin-left:5px; }
 
 <h1>Plantafel Dachdeckerei Frey</h1>
 
-<h2>Fahrzeuge</h2>
-<input id="vehicleInput">
-<button id="addVehicleBtn">+</button>
-<div id="vehicles"></div>
+<section>
+<h3>Fahrzeuge</h3>
+<input id="vehicleInput" placeholder="Fahrzeug" />
+<button onclick="addVehicle()">+</button>
+<div id="vehicleList" class="list"></div>
+</section>
 
-<h2>Mitarbeiter</h2>
-<input id="employeeInput">
-<button id="addEmployeeBtn">+</button>
-<div id="employees"></div>
+<section>
+<h3>Mitarbeiter</h3>
+<input id="employeeInput" placeholder="Name" />
+<button onclick="addEmployee()">+</button>
+<div id="employeeList" class="list"></div>
+</section>
 
-<h2>Projekt-Parkplatz (12 Monate)</h2>
-<input id="projectInput">
-<button id="addProjectBtn">Projekt +</button>
+<section>
+<h3>Projekt-Parkplatz (12 Monate)</h3>
+<input id="projectInput" placeholder="Projektname" />
+<button onclick="addProject()">Projekt +</button>
 
-<div id="months"></div>
+<div class="months" id="months"></div>
 
-<div class="remove" id="trash">❌ Entfernen – hierher ziehen</div>
+<div class="trash" ondragover="event.preventDefault()" ondrop="deleteProject(event)">
+❌ Entfernen – hierher ziehen
+</div>
+</section>
 
 <script>
-const state = { vehicles:[], employees:[], projects:{} };
-const months = ["Jan","Feb","Mär","Apr","Mai","Jun","Jul","Aug","Sep","Okt","Nov","Dez"];
+/* ================= STATE ================= */
+const STORAGE_KEY = "plantafel_state";
 
-function uid(){ return Math.random().toString(36).slice(2); }
-
-const vehiclesDiv = document.getElementById("vehicles");
-const employeesDiv = document.getElementById("employees");
-const monthsDiv = document.getElementById("months");
-const trash = document.getElementById("trash");
-
-document.getElementById("addVehicleBtn").onclick = () => {
-  const v = vehicleInput.value.trim();
-  if(!v) return;
-  state.vehicles.push({id:uid(),name:v});
-  vehicleInput.value="";
-  render();
+let state = {
+  vehicles: [],
+  employees: [],
+  projects: [] // {id,name,month}
 };
 
-document.getElementById("addEmployeeBtn").onclick = () => {
-  const e = employeeInput.value.trim();
-  if(!e) return;
-  state.employees.push({id:uid(),name:e});
-  employeeInput.value="";
-  render();
-};
-
-document.getElementById("addProjectBtn").onclick = () => {
-  const p = projectInput.value.trim();
-  if(!p) return;
-  state.projects[uid()]={name:p,month:null};
-  projectInput.value="";
-  render();
-};
-
-function makeItem(obj,type){
-  const el=document.createElement("span");
-  el.className="item";
-  el.textContent=obj.name;
-  el.draggable=true;
-  el.ondragstart=e=>{
-    e.dataTransfer.setData("id",obj.id);
-    e.dataTransfer.setData("type",type);
-  };
-  return el;
+/* ================= STORAGE ================= */
+function saveState() {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+}
+function loadState() {
+  const s = localStorage.getItem(STORAGE_KEY);
+  if (s) state = JSON.parse(s);
 }
 
-function render(){
-  vehiclesDiv.innerHTML="";
-  employeesDiv.innerHTML="";
-  monthsDiv.innerHTML="";
+/* ================= INIT ================= */
+const monthNames = ["Jan","Feb","Mär","Apr","Mai","Jun","Jul","Aug","Sep","Okt","Nov","Dez"];
 
-  state.vehicles.forEach(v=>vehiclesDiv.appendChild(makeItem(v,"vehicle")));
-  state.employees.forEach(e=>employeesDiv.appendChild(makeItem(e,"employee")));
-
-  months.forEach(m=>{
-    const d=document.createElement("div");
-    d.className="month";
-    d.innerHTML="<b>"+m+"</b>";
-    d.ondragover=e=>e.preventDefault();
-    d.ondrop=e=>{
-      const id=e.dataTransfer.getData("id");
-      if(state.projects[id]){ state.projects[id].month=m; render(); }
-    };
-    Object.entries(state.projects).forEach(([id,p])=>{
-      if(p.month===m) d.appendChild(makeItem({id,name:p.name},"project"));
-    });
-    monthsDiv.appendChild(d);
+function initMonths() {
+  const m = document.getElementById("months");
+  m.innerHTML = "";
+  monthNames.forEach((name,idx)=>{
+    const d = document.createElement("div");
+    d.className = "month";
+    d.dataset.month = idx;
+    d.ondragover = e => e.preventDefault();
+    d.ondrop = e => dropProject(e, idx);
+    d.innerHTML = `<h4>${name}</h4>`;
+    m.appendChild(d);
   });
 }
 
-trash.ondragover=e=>e.preventDefault();
-trash.ondrop=e=>{
-  const id=e.dataTransfer.getData("id");
-  const type=e.dataTransfer.getData("type");
-  if(type==="project") delete state.projects[id];
-  if(type==="vehicle") state.vehicles=state.vehicles.filter(v=>v.id!==id);
-  if(type==="employee") state.employees=state.employees.filter(e=>e.id!==id);
-  render();
-};
+/* ================= RENDER ================= */
+function render() {
+  document.getElementById("vehicleList").innerHTML =
+    state.vehicles.map(v=>`<span>${v}</span>`).join("");
 
+  document.getElementById("employeeList").innerHTML =
+    state.employees.map(e=>`<span>${e}</span>`).join("");
+
+  initMonths();
+  state.projects.forEach(p=>{
+    const el = document.createElement("span");
+    el.textContent = p.name;
+    el.draggable = true;
+    el.ondragstart = e => e.dataTransfer.setData("id", p.id);
+    document.querySelector(`.month[data-month="${p.month}"]`).appendChild(el);
+  });
+}
+
+/* ================= ACTIONS ================= */
+function addVehicle() {
+  const v = vehicleInput.value.trim();
+  if (!v) return;
+  state.vehicles.push(v);
+  vehicleInput.value="";
+  saveState(); render();
+}
+
+function addEmployee() {
+  const e = employeeInput.value.trim();
+  if (!e) return;
+  state.employees.push(e);
+  employeeInput.value="";
+  saveState(); render();
+}
+
+function addProject() {
+  const p = projectInput.value.trim();
+  if (!p) return;
+  state.projects.push({id:crypto.randomUUID(), name:p, month:0});
+  projectInput.value="";
+  saveState(); render();
+}
+
+function dropProject(e, month) {
+  const id = e.dataTransfer.getData("id");
+  const p = state.projects.find(x=>x.id===id);
+  if (p) p.month = month;
+  saveState(); render();
+}
+
+function deleteProject(e) {
+  const id = e.dataTransfer.getData("id");
+  state.projects = state.projects.filter(p=>p.id!==id);
+  saveState(); render();
+}
+
+/* ================= START ================= */
+loadState();
 render();
 </script>
 
