@@ -1,55 +1,60 @@
 <!DOCTYPE html>
 <html lang="de">
 <head>
-  <meta charset="UTF-8" />
+  <meta charset="UTF-8">
   <title>Plantafel Dachdeckerei Frey</title>
   <style>
-    body { font-family: Arial; margin:0; background:#f4f6f8; }
-    header { background:#0b5ed7; color:white; padding:10px 20px; }
-    section { padding:15px; }
-    h3 { margin-top:0 }
-    .row { display:flex; gap:10px; margin-bottom:10px }
-    input { padding:6px; flex:1 }
-    button { padding:6px 10px; cursor:pointer }
-    .magnet { display:inline-block; padding:4px 8px; background:#ddd; margin:4px; border-radius:4px; cursor:grab }
-    .month { border:1px solid #ccc; min-height:80px; padding:5px }
-    .grid { display:grid; grid-template-columns:repeat(4,1fr); gap:10px }
-    #trash { border:2px dashed red; padding:10px; margin-top:10px }
+    body { font-family: Arial; margin: 20px; }
+    h2 { margin-top: 30px; }
+    input { padding: 6px; margin-right: 6px; }
+    button { padding: 6px 10px; }
+    .box { border: 1px solid #ccc; padding: 10px; margin-top: 10px; }
+    .item {
+      display: inline-block;
+      padding: 5px 8px;
+      border: 1px solid #333;
+      margin: 4px;
+      cursor: grab;
+      background: #f5f5f5;
+    }
+    .month {
+      min-height: 60px;
+      border: 1px dashed #999;
+      margin: 5px;
+      padding: 5px;
+    }
+    .remove {
+      border: 2px dashed red;
+      padding: 10px;
+      margin-top: 20px;
+    }
   </style>
 </head>
 <body>
 
-<header>Plantafel Dachdeckerei Frey</header>
+<h1>Plantafel Dachdeckerei Frey</h1>
 
-<section>
-  <h3>Fahrzeuge</h3>
-  <div class="row">
-    <input id="vehicleInput" placeholder="Fahrzeug">
-    <button id="addVehicle">+</button>
-  </div>
-  <div id="vehicles"></div>
-</section>
+<h2>Fahrzeuge</h2>
+<input id="vehicleInput" placeholder="Fahrzeug">
+<button onclick="addVehicle()">+</button>
+<div id="vehicles"></div>
 
-<section>
-  <h3>Mitarbeiter</h3>
-  <div class="row">
-    <input id="employeeInput" placeholder="Name">
-    <button id="addEmployee">+</button>
-  </div>
-  <div id="employees"></div>
-</section>
+<h2>Mitarbeiter</h2>
+<input id="employeeInput" placeholder="Name">
+<button onclick="addEmployee()">+</button>
+<div id="employees"></div>
 
-<section>
-  <h3>Projekt-Parkplatz (12 Monate)</h3>
-  <div class="row">
-    <input id="projectInput" placeholder="Projektname">
-    <button id="addProject">Projekt +</button>
-  </div>
+<h2>Projekt-Parkplatz (12 Monate)</h2>
+<input id="projectInput" placeholder="Projektname">
+<button onclick="addProject()">Projekt +</button>
 
-  <div class="grid" id="months"></div>
-</section>
+<div id="months"></div>
 
-<div id="trash">❌ Entfernen – hierher ziehen</div>
+<div class="remove"
+     ondragover="event.preventDefault()"
+     ondrop="removeItem(event)">
+  ❌ Entfernen – hierher ziehen
+</div>
 
 <script src="app.js"></script>
 </body>
