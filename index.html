@@ -1,34 +1,53 @@
 <!doctype html>
 <html lang="de">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Plantafel Dachdeckerei Frey</title>
-  <style>
-    body{font-family:Arial,Helvetica,sans-serif;margin:0;background:#f4f6f8}
-    header{background:#1f5fbf;color:#fff;padding:12px 18px;font-size:20px}
-    main{padding:16px}
-    h2{margin:18px 0 8px}
-    .row{display:flex;gap:8px;flex-wrap:wrap}
-    input{padding:8px}
-    button{padding:8px 12px;cursor:pointer}
-    .box{background:#fff;border-radius:10px;padding:12px;margin-bottom:12px}
-    .list span,.project{
-      display:inline-block;padding:6px 10px;margin:4px;border-radius:14px;
-      background:#e6e6e6;border:1px solid #d2d2d2;cursor:grab;user-select:none
-    }
-    .months{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
-    .month{background:#fff;border-radius:10px;padding:10px;min-height:90px}
-    .month h4{margin:0 0 6px}
-    .trash{
-      margin:12px 0;padding:12px;border:2px dashed #c62828;color:#c62828;
-      text-align:center;border-radius:12px;background:#fff
-    }
-    .weeks{margin-top:12px}
-    .week{background:#fff;border-radius:10px;padding:10px;margin-bottom:10px}
-    .week-title{font-weight:bold;margin-bottom:6px}
-    .week-drop{min-height:40px;border:1px dashed #cfcfcf;border-radius:10px;padding:6px}
-  </style>
+<meta charset="utf-8">
+<title>Plantafel Dachdeckerei Frey</title>
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<style>
+body{margin:0;font-family:Arial;background:#f4f6f8}
+header{background:#1f5fbf;color:#fff;padding:14px 18px;font-size:20px}
+main{padding:16px}
+
+.box{background:#fff;border-radius:12px;padding:12px;margin-bottom:16px}
+.row{display:flex;gap:8px;flex-wrap:wrap}
+input{padding:8px}
+button{padding:8px 12px;cursor:pointer}
+
+.magnet{
+  display:inline-block;padding:6px 10px;border-radius:14px;
+  background:#e6e6e6;border:1px solid #d2d2d2;
+  cursor:grab;user-select:none;margin:4px
+}
+.vehicle{background:#c62828;color:#fff}
+.employee.blue{background:#1e88e5;color:#fff}
+.employee.green{background:#43a047;color:#fff}
+.employee.orange{background:#fb8c00;color:#fff}
+.employee.purple{background:#8e24aa;color:#fff}
+.employee.teal{background:#00897b;color:#fff}
+
+.months{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
+.month{background:#fafafa;border:1px dashed #cfcfcf;border-radius:12px;padding:8px}
+.month h4{margin:0 0 6px}
+
+.trash{
+  border:2px dashed #c62828;color:#c62828;
+  text-align:center;padding:12px;border-radius:12px
+}
+
+.week{background:#fff;border-radius:12px;padding:10px;margin-bottom:12px}
+.week-title{font-weight:bold;margin-bottom:8px}
+.days{display:grid;grid-template-columns:repeat(5,1fr);gap:8px}
+.day{background:#f7f7f7;border:1px solid #ddd;border-radius:10px;padding:6px;min-height:120px}
+.day-title{font-size:12px;font-weight:bold;margin-bottom:4px}
+.day-drop{min-height:40px}
+
+.project-block{
+  background:#e6e6e6;border:1px solid #ccc;border-radius:10px;
+  padding:6px;margin:4px 0
+}
+.section-title{font-size:11px;font-weight:bold;margin-top:4px}
+</style>
 </head>
 <body>
 
@@ -36,43 +55,41 @@
 
 <main>
 
-  <div class="box">
-    <h2>Fahrzeuge</h2>
-    <div class="row">
-      <input id="vehicleInput" placeholder="Fahrzeug">
-      <button id="addVehicleBtn">+</button>
-    </div>
-    <div id="vehicleList" class="list"></div>
+<div class="box">
+  <h3>Fahrzeuge</h3>
+  <div class="row">
+    <input id="vehicleInput" placeholder="Fahrzeug">
+    <button id="addVehicleBtn">+</button>
   </div>
+  <div id="vehicleList"></div>
+</div>
 
-  <div class="box">
-    <h2>Mitarbeiter</h2>
-    <div class="row">
-      <input id="employeeInput" placeholder="Name">
-      <button id="addEmployeeBtn">+</button>
-    </div>
-    <div id="employeeList" class="list"></div>
+<div class="box">
+  <h3>Mitarbeiter</h3>
+  <div class="row">
+    <input id="employeeInput" placeholder="Name">
+    <button id="addEmployeeBtn">+</button>
   </div>
+  <div id="employeeList"></div>
+</div>
 
-  <div class="box">
-    <h2>Projekt-Parkplatz (12 Monate)</h2>
-    <div class="row">
-      <input id="projectInput" placeholder="Projektname">
-      <button id="addProjectBtn">Projekt +</button>
-      <label style="margin-left:auto">Start-Montag:</label>
-      <input id="startDate" type="date">
-      <button id="btnToday">Diese Woche</button>
-    </div>
-
-    <div class="months" id="months"></div>
+<div class="box">
+  <h3>12 Monate – Projekt-Parkplatz</h3>
+  <div class="row">
+    <input id="projectInput" placeholder="Projektname">
+    <button id="addProjectBtn">Projekt +</button>
+    <label style="margin-left:auto">Start-Montag:</label>
+    <input id="startDate" type="date">
   </div>
+  <div id="months" class="months"></div>
+</div>
 
-  <div class="trash" id="trash">✖ Entfernen (hierher ziehen)</div>
+<div id="trash" class="trash">✖ Entfernen (hierher ziehen)</div>
 
-  <div class="box weeks">
-    <h2>4-Wochen-Planung</h2>
-    <div id="weeks"></div>
-  </div>
+<div class="box">
+  <h3>4-Wochen-Planung</h3>
+  <div id="weeks"></div>
+</div>
 
 </main>
 
