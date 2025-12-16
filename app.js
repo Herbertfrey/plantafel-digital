@@ -44,19 +44,26 @@ function render() {
   employees.innerHTML = "";
   monthsDiv.innerHTML = "";
 
-  state.vehicles.forEach(v => vehicles.appendChild(makeItem(v, "vehicle")));
-  state.employees.forEach(e => employees.appendChild(makeItem(e, "employee")));
+  state.vehicles.forEach(v =>
+    vehicles.appendChild(makeItem(v, "vehicle"))
+  );
+
+  state.employees.forEach(e =>
+    employees.appendChild(makeItem(e, "employee"))
+  );
 
   months.forEach(m => {
     const div = document.createElement("div");
     div.className = "month";
-    div.textContent = m;
     div.dataset.month = m;
+    div.innerHTML = "<strong>" + m + "</strong>";
+
     div.ondragover = ev => ev.preventDefault();
     div.ondrop = ev => dropProject(ev, m);
 
     Object.entries(state.projects).forEach(([id,p])=>{
-      if (p.month === m) div.appendChild(makeItem({id,name:p.name},"project"));
+      if (p.month === m)
+        div.appendChild(makeItem({id,name:p.name},"project"));
     });
 
     monthsDiv.appendChild(div);
@@ -64,24 +71,23 @@ function render() {
 }
 
 function makeItem(obj, type) {
-  const s = document.createElement("span");
-  s.className = "item";
-  s.textContent = obj.name;
-  s.draggable = true;
-  s.dataset.id = obj.id;
-  s.dataset.type = type;
-  s.ondragstart = ev => {
+  const el = document.createElement("span");
+  el.className = "item";
+  el.textContent = obj.name;
+  el.draggable = true;
+  el.dataset.id = obj.id;
+  el.dataset.type = type;
+  el.ondragstart = ev => {
     ev.dataTransfer.setData("id", obj.id);
     ev.dataTransfer.setData("type", type);
   };
-  return s;
+  return el;
 }
 
 // ---------- DROP ----------
 function dropProject(ev, month) {
   const id = ev.dataTransfer.getData("id");
-  const type = ev.dataTransfer.getData("type");
-  if (type !== "project") return;
+  if (!state.projects[id]) return;
   state.projects[id].month = month;
   render();
 }
@@ -91,8 +97,10 @@ function removeItem(ev) {
   const type = ev.dataTransfer.getData("type");
 
   if (type === "project") delete state.projects[id];
-  if (type === "vehicle") state.vehicles = state.vehicles.filter(v=>v.id!==id);
-  if (type === "employee") state.employees = state.employees.filter(e=>e.id!==id);
+  if (type === "vehicle")
+    state.vehicles = state.vehicles.filter(v=>v.id!==id);
+  if (type === "employee")
+    state.employees = state.employees.filter(e=>e.id!==id);
 
   render();
 }
