@@ -1,105 +1,102 @@
 const state = {
   vehicles: [],
   employees: [],
-  projects: []
+  projects: {}
 };
 
 const months = [
-  "Jan","Feb","Mär","Apr",
-  "Mai","Jun","Jul","Aug",
-  "Sep","Okt","Nov","Dez"
+  "Jan","Feb","Mär","Apr","Mai","Jun",
+  "Jul","Aug","Sep","Okt","Nov","Dez"
 ];
 
-const vehiclesDiv = document.getElementById("vehicles");
-const employeesDiv = document.getElementById("employees");
-const monthsDiv = document.getElementById("months");
-const trash = document.getElementById("trash");
-
-/* ---------- HELPERS ---------- */
 function uid() {
   return Math.random().toString(36).slice(2);
 }
 
-function makeMagnet(text, type, id) {
-  const el = document.createElement("span");
-  el.className = "magnet";
-  el.textContent = text;
-  el.draggable = true;
-  el.ondragstart = e => {
-    e.dataTransfer.setData("type", type);
-    e.dataTransfer.setData("id", id);
-  };
-  return el;
-}
-
-/* ---------- ADD ---------- */
-document.getElementById("addVehicle").onclick = () => {
+// ---------- ADD ----------
+function addVehicle() {
   const v = vehicleInput.value.trim();
   if (!v) return;
-  state.vehicles.push({id:uid(), name:v});
-  vehicleInput.value="";
+  state.vehicles.push({ id: uid(), name: v });
+  vehicleInput.value = "";
   render();
-};
+}
 
-document.getElementById("addEmployee").onclick = () => {
+function addEmployee() {
   const e = employeeInput.value.trim();
   if (!e) return;
-  state.employees.push({id:uid(), name:e});
-  employeeInput.value="";
+  state.employees.push({ id: uid(), name: e });
+  employeeInput.value = "";
   render();
-};
+}
 
-document.getElementById("addProject").onclick = () => {
+function addProject() {
   const p = projectInput.value.trim();
   if (!p) return;
-  state.projects.push({id:uid(), name:p, month:null});
-  projectInput.value="";
+  state.projects[uid()] = { name: p, month: null };
+  projectInput.value = "";
   render();
-};
+}
 
-/* ---------- RENDER ---------- */
+// ---------- RENDER ----------
 function render() {
-  vehiclesDiv.innerHTML="";
-  employeesDiv.innerHTML="";
-  monthsDiv.innerHTML="";
+  vehicles.innerHTML = "";
+  employees.innerHTML = "";
+  monthsDiv.innerHTML = "";
 
-  state.vehicles.forEach(v =>
-    vehiclesDiv.appendChild(makeMagnet(v.name,"vehicle",v.id))
-  );
-  state.employees.forEach(e =>
-    employeesDiv.appendChild(makeMagnet(e.name,"employee",e.id))
-  );
+  state.vehicles.forEach(v => vehicles.appendChild(makeItem(v, "vehicle")));
+  state.employees.forEach(e => employees.appendChild(makeItem(e, "employee")));
 
-  months.forEach((m,i)=>{
-    const box = document.createElement("div");
-    box.className="month";
-    box.innerHTML = `<b>${m}</b>`;
-    box.ondragover = e=>e.preventDefault();
-    box.ondrop = e=>{
-      const type = e.dataTransfer.getData("type");
-      const id = e.dataTransfer.getData("id");
-      if (type==="project") {
-        const p = state.projects.find(x=>x.id===id);
-        if (p) p.month=i;
-        render();
-      }
-    };
+  months.forEach(m => {
+    const div = document.createElement("div");
+    div.className = "month";
+    div.textContent = m;
+    div.dataset.month = m;
+    div.ondragover = ev => ev.preventDefault();
+    div.ondrop = ev => dropProject(ev, m);
 
-    state.projects
-      .filter(p=>p.month===i)
-      .forEach(p=>box.appendChild(makeMagnet(p.name,"project",p.id)));
+    Object.entries(state.projects).forEach(([id,p])=>{
+      if (p.month === m) div.appendChild(makeItem({id,name:p.name},"project"));
+    });
 
-    monthsDiv.appendChild(box);
+    monthsDiv.appendChild(div);
   });
 }
 
-/* ---------- DELETE ---------- */
-trash.ondragover = e=>e.preventDefault();
-trash.ondrop = e=>{
-  const type = e.dataTransfer.getData("type");
-  const id = e.dataTransfer.getData("id");
-  state[type+"s"] = state[type+"s"].filter(x=>x.id!==id);
-  render();
-};
+function makeItem(obj, type) {
+  const s = document.createElement("span");
+  s.className = "item";
+  s.textContent = obj.name;
+  s.draggable = true;
+  s.dataset.id = obj.id;
+  s.dataset.type = type;
+  s.ondragstart = ev => {
+    ev.dataTransfer.setData("id", obj.id);
+    ev.dataTransfer.setData("type", type);
+  };
+  return s;
+}
 
+// ---------- DROP ----------
+function dropProject(ev, month) {
+  const id = ev.dataTransfer.getData("id");
+  const type = ev.dataTransfer.getData("type");
+  if (type !== "project") return;
+  state.projects[id].month = month;
+  render();
+}
+
+function removeItem(ev) {
+  const id = ev.dataTransfer.getData("id");
+  const type = ev.dataTransfer.getData("type");
+
+  if (type === "project") delete state.projects[id];
+  if (type === "vehicle") state.vehicles = state.vehicles.filter(v=>v.id!==id);
+  if (type === "employee") state.employees = state.employees.filter(e=>e.id!==id);
+
+  render();
+}
+
+// ---------- INIT ----------
+const monthsDiv = document.getElementById("months");
 render();
