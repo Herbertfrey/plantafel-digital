@@ -1,162 +1,75 @@
-// ================================
+// =============================
 // PLANTAFEL – STABILER KERN
-// Projekt-Parkplatz ↔ 4-Wochen
-// ================================
+// =============================
 
-const LS_KEY = "plantafel_stable_v1";
+document.addEventListener("DOMContentLoaded", () => {
 
-let state = loadState();
+  // ---------- ELEMENTE ----------
+  const projectInput = document.getElementById("projectInput");
+  const addProjectBtn = document.getElementById("addProjectBtn");
+  const yearGrid = document.getElementById("yearGrid");
+  const trash = document.getElementById("trash");
 
-function loadState() {
-  const raw = localStorage.getItem(LS_KEY);
-  if (!raw) {
-    return {
-      startMonday: getMonday(new Date()),
-      projects: [],          // {id, name}
-      planned: []            // {id, projectId, date}
-    };
+  if (!projectInput || !addProjectBtn || !yearGrid || !trash) {
+    console.error("Pflicht-Element fehlt – Abbruch");
+    return;
   }
-  return JSON.parse(raw);
-}
 
-function saveState() {
-  localStorage.setItem(LS_KEY, JSON.stringify(state));
-}
+  // ---------- MONATE ----------
+  const MONTHS = ["Jan","Feb","Mär","Apr","Mai","Jun","Jul","Aug","Sep","Okt","Nov","Dez"];
 
-function uid() {
-  return Math.random().toString(36).slice(2);
-}
+  // ---------- STATE ----------
+  let projects = [];
 
-// --------------------
-// DATE HELPERS
-// --------------------
-function getMonday(date) {
-  const d = new Date(date);
-  const day = d.getDay() || 7;
-  if (day !== 1) d.setDate(d.getDate() - day + 1);
-  d.setHours(12,0,0,0);
-  return d.toISOString().slice(0,10);
-}
+  // ---------- INIT ----------
+  renderMonths();
 
-function getVisibleDates() {
-  const start = new Date(state.startMonday);
-  const dates = [];
-  for (let i = 0; i < 20; i++) {
-    const d = new Date(start);
-    d.setDate(start.getDate() + i + Math.floor(i / 5) * 2);
-    dates.push(d.toISOString().slice(0,10));
-  }
-  return dates;
-}
+  // ---------- EVENTS ----------
+  addProjectBtn.onclick = () => {
+    const name = projectInput.value.trim();
+    if (!name) return;
 
-// --------------------
-// INIT
-// --------------------
-document.getElementById("btnToday").onclick = () => {
-  state.startMonday = getMonday(new Date());
-  saveState();
-  renderAll();
-};
+    projects.push({ id: crypto.randomUUID(), name });
+    projectInput.value = "";
+    renderProjects();
+  };
 
-document.getElementById("startDate").value = state.startMonday;
-document.getElementById("startDate").onchange = e => {
-  state.startMonday = getMonday(new Date(e.target.value));
-  saveState();
-  renderAll();
-};
-
-// --------------------
-// PROJECT ADD
-// --------------------
-document.getElementById("addProjectBtn").onclick = () => {
-  const input = document.getElementById("projectInput");
-  const name = input.value.trim();
-  if (!name) return;
-  state.projects.push({ id: uid(), name });
-  input.value = "";
-  saveState();
-  renderAll();
-};
-
-// --------------------
-// RENDER
-// --------------------
-function renderAll() {
-  renderParkplatz();
-  renderWeeks();
-}
-
-function renderParkplatz() {
-  const box = document.getElementById("projectParkplatz");
-  box.innerHTML = "";
-
-  state.projects.forEach(p => {
-    const el = document.createElement("div");
-    el.className = "year-bar";
-    el.textContent = p.name;
-    el.draggable = true;
-
-    el.ondragstart = e => {
-      e.dataTransfer.setData("text/plain", p.id);
-    };
-
-    const del = document.createElement("span");
-    del.textContent = " ✖";
-    del.onclick = () => {
-      state.projects = state.projects.filter(x => x.id !== p.id);
-      state.planned = state.planned.filter(x => x.projectId !== p.id);
-      saveState();
-      renderAll();
-    };
-
-    el.appendChild(del);
-    box.appendChild(el);
+  trash.addEventListener("dragover", e => e.preventDefault());
+  trash.addEventListener("drop", e => {
+    const id = e.dataTransfer.getData("text");
+    projects = projects.filter(p => p.id !== id);
+    renderProjects();
   });
-}
 
-function renderWeeks() {
-  const weeks = document.getElementById("weeks");
-  weeks.innerHTML = "";
+  // ---------- FUNKTIONEN ----------
+  function renderMonths() {
+    yearGrid.innerHTML = "";
+    MONTHS.forEach(month => {
+      const box = document.createElement("div");
+      box.className = "month";
+      box.innerHTML = `
+        <div class="month-head">${month}</div>
+        <div class="month-drop"></div>
+      `;
+      yearGrid.appendChild(box);
+    });
+  }
 
-  const dates = getVisibleDates();
+  function renderProjects() {
+    document.querySelectorAll(".month-drop").forEach(drop => drop.innerHTML = "");
 
-  dates.forEach(date => {
-    const day = document.createElement("div");
-    day.className = "day";
-    day.innerHTML = `<b>${date}</b>`;
-    day.ondragover = e => e.preventDefault();
+    projects.forEach(project => {
+      const el = document.createElement("div");
+      el.className = "year-bar";
+      el.textContent = project.name;
+      el.draggable = true;
 
-    day.ondrop = e => {
-      const projectId = e.dataTransfer.getData("text/plain");
-      state.planned.push({
-        id: uid(),
-        projectId,
-        date
-      });
-      saveState();
-      renderAll();
-    };
-
-    state.planned
-      .filter(p => p.date === date)
-      .forEach(p => {
-        const proj = state.projects.find(x => x.id === p.projectId);
-        if (!proj) return;
-
-        const block = document.createElement("div");
-        block.className = "project-block";
-        block.textContent = proj.name;
-        block.draggable = true;
-
-        block.ondragstart = e => {
-          e.dataTransfer.setData("text/plain", p.id);
-        };
-
-        day.appendChild(block);
+      el.addEventListener("dragstart", e => {
+        e.dataTransfer.setData("text", project.id);
       });
 
-    weeks.appendChild(day);
-  });
-}
+      document.querySelector(".month-drop").appendChild(el);
+    });
+  }
 
-renderAll();
+});
