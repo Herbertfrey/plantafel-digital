@@ -2,8 +2,8 @@
 // SUPABASE ONLINE SYNC + EDITOR LOGIN (NEU)
 // =====================================================
 // 1) Trage hier deine Supabase Daten ein:
-const SUPABASE_URL = "https://DEIN-PROJEKT.supabase.co";
-const SUPABASE_ANON_KEY = "DEIN_ANON_KEY";
+const SUPABASE_URL = "https://yzfmviddzhghvcxowbjl.supabase.co";
+const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inl6Zm12aWRkemhnaHZjeG93YmpsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjQ4MjkyNzIsImV4cCI6MjA4MDQwNTI3Mn0.BOmbE7xq1-kUBdbH3kpN4lIjDyWIwLaCpS6ZT3mbb9U";
 
 // 2) Tabelle: plantafel_state  (eine Zeile, key="main")
 // 3) Tabelle: editors (email als primary key)
