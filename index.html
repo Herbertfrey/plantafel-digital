@@ -1,162 +1,114 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="de">
 <head>
-<meta charset="UTF-8" />
-<title>Plantafel Dachdeckerei</title>
-
-<style>
-body { font-family: Arial; background:#f4f6f8; margin:0; padding:16px }
-h2 { margin-top:30px }
-input, button { padding:6px }
-.box { background:#fff; padding:10px; margin-bottom:20px; border-radius:8px }
-.row { display:flex; gap:10px; flex-wrap:wrap }
-.item { padding:6px 10px; background:#e0e0e0; border-radius:12px; cursor:grab }
-.item:active { cursor:grabbing }
-.month, .day { border:1px dashed #bbb; min-height:60px; padding:6px; border-radius:8px }
-.grid { display:grid; grid-template-columns:repeat(4,1fr); gap:10px }
-.week { margin-bottom:20px }
-.trash { border:2px dashed red; padding:15px; text-align:center; color:red }
-</style>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Plantafel Dachdeckerei Frey</title>
+  <link rel="stylesheet" href="./style.css" />
 </head>
-
 <body>
+<header class="topbar">
+  <div class="topbar__title">Plantafel Dachdeckerei Frey</div>
+  <div class="topbar__actions">
+    <label class="small">Start-Montag:</label>
+    <input id="startDate" type="date" />
+    <button id="btnToday" class="btn secondary">Diese Woche</button>
+    <button id="btnReset" class="btn danger">Alles zurücksetzen</button>
 
-<h1>Plantafel</h1>
+    <!-- ZOOM (NEU) -->
+    <div class="zoomControls">
+      <button type="button" class="btn secondary zoomBtn" onclick="setZoom(zoomLevel - 0.1)">−</button>
+      <button type="button" class="btn secondary zoomBtn" onclick="setZoom(1)">100%</button>
+      <button type="button" class="btn secondary zoomBtn" onclick="setZoom(zoomLevel + 0.1)">+</button>
+      <span id="zoomValue" class="zoomValue">100%</span>
+    </div>
+  </div>
+</header>
 
-<div class="box">
-<h2>Fahrzeuge</h2>
-<input id="vehInput"><button onclick="addVehicle()">+</button>
-<div id="vehicles" class="row"></div>
-</div>
+<!-- ZOOM WRAPPER (NEU) -->
+<div id="zoom-root">
 
-<div class="box">
-<h2>Mitarbeiter</h2>
-<input id="empInput"><button onclick="addEmployee()">+</button>
-<div id="employees" class="row"></div>
-</div>
+<main class="layout">
+  <!-- LEFT: Stammdaten -->
+  <aside class="sidebar">
+    <section class="card">
+      <h3>Fahrzeuge (Stammdaten)</h3>
+      <div class="row">
+        <input id="vehicleInput" placeholder="Fahrzeug" />
+        <button id="addVehicleBtn" class="btn">+</button>
+      </div>
+      <div id="vehicleList" class="magnet-list"></div>
+      <div class="hint">Fahrzeuge bleiben links. Ziehen erzeugt Kopie im Projekt (Feinplanung).</div>
+    </section>
 
-<div class="box">
-<h2>Projekt-Parkplatz (12 Monate)</h2>
-<input id="projInput"><button onclick="addProject()">Projekt +</button>
-<div id="months" class="grid"></div>
-</div>
+    <section class="card">
+      <h3>Mitarbeiter (Stammdaten)</h3>
+      <div class="row">
+        <input id="employeeInput" placeholder="Name" />
+        <button id="addEmployeeBtn" class="btn">+</button>
+      </div>
+      <div id="employeeList" class="magnet-list"></div>
+      <div class="hint">Jeder Mitarbeiter hat eigene Farbe. Ziehen erzeugt Kopie im Projekt/Status.</div>
+    </section>
 
-<div class="box">
-<h2>4-Wochen-Planung</h2>
-<div id="weeks"></div>
-</div>
+    <section class="card">
+      <h3>Projekt anlegen (Pool)</h3>
+      <div class="row">
+        <input id="projectInput" placeholder="Projektname" />
+        <button id="addProjectBtn" class="btn">Projekt +</button>
+      </div>
+      <div id="projectPool" class="pool"></div>
+      <div class="hint">Hier stehen nur ungeplante Projekte. Sobald geplant: hier weg.</div>
+    </section>
 
-<div class="trash" id="trash">❌ ENTFERNEN (hierher ziehen)</div>
+    <section class="card">
+      <h3>Status (Urlaub/Krank/Schule)</h3>
+      <div class="status-buttons">
+        <div class="status-chip urlaub" draggable="true" data-kind="status" data-status="urlaub">Urlaub</div>
+        <div class="status-chip krank" draggable="true" data-kind="status" data-status="krank">Krank</div>
+        <div class="status-chip schule" draggable="true" data-kind="status" data-status="schule">Schule</div>
+      </div>
+      <div class="hint">Status in einen Tag ziehen → Statusbox entsteht → Mitarbeiter hineinziehen.</div>
+    </section>
 
-<script>
-const state = JSON.parse(localStorage.getItem("plantafel")) || {
-  projects:[], employees:[], vehicles:[],
-  months:{}, weeks:{}
-};
+    <section class="card trash">
+      <h3>ENTFERNEN</h3>
+      <div id="trash" class="trashZone">Hierher ziehen zum Entfernen</div>
+      <div class="hint">
+        Projekt aus Monat/Tag → zurück in Pool.<br/>
+        KFZ/MA im Projekt/Status → nur dort entfernen.<br/>
+        Stammdaten löschen: über X (Bestätigung).
+      </div>
+    </section>
+  </aside>
 
-const months = ["Jan","Feb","Mär","Apr","Mai","Jun","Jul","Aug","Sep","Okt","Nov","Dez"];
+  <!-- RIGHT: Planung -->
+  <section class="content">
+    <section class="card">
+      <div class="headRow">
+        <h2>Grobplanung (12 Monate)</h2>
+        <div class="small hint">Projekte aus Pool hier hineinziehen. Von Monat in Tag ziehen → Feinplanung.</div>
+      </div>
+      <div id="monthsGrid" class="monthsGrid"></div>
+    </section>
 
-function save(){ localStorage.setItem("plantafel",JSON.stringify(state)); render(); }
+    <section class="card">
+      <div class="headRow">
+        <h2>Feinplanung (4 Wochen · Mo–Fr)</h2>
+        <div class="small hint">Pro Tag mehrere Projekte NEBENEINANDER. Projektblock als Ganzes verschiebbar.</div>
+      </div>
+      <div class="navRow">
+        <button id="weekPrev" class="btn secondary">◀</button>
+        <div id="rangeTitle" class="rangeTitle"></div>
+        <button id="weekNext" class="btn secondary">▶</button>
+      </div>
+      <div id="weeks" class="weeks"></div>
+    </section>
+  </section>
+</main>
 
-function addProject(){
-  const v=projInput.value.trim(); if(!v)return;
-  const id=Date.now(); state.projects.push({id,name:v});
-  state.months[id]="Jan"; projInput.value=""; save();
-}
+</div><!-- /zoom-root -->
 
-function addEmployee(){
-  const v=empInput.value.trim(); if(!v)return;
-  state.employees.push({id:Date.now(),name:v}); empInput.value=""; save();
-}
-
-function addVehicle(){
-  const v=vehInput.value.trim(); if(!v)return;
-  state.vehicles.push({id:Date.now(),name:v}); vehInput.value=""; save();
-}
-
-function makeDrag(el,type,id){
-  el.draggable=true;
-  el.ondragstart=e=>{
-    e.dataTransfer.setData("type",type);
-    e.dataTransfer.setData("id",id);
-  };
-}
-
-function dropZone(el,fn){
-  el.ondragover=e=>e.preventDefault();
-  el.ondrop=e=>fn(
-    e.dataTransfer.getData("type"),
-    +e.dataTransfer.getData("id")
-  );
-}
-
-function render(){
-vehicles.innerHTML="";
-employees.innerHTML="";
-monthsDiv.innerHTML="";
-weeks.innerHTML="";
-
-state.vehicles.forEach(v=>{
-  const s=document.createElement("span");
-  s.className="item"; s.textContent=v.name;
-  makeDrag(s,"vehicle",v.id); vehicles.appendChild(s);
-});
-
-state.employees.forEach(e=>{
-  const s=document.createElement("span");
-  s.className="item"; s.textContent=e.name;
-  makeDrag(s,"employee",e.id); employees.appendChild(s);
-});
-
-months.forEach(m=>{
-  const d=document.createElement("div");
-  d.className="month"; d.innerHTML="<b>"+m+"</b>";
-  dropZone(d,(t,id)=>{ if(t==="project"){ state.months[id]=m; save(); }});
-  state.projects.filter(p=>state.months[p.id]===m)
-    .forEach(p=>{
-      const s=document.createElement("span");
-      s.className="item"; s.textContent=p.name;
-      makeDrag(s,"project",p.id); d.appendChild(s);
-    });
-  monthsDiv.appendChild(d);
-});
-
-for(let w=1;w<=4;w++){
-  const div=document.createElement("div");
-  div.className="week";
-  div.innerHTML="<b>KW "+w+"</b>";
-  const row=document.createElement("div");
-  row.className="row";
-  ["Mo","Di","Mi","Do","Fr"].forEach(d=>{
-    const day=document.createElement("div");
-    day.className="day";
-    const key="W"+w+d;
-    dropZone(day,(t,id)=>{
-      if(!state.weeks[key])state.weeks[key]=[];
-      state.weeks[key].push({t,id}); save();
-    });
-    (state.weeks[key]||[]).forEach(x=>{
-      const s=document.createElement("span");
-      s.className="item";
-      const src=[...state.projects,...state.employees,...state.vehicles]
-        .find(z=>z.id===x.id);
-      if(src){ s.textContent=src.name; makeDrag(s,x.t,x.id); }
-      day.appendChild(s);
-    });
-    row.appendChild(day);
-  });
-  div.appendChild(row); weeks.appendChild(div);
-}
-}
-
-dropZone(trash,(t,id)=>{
-  if(t==="project") state.projects=state.projects.filter(p=>p.id!==id);
-  if(t==="employee") state.employees=state.employees.filter(e=>e.id!==id);
-  if(t==="vehicle") state.vehicles=state.vehicles.filter(v=>v.id!==id);
-  save();
-});
-
-render();
-</script>
+<script src="./app.js"></script>
 </body>
 </html>
