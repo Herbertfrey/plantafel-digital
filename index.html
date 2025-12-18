@@ -7,152 +7,129 @@
   <link rel="stylesheet" href="./style.css" />
 </head>
 <body>
+
 <header class="topbar">
   <div class="topbar__title">Plantafel Dachdeckerei Frey</div>
 
   <div class="topbar__actions">
-    <div class="pill" id="modePill">Ansicht</div>
-
-    <div class="zoomBox">
-      <button id="zoomOut" class="btn secondary" title="Zoom -">−</button>
-      <select id="zoomSelect" class="zoomSelect" title="Zoom">
-        <option value="0.2">20%</option>
-        <option value="0.4">40%</option>
-        <option value="0.6">60%</option>
-        <option value="0.8">80%</option>
-        <option value="1.0" selected>100%</option>
-        <option value="1.2">120%</option>
-        <option value="1.6">160%</option>
-      </select>
-      <button id="zoomIn" class="btn secondary" title="Zoom +">+</button>
-    </div>
-
     <label class="small">Start-Montag:</label>
     <input id="startDate" type="date" />
     <button id="btnToday" class="btn secondary">Diese Woche</button>
     <button id="btnReset" class="btn danger">Alles zurücksetzen</button>
 
-    <button id="btnLogin" class="btn">Editor-Login</button>
+    <!-- ONLINE / LOGIN -->
+    <div class="topbar__divider"></div>
+    <span id="syncState" class="sync-badge">Offline</span>
+    <button id="btnLoginOpen" class="btn secondary">Editor Login</button>
     <button id="btnLogout" class="btn secondary" style="display:none;">Logout</button>
   </div>
 </header>
 
-<!-- Login Modal -->
+<!-- LOGIN MODAL (nur Editoren) -->
 <div id="loginModal" class="modal" aria-hidden="true">
-  <div class="modalCard">
-    <div class="modalHead">
-      <div class="modalTitle">Editor-Login</div>
-      <button id="loginClose" class="btn secondary" style="padding:6px 10px;">✖</button>
+  <div class="modal__backdrop"></div>
+  <div class="modal__card">
+    <div class="modal__head">
+      <h3>Editor Login</h3>
+      <button id="btnLoginClose" class="btn danger" style="padding:6px 10px;">✖</button>
     </div>
 
-    <div class="small hint" style="margin-bottom:10px;">
-      Login ist nur für die 5 Editor-E-Mails. Alle anderen haben reine Ansicht.
-    </div>
+    <div class="modal__body">
+      <div class="small hint" style="margin-bottom:8px;">
+        Nur die freigeschalteten E-Mails dürfen ändern. Alle anderen haben Ansicht.
+      </div>
 
-    <div class="row" style="margin-bottom:8px;">
-      <input id="loginEmail" placeholder="E-Mail" autocomplete="username" />
-    </div>
-    <div class="row" style="margin-bottom:12px;">
-      <input id="loginPass" placeholder="Passwort" type="password" autocomplete="current-password" />
-    </div>
+      <input id="loginEmail" type="email" placeholder="E-Mail" class="modal__input" />
+      <input id="loginPassword" type="password" placeholder="Passwort" class="modal__input" />
 
-    <div class="row" style="justify-content:flex-end;">
-      <button id="loginDo" class="btn">Login</button>
+      <button id="btnLogin" class="btn" style="width:100%;">Anmelden</button>
+      <div id="loginError" class="modal__error"></div>
     </div>
-
-    <div id="loginMsg" class="small" style="margin-top:10px;"></div>
   </div>
 </div>
 
-<!-- Zoom root: hier wird skaliert -->
-<div id="zoomRoot">
-  <main class="layout">
-    <!-- LEFT: Stammdaten -->
-    <aside class="sidebar">
-      <section class="card">
-        <h3>Fahrzeuge (Stammdaten)</h3>
-        <div class="row">
-          <input id="vehicleInput" placeholder="Fahrzeug" />
-          <button id="addVehicleBtn" class="btn">+</button>
-        </div>
-        <div id="vehicleList" class="magnet-list"></div>
-        <div class="hint">Fahrzeuge bleiben links. Ziehen erzeugt Kopie im Projekt (Feinplanung).</div>
-      </section>
-
-      <section class="card">
-        <h3>Mitarbeiter (Stammdaten)</h3>
-        <div class="row">
-          <input id="employeeInput" placeholder="Name" />
-          <button id="addEmployeeBtn" class="btn">+</button>
-        </div>
-        <div id="employeeList" class="magnet-list"></div>
-        <div class="hint">Jeder Mitarbeiter hat eigene Farbe. Ziehen erzeugt Kopie im Projekt/Status.</div>
-      </section>
-
-      <section class="card">
-        <h3>Projekt anlegen (Pool)</h3>
-        <div class="row">
-          <input id="projectInput" placeholder="Projektname" />
-          <button id="addProjectBtn" class="btn">Projekt +</button>
-        </div>
-        <div id="projectPool" class="pool"></div>
-        <div class="hint">Hier stehen nur ungeplante Projekte. Sobald geplant: hier weg.</div>
-      </section>
-
-      <section class="card">
-        <h3>Status (Urlaub/Krank/Schule)</h3>
-        <div class="status-buttons">
-          <div class="status-chip urlaub" draggable="true" data-kind="status" data-status="urlaub">Urlaub</div>
-          <div class="status-chip krank" draggable="true" data-kind="status" data-status="krank">Krank</div>
-          <div class="status-chip schule" draggable="true" data-kind="status" data-status="schule">Schule</div>
-        </div>
-        <div class="hint">Status in einen Tag ziehen → Statusbox entsteht → Mitarbeiter hineinziehen.</div>
-      </section>
-
-      <section class="card trash">
-        <h3>ENTFERNEN</h3>
-        <div id="trash" class="trashZone">Hierher ziehen zum Entfernen</div>
-        <div class="hint">
-          Projekt aus Monat/Tag → zurück in Pool.<br/>
-          KFZ/MA im Projekt/Status → nur dort entfernen.<br/>
-          Stammdaten löschen: über X (Bestätigung).
-        </div>
-      </section>
-    </aside>
-
-    <!-- RIGHT: Planung -->
-    <section class="content">
-      <section class="card">
-        <div class="headRow">
-          <h2>Grobplanung (12 Monate)</h2>
-          <div class="small hint">Projekte aus Pool hier hineinziehen. Von Monat in Tag ziehen → Feinplanung.</div>
-        </div>
-        <div id="monthsGrid" class="monthsGrid"></div>
-      </section>
-
-      <section class="card">
-        <div class="headRow">
-          <h2>Feinplanung (4 Wochen · Mo–Fr)</h2>
-          <div class="small hint">Pro Tag mehrere Projekte NEBENEINANDER. Projektblock als Ganzes verschiebbar.</div>
-        </div>
-        <div class="navRow">
-          <button id="weekPrev" class="btn secondary">◀</button>
-          <div id="rangeTitle" class="rangeTitle"></div>
-          <button id="weekNext" class="btn secondary">▶</button>
-        </div>
-        <div id="weeks" class="weeks"></div>
-      </section>
+<main class="layout">
+  <!-- LEFT: Stammdaten -->
+  <aside class="sidebar">
+    <section class="card">
+      <h3>Fahrzeuge (Stammdaten)</h3>
+      <div class="row">
+        <input id="vehicleInput" placeholder="Fahrzeug" />
+        <button id="addVehicleBtn" class="btn">+</button>
+      </div>
+      <div id="vehicleList" class="magnet-list"></div>
+      <div class="hint">Fahrzeuge bleiben links. Ziehen erzeugt Kopie im Projekt (Feinplanung).</div>
     </section>
-  </main>
-</div>
+
+    <section class="card">
+      <h3>Mitarbeiter (Stammdaten)</h3>
+      <div class="row">
+        <input id="employeeInput" placeholder="Name" />
+        <button id="addEmployeeBtn" class="btn">+</button>
+      </div>
+      <div id="employeeList" class="magnet-list"></div>
+      <div class="hint">Jeder Mitarbeiter hat eigene Farbe. Ziehen erzeugt Kopie im Projekt/Status.</div>
+    </section>
+
+    <section class="card">
+      <h3>Projekt anlegen (Pool)</h3>
+      <div class="row">
+        <input id="projectInput" placeholder="Projektname" />
+        <button id="addProjectBtn" class="btn">Projekt +</button>
+      </div>
+      <div id="projectPool" class="pool"></div>
+      <div class="hint">Hier stehen nur ungeplante Projekte. Sobald geplant: hier weg.</div>
+    </section>
+
+    <section class="card">
+      <h3>Status (Urlaub/Krank/Schule)</h3>
+      <div class="status-buttons">
+        <div class="status-chip urlaub" draggable="true" data-kind="status" data-status="urlaub">Urlaub</div>
+        <div class="status-chip krank" draggable="true" data-kind="status" data-status="krank">Krank</div>
+        <div class="status-chip schule" draggable="true" data-kind="status" data-status="schule">Schule</div>
+      </div>
+      <div class="hint">Status in einen Tag ziehen → Statusbox entsteht → Mitarbeiter hineinziehen.</div>
+    </section>
+
+    <section class="card trash">
+      <h3>ENTFERNEN</h3>
+      <div id="trash" class="trashZone">Hierher ziehen zum Entfernen</div>
+      <div class="hint">
+        Projekt aus Monat/Tag → zurück in Pool.<br/>
+        KFZ/MA im Projekt/Status → nur dort entfernen.<br/>
+        Stammdaten löschen: über X (Bestätigung).
+      </div>
+    </section>
+  </aside>
+
+  <!-- RIGHT: Planung -->
+  <section class="content">
+    <section class="card">
+      <div class="headRow">
+        <h2>Grobplanung (12 Monate)</h2>
+        <div class="small hint">Projekte aus Pool hier hineinziehen. Von Monat in Tag ziehen → Feinplanung.</div>
+      </div>
+      <div id="monthsGrid" class="monthsGrid"></div>
+    </section>
+
+    <section class="card">
+      <div class="headRow">
+        <h2>Feinplanung (4 Wochen · Mo–Fr)</h2>
+        <div class="small hint">Pro Tag mehrere Projekte NEBENEINANDER. Projektblock als Ganzes verschiebbar.</div>
+      </div>
+      <div class="navRow">
+        <button id="weekPrev" class="btn secondary">◀</button>
+        <div id="rangeTitle" class="rangeTitle"></div>
+        <button id="weekNext" class="btn secondary">▶</button>
+      </div>
+      <div id="weeks" class="weeks"></div>
+    </section>
+  </section>
+</main>
 
 <!-- Supabase UMD -->
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
-<!-- Supabase helper -->
-<script src="./supabase.js"></script>
-
-<!-- App -->
 <script src="./app.js"></script>
 </body>
 </html>
